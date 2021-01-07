@@ -1,0 +1,21 @@
+te                          2.5 
+dt                          2e-3 
+threshold                   5e-8 
+dict_zero                   1e-8 
+
+add_Hamiltonian  { 0*Id_4}
+initial          { |1><1|_2 otimes |1><1|_2}
+
+RadiativeDecay_N_modes      50 
+RadiativeDecay_rate          1 
+RadiativeDecay_omega_max    50 
+RadiativeDecay_omega_min   -50 
+RadiativeDecay_SysOp  { (|0><1|_2 otimes Id_2) + (Id_2 otimes |0><1|_2) }
+
+
+
+add_Output       { |1><1|_2 otimes Id_2 }
+add_Output       { Id_2 otimes |1><1|_2 }
+
+write_PT  superradiance.pt
+outfile   01_calculate_PT.out

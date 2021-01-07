@@ -1,0 +1,14 @@
+te                  5
+dt                  1e-2
+threshold           1e-7
+
+
+Leads_N_modes       2
+Leads_g             1 
+Leads_omega_min     0
+Leads_omega_max     0
+Leads_EFermi        1e4
+temperature         0
+
+
+outfile             01_resonantlevelmodel_N2_degenerate.out

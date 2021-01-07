@@ -1,0 +1,704 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"  
+  "http://www.w3.org/TR/html4/loose.dtd">  
+<html > 
+<head><title></title> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"> 
+<meta name="generator" content="TeX4ht (http://www.tug.org/tex4ht/)"> 
+<meta name="originator" content="TeX4ht (http://www.tug.org/tex4ht/)"> 
+<!-- html --> 
+<meta name="src" content="documentation.tex"> 
+<link rel="stylesheet" type="text/css" href="documentation.css"> 
+</head><body 
+>
+<div class="center" 
+>
+<!--l. 7--><p class="noindent" >
+<!--l. 8--><p class="noindent" ><span 
+class="ecbx-1728">ACE Documentation</span><br />
+<span 
+class="ecti-1440">Moritz Cygorek</span></div>
+  <h3 class="sectionHead"><span class="titlemark">1 </span> <a 
+ id="x1-10001"></a>Introduction</h3>
+<!--l. 12--><p class="noindent" >This document is intended to describe how to use the C++ code ACE for the solution of open
+quantum systems using the <span 
+class="ecti-1095">automated compression of environments </span>(ACE) method. The
+article explaining the method can be found <a 
+href="https://arxiv.org/abs/2101.01653" >here</a>.
+<!--l. 18--><p class="indent" >  Generally, ACE provides numerically exact simulation of the dynamics of an open quantum
+systems described by the microscopic Hamiltonian
+  <table 
+class="equation"><tr><td><a 
+ id="x1-1001r1"></a>
+  <center class="math-display" >
+<img 
+src="documentation0x.png" alt="                      N&#x2211;E
+H  = HS +  HE = HS  +    HkE,
+                      k=1
+" class="math-display" ></center></td><td class="equation-label">(1)</td></tr></table>
+<!--l. 23--><p class="nopar" >
+where <span 
+class="cmmi-10x-x-109">H</span><sub><span 
+class="cmmi-8">S</span></sub> is the system Hamiltonian and the environment Hamiltonian <span 
+class="cmmi-10x-x-109">H</span><sub><span 
+class="cmmi-8">E</span></sub>, which also
+includes the system-environment coupling, is assumed to be separable into <span 
+class="cmmi-10x-x-109">N</span><sub><span 
+class="cmmi-8">E</span></sub> independent
+modes <span 
+class="cmmi-10x-x-109">k</span>. Throughout this document we will denote the dimension of the system Hilbert space
+by <span 
+class="cmmi-10x-x-109">N </span>while the dimension of the <span 
+class="cmmi-10x-x-109">k</span>-th environment mode is <span 
+class="cmmi-10x-x-109">M</span><sup><span 
+class="cmmi-8">k</span></sup> (or simply <span 
+class="cmmi-10x-x-109">M </span>if all <span 
+class="cmmi-10x-x-109">M</span><sup><span 
+class="cmmi-8">k</span></sup> are
+identical).
+<!--l. 32--><p class="indent" >  The goal is to obtain the reduced system density matrix discretized on a time grid
+<span 
+class="cmmi-10x-x-109">t</span><sub><span 
+class="cmmi-8">l</span></sub> <span 
+class="cmr-10x-x-109">= </span><span 
+class="cmmi-10x-x-109">t</span><sub><span 
+class="cmmi-8">a</span></sub> <span 
+class="cmr-10x-x-109">+ </span><span 
+class="cmmi-10x-x-109">l</span><span 
+class="cmr-10x-x-109">&#x0394;</span><span 
+class="cmmi-10x-x-109">t </span>up to a given final time <span 
+class="cmmi-10x-x-109">t</span><sub><span 
+class="cmmi-8">n</span></sub> <span 
+class="cmr-10x-x-109">= </span><span 
+class="cmmi-10x-x-109">t</span><sub><span 
+class="cmmi-8">a</span></sub> <span 
+class="cmr-10x-x-109">+ </span><span 
+class="cmmi-10x-x-109">n</span><span 
+class="cmr-10x-x-109">&#x0394;</span><span 
+class="cmmi-10x-x-109">t </span><span 
+class="cmr-10x-x-109">= </span><span 
+class="cmmi-10x-x-109">t</span><sub><span 
+class="cmmi-8">e</span></sub>. This can be done using the path
+integral expression
+  <table 
+class="equation"><tr><td><a 
+ id="x1-1002r2"></a>
+                                                                                
+                                                                                
+  <center class="math-display" >
+<img 
+src="documentation1x.png" alt="                             n
+&#x03C1;   =   &#x2211;     I(&#x03B1;n&#x02DC;&#x03B1;n)...(&#x03B1;1&#x02DC;&#x03B1;1)(&#x220F;  M &#x03B1;&#x02DC;l&#x03B1;l- 1)&#x03C1;  ,
+  &#x03B1;n  &#x03B1;n-1...&#x03B1;0                          &#x03B1;0
+       &#x02DC;&#x03B1;n...&#x02DC;&#x03B1;1               l=1
+" class="math-display" ></center></td><td class="equation-label">(2)</td></tr></table>
+<!--l. 44--><p class="nopar" >
+where <span 
+class="cmmi-10x-x-109">&#x03C1;</span><sub><span 
+class="cmmi-8">&#x03B1;</span><sub><span 
+class="cmmi-6">l</span></sub></sub> <span 
+class="cmr-10x-x-109">= </span><span 
+class="cmmi-10x-x-109">&#x03C1;</span><sub><span 
+class="cmmi-8">&#x03BD;</span><sub><span 
+class="cmmi-6">l</span></sub><span 
+class="cmmi-8">&#x03BC;</span><sub><span 
+class="cmmi-6">l</span></sub></sub> is the reduced system density matrix at time step <span 
+class="cmmi-10x-x-109">l</span>, <span 
+class="cmsy-10x-x-109"><img 
+src="cmsy10-4d.png" alt="M" class="10-109x-x-4d" /> </span>describes the free
+time evolution of the system, and <span 
+class="cmsy-10x-x-109"><img 
+src="cmsy10-49.png" alt="I" class="10-109x-x-49" /> </span>is the <span 
+class="ecti-1095">process tensor </span>(PT) accounting for the effects
+of the environment. To keep the notation compact, we combine two Hilbert space
+indices on the system density matrix <span 
+class="cmmi-10x-x-109">&#x03BD;</span><sub><span 
+class="cmmi-8">l</span></sub> and <span 
+class="cmmi-10x-x-109">&#x03BC;</span><sub><span 
+class="cmmi-8">l</span></sub> into a single Liouville space index
+<span 
+class="cmmi-10x-x-109">&#x03B1;</span><sub><span 
+class="cmmi-8">l</span></sub> <span 
+class="cmr-10x-x-109">= (</span><span 
+class="cmmi-10x-x-109">&#x03BD;</span><sub><span 
+class="cmmi-8">l</span></sub><span 
+class="cmmi-10x-x-109">,&#x03BC;</span><sub><span 
+class="cmmi-8">l</span></sub><span 
+class="cmr-10x-x-109">)</span>. The GIF can always expressed in the form of a matrix product operator
+(MPO)
+  <table 
+class="equation"><tr><td><a 
+ id="x1-1003r3"></a>
+  <center class="math-display" >
+<img 
+src="documentation2x.png" alt="  (&#x03B1; ,&#x02DC;&#x03B1; )(&#x03B1;   ,&#x03B1;&#x02DC;  )...(&#x03B1; ,&#x02DC;&#x03B1; )    &#x2211;      (&#x03B1;n,&#x02DC;&#x03B1;n)  (&#x03B1;n-1,&#x03B1;&#x02DC;n-1)     (&#x03B1;1,&#x02DC;&#x03B1;1)
+I  n  n  n-1 n-1    1 1 =        Q 1dn-1 Q dn-1dn-2  ...Q d11   .
+                          dn-1...d1
+" class="math-display" ></center></td><td class="equation-label">(3)</td></tr></table>
+<!--l. 63--><p class="nopar" >
+In the explicit derivation of the matrices <span 
+class="cmsy-10x-x-109"><img 
+src="cmsy10-51.png" alt="Q" class="10-109x-x-51" /></span>, the inner indices <span 
+class="cmmi-10x-x-109">d</span><sub><span 
+class="cmmi-8">l</span></sub> correspond to a complete basis
+of the Liouville space of the full environment, which can be extremely large. However, the inner
+dimensions of MPOs can be systemaically reduced using established compression
+techniques. Here, we use a compression method based on singular value decomposition
+(SVD), where singular values below a predefined threshold <span 
+class="cmmi-10x-x-109">&#x03F5; </span>are disregarded. The time
+discretization <span 
+class="cmr-10x-x-109">&#x0394;</span><span 
+class="cmmi-10x-x-109">t </span>and the compression threshold <span 
+class="cmmi-10x-x-109">&#x03F5; </span>are the main convergence parameters of
+ACE.
+<!--l. 74--><p class="indent" >  The working principle of ACE is to construct the PT in compressed MPO form by
+calculating the PTs for the individual environment modes <span 
+class="cmmi-10x-x-109">k </span>and then combining
+them one by one. After each combination step, the GIF MPO is compressed using
+SVDs to reduce the inner dimensions to a manageable size at all times. Once the
+compressed PT is calculated, the reduced system density matrix for a given system
+Hamiltonian and system initial state can be obtained by contracting a simple tensor
+                                                                                
+                                                                                
+network.
+<!--l. 84--><p class="noindent" >
+  <h3 class="sectionHead"><span class="titlemark">2 </span> <a 
+ id="x1-20002"></a>Code, Compilation, Dependencies, and Design Choices</h3>
+<!--l. 85--><p class="noindent" >The code has been written in C++ to combine low-level optimization (memory storage, access
+to LAPACK routines) with high-level abstraction for better usability. Although nothing in the
+code depends explicitly on the operating system, the code has been tested only on
+Linux.
+<!--l. 90--><p class="indent" >  We have tried to keep the dependencies on other codes minimal. However, the <a 
+href="http://eigen.tuxfamily.org" >Eigen</a> library
+is very handy and provides useful and efficient routines, e.g., for matrix exponentials. We use it
+in particular to specify Hamiltonians and density matrices. The numerically most demanding
+part of ACE is the calculation of SVDs. Here, we make use of the corresponding LAPACK
+routines. In my experience, the <a 
+href="https://software.intel.com/content/www/us/en/develop/tools/math-kernel-library.html" >Intel MKL</a> implementation of the SVD LAPACK
+routines can be significantly faster than other implementations, sometimes by orders of
+magnitudes. Therefore, we assume that Eigen as well as the Intel MKL is installed on the
+computer.
+<!--l. 102--><p class="indent" >  The installation of ACE via Makefiles needs to be able to find these libraries. To this end,
+the corresponding Linux environment variables have to be set. A successful installation of MKL
+should automatically set the <span 
+class="ectt-1095">MKLROOT </span>environment variable to the correct directory. We assume
+that the Eigen library is installed in the directory <span 
+class="ectt-1095">/usr/include/eigen3/</span>. If not, please set
+the variable <span 
+class="ectt-1095">EIGEN_HOME </span>manually in such a way that the file <span 
+class="ectt-1095">$EIGEN_HOME/Eigen/Eigen</span>
+exists.
+<!--l. 112--><p class="indent" >  To compile the code, go into the main directory of ACE and type in the console
+                                                                                
+                                                                                
+  <div class="verbatim" id="verbatim-1">
+&#x003E;&#x00A0;make
+</div>
+<!--l. 116--><p class="nopar" > This should compile the code and copy the binaries into the <span 
+class="ectt-1095">bin/ </span>subdirectory. For easy access
+later on, we suggest to add this directory to your Linux environment via the <span 
+class="ectt-1095">PATH </span>variable. For
+example, add the follwing line to your <span 
+class="cmsy-10x-x-109">~</span><span 
+class="ectt-1095">/.bashrc </span>file
+                                                                                
+                                                                                
+  <div class="verbatim" id="verbatim-2">
+PATH=/.../ACE/bin/:$PATH
+</div>
+<!--l. 123--><p class="nopar" > where the <span 
+class="cmmi-10x-x-109">&#x2026;</span><span style="margin-left:0.3em" class="thinspace"></span> are to be replaced to point to the correct absolute directory. Log out
+and log in again to activate the changes. Then, go to a temporary directory and
+run
+                                                                                
+                                                                                
+  <div class="verbatim" id="verbatim-3">
+&#x003E;&#x00A0;ACE
+</div>
+<!--l. 129--><p class="nopar" > This should generate a file <span 
+class="ectt-1095">ACE.out </span>whose first lines are
+                                                                                
+                                                                                
+  <div class="verbatim" id="verbatim-4">
+0&#x00A0;0&#x00A0;0&#x00A0;1&#x00A0;0&#x00A0;0&#x00A0;0&#x00A0;inf&#x00A0;inf
+&#x00A0;<br />0.01&#x00A0;0&#x00A0;0&#x00A0;1&#x00A0;0&#x00A0;0&#x00A0;0&#x00A0;1&#x00A0;0
+&#x00A0;<br />0.02&#x00A0;0&#x00A0;0&#x00A0;1&#x00A0;0&#x00A0;0&#x00A0;0&#x00A0;1&#x00A0;0
+&#x00A0;<br />0.03&#x00A0;0&#x00A0;0&#x00A0;1&#x00A0;0&#x00A0;0&#x00A0;0&#x00A0;1&#x00A0;0
+&#x00A0;<br />0.04&#x00A0;0&#x00A0;0&#x00A0;1&#x00A0;0&#x00A0;0&#x00A0;0&#x00A0;1&#x00A0;0
+&#x00A0;<br />...
+</div>
+<!--l. 138--><p class="nopar" > Congratulations! You have just executed your first (rather boring) simulation using
+ACE.
+<!--l. 142--><p class="noindent" >
+  <h3 class="sectionHead"><span class="titlemark">3 </span> <a 
+ id="x1-30003"></a>System dynamics</h3>
+<!--l. 143--><p class="noindent" >ACE can be controlled by command line parameters. Alternatively, the command line
+parameters can be written into a driver file and the driver file can be specified via the <span 
+class="ectt-1095">-driver</span>
+command line option. The ACE method can deal with arbitrary system-environment couplings,
+but it is difficult to provide hard-coded support for the specification of arbitrary
+time-dependent and mode-dependent Hamiltonians. So far, only a few specific environments
+are implemented. For others, there is no way around adding more C++-code. However,
+time-independent system Hamiltonians or Lindblad operators as well as a few predefine
+time-dependent Hamiltonians (e.g., Gaussian pulses) can be specified by command line options
+using a bra-ket notation.
+<!--l. 158--><p class="indent" >  First, let us discuss some of the most important parameters: The starting time, the final
+time, and the time step width can be specified by the command line options <span 
+class="ectt-1095">-ta</span>, <span 
+class="ectt-1095">-te</span>, and <span 
+class="ectt-1095">-dt</span>,
+respectively, which have the default values 0, 10, and 0.01 (times are assumed to be measured
+in picoseconds if not otherwise specified). You will find the corresponding time grid in the first
+column of output file <span 
+class="ectt-1095">ACE.out</span>, whose name may be changed via the option <span 
+class="ectt-1095">-outfile</span>.
+By default, there will be no environment, the system is a two-level system (TLS)
+initially in its ground state, and the system Hamiltonian is <span 
+class="cmmi-10x-x-109">H</span><sub><span 
+class="cmmi-8">S</span></sub> <span 
+class="cmr-10x-x-109">= 0</span>. For TLSs, if not
+specified otherwise, the second and third columns in the output file will be the real and
+imaginary part of the diagonal element of the system density matrix corresponding to the
+exited state. If no parameters are specified explicitly, these columns should remain
+0.
+<!--l. 172--><p class="indent" >  As a first example, run
+                                                                                
+                                                                                
+  <div class="verbatim" id="verbatim-5">
+&#x003E;&#x00A0;ACE&#x00A0;-dt&#x00A0;0.001&#x00A0;-te&#x00A0;20&#x00A0;-add_Hamiltonian&#x00A0;"{hbar/2*(|1&#x003E;&#x003C;0|_2+|0&#x003E;&#x003C;1|_2)}"&#x00A0;-outfile&#x00A0;ACE1.out
+</div>
+<!--l. 175--><p class="nopar" > This will generate an output file <span 
+class="ectt-1095">ACE1.out</span>, which contains the dynamics of a constantly
+driven TLS from 0 to 20 ps with time steps of 0.001 ps. The driving is described by the
+Hamiltonian <span 
+class="cmmi-10x-x-109">H</span><sub><span 
+class="cmmi-8">S</span></sub> <span 
+class="cmr-10x-x-109">= (</span><span 
+class="msbm-10x-x-109">&#x210F;</span><span 
+class="cmmi-10x-x-109">&#x2215;</span><span 
+class="cmr-10x-x-109">2)(</span><span 
+class="cmsy-10x-x-109">|</span><span 
+class="cmmi-10x-x-109">X</span><span 
+class="cmsy-10x-x-109">&#x27E9;&#x27E8;</span><span 
+class="cmmi-10x-x-109">G</span><span 
+class="cmsy-10x-x-109">| </span><span 
+class="cmr-10x-x-109">+ </span><span 
+class="cmsy-10x-x-109">|</span><span 
+class="cmmi-10x-x-109">G</span><span 
+class="cmsy-10x-x-109">&#x27E9;&#x27E8;</span><span 
+class="cmmi-10x-x-109">X</span><span 
+class="cmsy-10x-x-109">|</span><span 
+class="cmr-10x-x-109">) </span>(note: hbar is given in units of meV/ps). Here, the
+bra-ket notation for Hamiltonians has the form <span 
+class="ectt-1095">|i&#x003E;&#x003C;j|_d</span>, where <span 
+class="cmmi-10x-x-109">d </span>is the dimension of the
+Hilbert space. The curly braces are used to indicate the beginning and end of matrix-valued
+expressions. On the command line, quotes are required to avoid the removal of curly braces by
+the <span 
+class="ectt-1095">bash </span>shell.
+<!--l. 187--><p class="indent" >  Plotting the second column of <span 
+class="ectt-1095">ACE1.out </span>(in gnuplot: <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">plot</span><span 
+class="ectt-1095">&#x00A0;"ACE1.out"</span><span 
+class="ectt-1095">&#x00A0;using</span><span 
+class="ectt-1095">&#x00A0;1:2</span><span 
+class="ectt-1095">&#x00A0;with</span><span 
+class="ectt-1095">&#x00A0;lines</span></span></span>)
+reveals clear Rabi oscillations of the excited state occupations:
+<!--l. 192--><p class="indent" >  <img 
+src="figs/example1.png" alt="PIC"  
+width="569" height="279" >
+<!--l. 197--><p class="indent" >  The same result can be obtained creating and editing the file <span 
+class="ectt-1095">driver1.param</span>:
+<!--l. 201--><p class="noindent" >______________________________________
+                                                                                
+                                                                                
+  <div class="verbatim" id="verbatim-6">
+dt&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;0.001
+&#x00A0;<br />te&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;20
+&#x00A0;<br />
+&#x00A0;<br />add_Hamiltonian&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;{hbar/2*(|1&#x003E;&#x003C;0|_2+|0&#x003E;&#x003C;1|_2)}
+&#x00A0;<br />
+&#x00A0;<br />
+&#x00A0;<br />outfile&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;ACE1.out
+</div>
+<!--l. 210--><p class="nopar" >______________________________________
+<!--l. 213--><p class="indent" >  and running
+                                                                                
+                                                                                
+  <div class="verbatim" id="verbatim-7">
+&#x003E;&#x00A0;ACE&#x00A0;-driver&#x00A0;driver1.param
+</div>
+<!--l. 216--><p class="nopar" > or simply
+                                                                                
+                                                                                
+  <div class="verbatim" id="verbatim-8">
+&#x003E;&#x00A0;ACE&#x00A0;driver1.param
+</div>
+<!--l. 220--><p class="nopar" > I.e., the first parameter is interpreted as a driver file.
+<!--l. 223--><p class="indent" >  A more complicated scenario can be described by the following driver file (<span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">driver2.param</span></span></span>),
+where an initially excited TLS, optionally subject to radiative decay described by a Lindblad
+term, is driven by a Gaussian laser pulse:
+<!--l. 228--><p class="noindent" >______________________________________
+                                                                                
+                                                                                
+  <div class="verbatim" id="verbatim-9">
+dt&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;0.01
+&#x00A0;<br />te&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;20
+&#x00A0;<br />
+&#x00A0;<br />initial&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;{|1&#x003E;&#x003C;1|_2}
+&#x00A0;<br />
+&#x00A0;<br />#add_Lindblad&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;0.5&#x00A0;&#x00A0;{|0&#x003E;&#x003C;1|_2}
+&#x00A0;<br />add_Pulse&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;Gauss&#x00A0;&#x00A0;10&#x00A0;1&#x00A0;1&#x00A0;0&#x00A0;&#x00A0;{(|1&#x003E;&#x003C;0|_2+|0&#x003E;&#x003C;1|_2)}
+&#x00A0;<br />
+&#x00A0;<br />outfile&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;ACE2.out
+</div>
+<!--l. 239--><p class="nopar" >______________________________________
+<!--l. 242--><p class="indent" >  This produces the following dynamics:
+<!--l. 244--><p class="indent" >  <img 
+src="figs/example2.png" alt="PIC"  
+width="569" height="279" >
+<!--l. 246--><p class="indent" >  where the two curves are results of calculation where the Lindblad term is either turned off
+or on. The # symbol in a driver file indicates a comment, i.e. anything after it is ignored. The
+parameters of <span 
+class="ectt-1095">add_Lindblad </span>are the rate <span 
+class="cmmi-10x-x-109">&#x03B3; </span>and the operator <span 
+class="cmmi-10x-x-109">A </span>for the Lindblad
+term
+  <table 
+class="equation"><tr><td><a 
+ id="x1-3001r4"></a>
+  <center class="math-display" >
+<img 
+src="documentation3x.png" alt="&#x03B3;L [A ](&#x03C1;) = &#x03B3;[A&#x03C1;A &#8224; - 12(A&#8224;A&#x03C1; + &#x03C1;A &#8224;A)].
+" class="math-display" ></center></td><td class="equation-label">(4)</td></tr></table>
+<!--l. 254--><p class="nopar" >
+<!--l. 256--><p class="indent" >  The parameters of <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">add_Pulse</span><span 
+class="ectt-1095">&#x00A0;Gauss</span></span></span> are the pulse center (here: 10 ps), the pulse duration
+(<span 
+class="cmmi-10x-x-109">&#x03C4;</span><sub><span 
+class="cmmi-8">FWHM</span></sub> <span 
+class="cmr-10x-x-109">= 1 </span>ps), the pulse area (<span 
+class="cmr-10x-x-109">1</span><span 
+class="cmmi-10x-x-109">&#x03C0;</span>), the detuning (<span 
+class="cmr-10x-x-109">0 </span>meV), and the operator describing the
+light-matter coupling.
+<!--l. 260--><p class="indent" >  Finally, we mention that one can also explicitly specify which operator average are to be
+printed into the output file by the parameter <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">add_Output</span></span></span>, which takes as an argument an
+expression (in curly braces) describing the respective operator. When it is first specified,
+the default output operators are overridden and replaced by the specified operator
+average. Specifying <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">add_Output</span></span></span> multiple times adds more columns to the output
+file.
+                                                                                
+                                                                                
+<!--l. 268--><p class="noindent" >
+  <h3 class="sectionHead"><span class="titlemark">4 </span> <a 
+ id="x1-40004"></a>Environments</h3>
+<!--l. 269--><p class="noindent" >In the following subsections, the usage of some of the predefined environments is
+demonstrated. The driver files for the examples presented in the published article are
+contained in the first 4 subdirectories in the <span 
+class="ectt-1095">examples </span>directory provided with the
+code.
+<!--l. 275--><p class="noindent" >
+  <h4 class="subsectionHead"><span class="titlemark">4.1 </span> <a 
+ id="x1-50004.1"></a>Fermionic environment</h4>
+<!--l. 276--><p class="noindent" >One of the predefined environments is defined by the hopping Hamiltonian
+  <table 
+class="equation"><tr><td><a 
+ id="x1-5001r5"></a>
+  <center class="math-display" >
+<img 
+src="documentation4x.png" alt="          &#8224;     &#8224;          &#8224;
+HkE =  &#x210F;g(ckcS + cSck)+ &#x210F; &#x03C9;kckck
+" class="math-display" ></center></td><td class="equation-label">(5)</td></tr></table>
+<!--l. 281--><p class="nopar" >
+Here, the system is meant to be a Fermionic state that may be occupied or not. The
+occupation is created by <span 
+class="cmmi-10x-x-109">c</span><sub><span 
+class="cmmi-8">S</span></sub><sup><span 
+class="cmsy-8">&#8224;</span></sup> or destroyed by <span 
+class="cmmi-10x-x-109">c</span><sub><span 
+class="cmmi-8">S</span></sub>. Similarly, the environment consists of several
+Fermionic states, whose occupations are created and destroyed by <span 
+class="cmmi-10x-x-109">c</span><sub><span 
+class="cmmi-8">k</span></sub><sup><span 
+class="cmsy-8">&#8224;</span></sup> and <span 
+class="cmmi-10x-x-109">c</span><sub><span 
+class="cmmi-8">k</span></sub>, respectively. In
+the limit <span 
+class="cmmi-10x-x-109">N</span><sub><span 
+class="cmmi-8">E</span></sub> <span 
+class="cmsy-10x-x-109">&#x2192;&#x221E;</span>, the environment consists of a continuum of state, which can be used to
+model the electronic states in metallic leads in proximity to a quantum dot. Consider the driver
+file:
+<!--l. 291--><p class="noindent" >______________________________________
+                                                                                
+                                                                                
+  <div class="verbatim" id="verbatim-10">
+te&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;5
+&#x00A0;<br />dt&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;1e-2
+&#x00A0;<br />threshold&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;1e-7
+&#x00A0;<br />
+&#x00A0;<br />Leads_N_modes&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;2
+&#x00A0;<br />Leads_g&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;1
+&#x00A0;<br />Leads_omega_min&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;0
+&#x00A0;<br />Leads_omega_max&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;0
+&#x00A0;<br />Leads_EFermi&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;1e4
+&#x00A0;<br />
+&#x00A0;<br />outfile&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;ACE3.out
+</div>
+<!--l. 304--><p class="nopar" >______________________________________
+<!--l. 307--><p class="indent" >  Whenever we add an environment, we should specify a compression <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">threshold</span></span></span> (denoted <span 
+class="cmmi-10x-x-109">&#x03F5; </span>in
+the paper). The smaller the threshold, the more accurate the simulation. However, for
+very smaller thresholds also the calculation times as well as the memory demands
+increase.
+<!--l. 313--><p class="indent" >  <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">Leads_*</span></span></span> indicates that what comes after is a parameter for the leads-type environment
+specified by the above Hamiltonian. <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">Leads_N_modes</span></span></span> tells the code to use 2 Fermionic
+states as environment. The coupling strength is determined by <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">Leads_g</span></span></span> and the
+energies are equidistantly sampled from <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">Leads_omega_min</span></span></span> to <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">Leads_omega_max</span></span></span> (in
+picoseconds; there also exist <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">Leads_E_min</span></span></span> and <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">Leads_E_max</span></span></span> if we want to specify
+the band width in units of meV). Here, both limits are set to zero, so that both
+environment modes are resonant to the TLS transition. By setting <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">Leads_EFermi</span><span 
+class="ectt-1095">&#x00A0;1e4</span></span></span>
+(note that 1e4 is the C++ notation for <span 
+class="cmr-10x-x-109">1 </span><span 
+class="cmsy-10x-x-109">&#x00D7; </span><span 
+class="cmr-10x-x-109">10</span><sup><span 
+class="cmr-8">4</span></sup>) the Fermi level is set to such a high
+value that all environment states are initially occupied. There is also the parameter
+<span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">Leads_temperature</span></span></span> to specify the temperature (in units of Kelvin) of the Fermi distribution.
+If not specified, the global <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">temperature</span></span></span> parameter will be used, whose default is 4 K. The
+initial state of the system is empty. Therefore, electrons will start to move from the
+leads to the system. The dynamics is show below and it is discussed further in the
+article.
+<!--l. 332--><p class="indent" >  <img 
+src="figs/plot_hopping_N2.png" alt="PIC"  
+width="569" height="275" >
+<!--l. 335--><p class="indent" >  Typically, the environments of open quantum system are assumed to form a continuum. In
+ACE, we simply discretize the continuum. For the case of metallic leads, it turns out that using
+<span 
+class="cmmi-10x-x-109">N</span><sub><span 
+class="cmmi-8">E</span></sub> <span 
+class="cmr-10x-x-109">= 10 </span>modes is already not too bad. Consider the driver file <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">driver4.param</span></span></span>:
+<!--l. 341--><p class="noindent" >______________________________________
+                                                                                
+                                                                                
+  <div class="verbatim" id="verbatim-11">
+te&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;2.5
+&#x00A0;<br />dt&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;1e-2
+&#x00A0;<br />threshold&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;1e-7
+&#x00A0;<br />
+&#x00A0;<br />Leads_N_modes&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;10
+&#x00A0;<br />Leads_rate&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;1
+&#x00A0;<br />Leads_omega_min&#x00A0;&#x00A0;&#x00A0;&#x00A0;-5
+&#x00A0;<br />Leads_omega_max&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;5
+&#x00A0;<br />Leads_EFermi&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;1e4
+&#x00A0;<br />
+&#x00A0;<br />outfile&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;ACE4.out
+</div>
+<!--l. 354--><p class="nopar" >______________________________________
+<!--l. 357--><p class="indent" >  Here, instead of <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">Leads_g</span></span></span>, we use <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">Leads_rate</span></span></span> to specify the rate that we would expect in the
+Markov limit. Then, the coupling constant is calculated internally by solving the Fermi&#8217;s
+golden rule expression for <span 
+class="cmmi-10x-x-109">g</span>. The respective dynamics is compared with the Markovian result
+<span 
+class="cmr-10x-x-109">1 </span><span 
+class="cmsy-10x-x-109">-</span> <span 
+class="cmr-10x-x-109">exp</span><span 
+class="cmr-10x-x-109">(</span><span 
+class="cmsy-10x-x-109">-</span><span 
+class="cmmi-10x-x-109">x</span><span 
+class="cmr-10x-x-109">) </span>in the following plot:
+<!--l. 363--><p class="indent" >  <img 
+src="figs/plot_hopping_N10.png" alt="PIC"  
+width="569" height="272" >
+<!--l. 365--><p class="indent" >  Increasing <span 
+class="cmmi-10x-x-109">N</span><sub><span 
+class="cmmi-8">E</span></sub> even further to about 100 while keeping the same density of states (i.e.
+increasing the band width simultaneously) will produce a behaviour very close to the
+Markovian results.
+<!--l. 369--><p class="noindent" >
+  <h4 class="subsectionHead"><span class="titlemark">4.2 </span> <a 
+ id="x1-60004.2"></a>Radiative decay</h4>
+<!--l. 370--><p class="noindent" >The coupling of a quantum emitter to the electromagnetic field modes of free space gives rise
+to radative decay and can be described by the Hamiltonian
+  <table 
+class="equation"><tr><td><a 
+ id="x1-6001r6"></a>
+  <center class="math-display" >
+<img 
+src="documentation5x.png" alt="     &#x2211;
+H  =    [&#x210F;&#x03C9;ka &#8224;ak + &#x210F;gk (a &#8224;|G &#x27E9;&#x27E8;X |+ ak |X &#x27E9;&#x27E8;G|)],
+      k       k          k
+" class="math-display" ></center></td><td class="equation-label">(6)</td></tr></table>
+                                                                                
+                                                                                
+<!--l. 376--><p class="nopar" >
+where <span 
+class="cmmi-10x-x-109">a</span><sub><span 
+class="cmbx-8">k</span></sub><sup><span 
+class="cmsy-8">&#8224;</span></sup> and <span 
+class="cmmi-10x-x-109">a</span><sub><span 
+class="cmbx-8">k</span></sub> are Bosonic creation and annihilation operators. In practice, <span 
+class="cmbx-10x-x-109">k </span>is a
+three-dimensional vector and the photon bands <span 
+class="cmbx-10x-x-109">k </span>may be modified by structuring the photon
+environment, e.g. by embedding the emitter in a microcavity.
+<!--l. 383--><p class="indent" >  Here, we assume isotropy (i.e., we work exclusively with the modulus <span 
+class="cmmi-10x-x-109">k </span><span 
+class="cmr-10x-x-109">= </span><span 
+class="cmsy-10x-x-109">|</span><span 
+class="cmbx-10x-x-109">k</span><span 
+class="cmsy-10x-x-109">|</span>) and a flat
+spectral density of state (as a function of the modulus <span 
+class="cmsy-10x-x-109">|</span><span 
+class="cmbx-10x-x-109">k</span><span 
+class="cmsy-10x-x-109">|</span>), and discretize the light field
+continuum equidistantly. The only difference between this situation and the coupling to
+Fermionic leads is that the mode operators are Bosonic, i.e., they can in principle contain
+an arbitarily large number of excitations and the initial state is given by a Bose
+distribution instead of a Fermi distribution. Therefore, we use the same set of parameters,
+just replacing <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">Leads_*</span></span></span> by <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">RadiativeDecay_*</span></span></span>. Additionally, we use the parameter
+<span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">RadiativeDecay_M</span></span></span> to specify the cut-off in the number of excitations (dimension of the
+respective Hilbert space, i.e., 1+maximal number of photons per mode; default value:
+2).
+<!--l. 397--><p class="noindent" >
+  <h4 class="subsectionHead"><span class="titlemark">4.3 </span> <a 
+ id="x1-70004.3"></a>Phonons/spin-boson model/independent-boson model</h4>
+<!--l. 398--><p class="noindent" >A TLS diagonally coupled to a continuum of independent bosons is known as the
+independent-boson model or spin-boson model. It also describes the coupling between a
+quantum dot (QD) and longitudinal acoustic phonons. In this example, we take the latter as
+our use case. The corresponding Hamiltonian is
+  <table 
+class="equation"><tr><td><a 
+ id="x1-7001r7"></a>
+  <center class="math-display" >
+<img 
+src="documentation6x.png" alt="      &#x2211;
+HE  =    [&#x210F;&#x03C9;qb&#8224;qbq + &#x210F;&#x03B3;q(b&#8224;q + bq)|X &#x27E9;&#x27E8;X|],
+       q
+" class="math-display" ></center></td><td class="equation-label">(7)</td></tr></table>
+<!--l. 409--><p class="nopar" >
+<!--l. 411--><p class="indent" >  where <span 
+class="cmmi-10x-x-109">b</span><sub><span 
+class="cmbx-8">q</span></sub><sup><span 
+class="cmsy-8">&#8224;</span></sup> and <span 
+class="cmmi-10x-x-109">b</span><sub><span 
+class="cmbx-8">q</span></sub> are creation and annihilation operators for phonons with wave vector <span 
+class="cmbx-10x-x-109">q</span>. It
+can be shown that the effects of such an environment are fully characterized by the spectral
+density
+  <table 
+class="equation"><tr><td><a 
+ id="x1-7002r8"></a>
+                                                                                
+                                                                                
+  <center class="math-display" >
+<img 
+src="documentation7x.png" alt="       &#x2211;
+J(&#x03C9;) =    &#x03B3;2q &#x03B4;(&#x03C9; - &#x03C9;q )
+        q
+" class="math-display" ></center></td><td class="equation-label">(8)</td></tr></table>
+<!--l. 419--><p class="nopar" >
+<!--l. 421--><p class="indent" >  Solving the original Hamiltonian is very difficult when the number of phonon modes is large.
+Thus, we instead solve a replacement Hamiltonian by discretizing the respective spectral
+density <span 
+class="cmmi-10x-x-109">J</span><span 
+class="cmr-10x-x-109">(</span><span 
+class="cmmi-10x-x-109">&#x03C9;</span><span 
+class="cmr-10x-x-109">)</span>. Internally, we can specify arbitrary spectral densities. However, so far only the
+spectral density for phonons (described in the article) is accessible via command line options. A
+working driver file may be:
+                                                                                
+                                                                                
+  <div class="verbatim" id="verbatim-12">
+QDPhonon_temperature&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;4&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;#&#x00A0;default:&#x00A0;4
+&#x00A0;<br />
+&#x00A0;<br />QDPhonon_subtract_polaron_shift&#x00A0;&#x00A0;true&#x00A0;&#x00A0;&#x00A0;&#x00A0;#&#x00A0;default:&#x00A0;true
+&#x00A0;<br />QDPhonon_N_modes&#x00A0;&#x00A0;&#x00A0;&#x00A0;100
+&#x00A0;<br />QDPhonon_M_max&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;3&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;#&#x00A0;default:&#x00A0;4
+&#x00A0;<br />QDPhonon_E_max&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;5&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;#&#x00A0;default:&#x00A0;4
+</div>
+<!--l. 436--><p class="nopar" >
+<!--l. 438--><p class="indent" >  Here, <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">QDPhonon_N_modes</span></span></span> is the number of modes, i.e. the number of sample points for the
+discretization. <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">QDPhonon_E_max</span></span></span> is the cut-off energy determining the maximal value of <span 
+class="cmmi-10x-x-109">&#x03C9; </span>for
+the discretization of <span 
+class="cmmi-10x-x-109">J</span><span 
+class="cmr-10x-x-109">(</span><span 
+class="cmmi-10x-x-109">&#x03C9;</span><span 
+class="cmr-10x-x-109">)</span>. <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">QDPhonon_M_max</span></span></span> is the dimension of the Hilbert space for a single
+phonon mode (1+maximal number of phonons per mode). The temperature for the initial state
+of the bath is given by <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">QDPhonon_temperature</span></span></span> (if not specified, <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">temperature</span></span></span> is checked). By
+setting <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">QDPhonon_subtract_polaron_shift</span></span></span> to <span class="obeylines-h"><span class="verb"><span 
+class="ectt-1095">true</span></span></span> (which is the default behaviour) the
+polaron shift <span 
+class="cmsy-10x-x-109">-</span><span 
+class="cmex-10x-x-109">&#x2211;</span>
+  <sub><span 
+class="cmbx-8">q</span></sub><span 
+class="cmr-10x-x-109">(</span><span 
+class="cmmi-10x-x-109">&#x03B3;</span><sub><span 
+class="cmbx-8">q</span></sub><sup><span 
+class="cmr-8">2</span></sup><span 
+class="cmr-10x-x-109">)</span><span 
+class="cmmi-10x-x-109">&#x2215;</span><span 
+class="cmr-10x-x-109">(</span><span 
+class="cmmi-10x-x-109">&#x03C9;</span><sub><span 
+class="cmbx-8">q</span></sub><span 
+class="cmr-10x-x-109">) </span>is subtracted from (i.e. the modulus is added to)
+the Hamiltonian. This is done to eliminate the effects of the polaron shift when
+comparing calculations with and without phonons, which would otherwise affect resonance
+conditions.
+<!--l. 455--><p class="indent" >  As an alternative to ACE, the process tensor for Gaussian baths can be calculated using
+expressions where the bath is already integrated out [cf. Jørgensen and Pollock Phys. Rev.
+Lett. 123, 240602 (2019)]. This method is usually much more efficient and does not require
+discretization or truncation of the phonon Hilbert spaces (Recall: The advantage of ACE is its
+generality, while the latter method only works for Gaussian baths.) To use this method instead
+for phonon simulations with our standard phonon spectral density, the following can be added
+to the driver file:
+                                                                                
+                                                                                
+  <div class="verbatim" id="verbatim-13">
+use_process_tensor&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;true
+&#x00A0;<br />temperature&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;4
+</div>
+<!--l. 468--><p class="nopar" >
+<!--l. 497--><p class="noindent" >
+  <h3 class="sectionHead"><span class="titlemark">5 </span> <a 
+ id="x1-80005"></a>Concluding remarks</h3>
+<!--l. 498--><p class="noindent" >Further developments of ACE as well as the code are ongoing projects. The documentation
+naturally lags behind.
+   
+</body></html> 
+
+                                                                                
+
+

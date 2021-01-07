@@ -1,0 +1,15 @@
+te                          2.5 
+dt                          2e-3 
+
+add_Hamiltonian  { 10*hbar/2 * (|1><1|_2 otimes Id_2) }
+add_Hamiltonian  {-10*hbar/2 * (Id_2 otimes |1><1|_2) }
+
+initial          { |1><1|_2 otimes |1><1|_2}
+
+add_Output       { |1><1|_2 otimes Id_2 }
+add_Output       { Id_2 otimes |1><1|_2 }
+
+
+read_PT  superradiance.pt
+
+outfile  04_delta10.out

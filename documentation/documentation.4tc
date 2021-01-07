@@ -1,0 +1,9 @@
+\expandafter\ifx\csname doTocEntry\endcsname\relax \expandafter\endinput\fi
+\doTocEntry\tocsection{1}{\csname a:TocLink\endcsname{1}{x1-10001}{QQ2-1-1}{Introduction}}{1}\relax 
+\doTocEntry\tocsection{2}{\csname a:TocLink\endcsname{1}{x1-20002}{QQ2-1-2}{Code, Compilation, Dependencies, and Design Choices}}{3}\relax 
+\doTocEntry\tocsection{3}{\csname a:TocLink\endcsname{1}{x1-30003}{QQ2-1-3}{System dynamics}}{7}\relax 
+\doTocEntry\tocsection{4}{\csname a:TocLink\endcsname{1}{x1-40004}{QQ2-1-4}{Environments}}{13}\relax 
+\doTocEntry\tocsubsection{4.1}{\csname a:TocLink\endcsname{1}{x1-50004.1}{QQ2-1-5}{Fermionic environment}}{13}\relax 
+\doTocEntry\tocsubsection{4.2}{\csname a:TocLink\endcsname{1}{x1-60004.2}{QQ2-1-6}{Radiative decay}}{15}\relax 
+\doTocEntry\tocsubsection{4.3}{\csname a:TocLink\endcsname{1}{x1-70004.3}{QQ2-1-7}{Phonons/spin-boson model/independent-boson model}}{16}\relax 
+\doTocEntry\tocsection{5}{\csname a:TocLink\endcsname{1}{x1-80005}{QQ2-1-8}{Concluding remarks}}{19}\relax 
