@@ -1,19 +1,30 @@
 
-Note: 
+General remark:
+---------------
 
-'04_combine.param' requires the PT calculated using 
-'02_calculate_phonon_PT.param' and '03_calculate_photon_PT.param'.
-Thus, please run them first.
+The generation of process tensors can take a while. In particular, the 
+photon PT can take about one day and requires enough memory.
 
-The memory demands are significant. To be sure, run it on a computer with
-16GB RAM.
-
+The iQUAPI calculations are fast but require lots of memory. 
+Here, we suggest using a computer with 4GB RAM.
 
 
-Note:
+Note 1:    
+-------
 
-'01_iQUAPI.param'  must be run with the 'iQUAPI' program
+The examples '01_iQUAPI.param' and  '10_initial_iQUAPI.param' have to be run
+with the program 'iQUAPI', not with 'ACE'
 
-> iQUAPI 01_iQUAPI.param
+
+Note 2:
+-------
+
+Here, some examples ('02_calculate_phonon_PT.param', 
+'03_calculate_photon_PT.param', and '06_calculate_photon_PT_BW0.4.param') 
+are calculate and write process tensors to files.
+Other examples read them and work with them. Thus, it is best to run the
+examples in the correct order (according to the numbers in the file names).
+
+
 
 

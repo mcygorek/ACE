@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=latex 2020.6.17)  7 JAN 2021 22:23
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=latex 2020.6.17)  10 JAN 2021 15:46
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -878,28 +878,28 @@ l. 192 --- needs --- figs/example1.png ---
 l. 244 --- needs --- figs/example2.png ---
 l. 251 Writing documentation.idv[4] (documentation3x.png)
  [12]
-l. 278 Writing documentation.idv[5] (documentation4x.png)
+l. 280 Writing documentation.idv[5] (documentation4x.png)
  [13]
-l. 332 --- needs --- figs/plot_hopping_N2.png ---
+l. 334 --- needs --- figs/plot_hopping_N2.png ---
  [14]
-l. 363 --- needs --- figs/plot_hopping_N10.png ---
-l. 372 Writing documentation.idv[6] (documentation5x.png)
+l. 365 --- needs --- figs/plot_hopping_N10.png ---
+l. 374 Writing documentation.idv[6] (documentation5x.png)
  [15]
-l. 404 Writing documentation.idv[7] (documentation6x.png)
+l. 406 Writing documentation.idv[7] (documentation6x.png)
  [16]
-l. 416 Writing documentation.idv[8] (documentation7x.png)
+l. 418 Writing documentation.idv[8] (documentation7x.png)
  [17] [18]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 501.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 504.
  [19]
-Package atveryend Info: Executing hook `AfterLastShipout' on input line 501.
+Package atveryend Info: Executing hook `AfterLastShipout' on input line 504.
 \BKM@file=\write5
 \openout5 = `documentation.out.ps'.
 
 
 (./documentation.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 501.
-Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 501.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 501.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 504.
+Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 504.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 504.
  ) 
 Here is how much of TeX's memory you used:
  13289 strings out of 483058
@@ -910,4 +910,4 @@ Here is how much of TeX's memory you used:
  59 hyphenation exceptions out of 8191
  43i,10n,57p,10597b,465s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on documentation.dvi (19 pages, 65124 bytes).
+Output written on documentation.dvi (19 pages, 65360 bytes).

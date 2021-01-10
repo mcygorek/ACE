@@ -397,24 +397,25 @@ file.
 <!--l. 268--><p class="noindent" >
   <h3 class="sectionHead"><span class="titlemark">4 </span> <a 
  id="x1-40004"></a>Environments</h3>
-<!--l. 269--><p class="noindent" >In the following subsections, the usage of some of the predefined environments is
-demonstrated. The driver files for the examples presented in the published article are
-contained in the first 4 subdirectories in the <span 
-class="ectt-1095">examples </span>directory provided with the
-code.
-<!--l. 275--><p class="noindent" >
+<!--l. 269--><p class="noindent" >In the following subsections, the usage of some of the predefined environments is demonstrated.
+The driver files for the examples presented in the published article are contained in the first 4
+subdirectories in the <span 
+class="ectt-1095">examples </span>directory provided with the code. The respective
+parameter files should produces output files identical to the ones in the directory
+<span 
+class="ectt-1095">examples/results</span>.
+<!--l. 277--><p class="noindent" >
   <h4 class="subsectionHead"><span class="titlemark">4.1 </span> <a 
  id="x1-50004.1"></a>Fermionic environment</h4>
-<!--l. 276--><p class="noindent" >One of the predefined environments is defined by the hopping Hamiltonian
+<!--l. 278--><p class="noindent" >One of the predefined environments is defined by the hopping Hamiltonian
   <table 
 class="equation"><tr><td><a 
  id="x1-5001r5"></a>
   <center class="math-display" >
 <img 
-src="documentation4x.png" alt="          &#8224;     &#8224;          &#8224;
-HkE =  &#x210F;g(ckcS + cSck)+ &#x210F; &#x03C9;kckck
+src="documentation4x.png" alt="HkE =  &#x210F;g(c&#8224;kcS + c&#8224;Sck)+ &#x210F; &#x03C9;kc&#8224;kck
 " class="math-display" ></center></td><td class="equation-label">(5)</td></tr></table>
-<!--l. 281--><p class="nopar" >
+<!--l. 283--><p class="nopar" >
 Here, the system is meant to be a Fermionic state that may be occupied or not. The
 occupation is created by <span 
 class="cmmi-10x-x-109">c</span><sub><span 
@@ -434,7 +435,7 @@ class="cmmi-8">E</span></sub> <span
 class="cmsy-10x-x-109">&#x2192;&#x221E;</span>, the environment consists of a continuum of state, which can be used to
 model the electronic states in metallic leads in proximity to a quantum dot. Consider the driver
 file:
-<!--l. 291--><p class="noindent" >______________________________________
+<!--l. 293--><p class="noindent" >______________________________________
                                                                                 
                                                                                 
   <div class="verbatim" id="verbatim-10">
@@ -450,14 +451,14 @@ te&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A
 &#x00A0;<br />
 &#x00A0;<br />outfile&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;ACE3.out
 </div>
-<!--l. 304--><p class="nopar" >______________________________________
-<!--l. 307--><p class="indent" >  Whenever we add an environment, we should specify a compression <span class="obeylines-h"><span class="verb"><span 
+<!--l. 306--><p class="nopar" >______________________________________
+<!--l. 309--><p class="indent" >  Whenever we add an environment, we should specify a compression <span class="obeylines-h"><span class="verb"><span 
 class="ectt-1095">threshold</span></span></span> (denoted <span 
 class="cmmi-10x-x-109">&#x03F5; </span>in
 the paper). The smaller the threshold, the more accurate the simulation. However, for
 very smaller thresholds also the calculation times as well as the memory demands
 increase.
-<!--l. 313--><p class="indent" >  <span class="obeylines-h"><span class="verb"><span 
+<!--l. 315--><p class="indent" >  <span class="obeylines-h"><span class="verb"><span 
 class="ectt-1095">Leads_*</span></span></span> indicates that what comes after is a parameter for the leads-type environment
 specified by the above Hamiltonian. <span class="obeylines-h"><span class="verb"><span 
 class="ectt-1095">Leads_N_modes</span></span></span> tells the code to use 2 Fermionic
@@ -486,17 +487,17 @@ class="ectt-1095">temperature</span></span></span> parameter will be used, whose
 initial state of the system is empty. Therefore, electrons will start to move from the
 leads to the system. The dynamics is show below and it is discussed further in the
 article.
-<!--l. 332--><p class="indent" >  <img 
+<!--l. 334--><p class="indent" >  <img 
 src="figs/plot_hopping_N2.png" alt="PIC"  
 width="569" height="275" >
-<!--l. 335--><p class="indent" >  Typically, the environments of open quantum system are assumed to form a continuum. In
+<!--l. 337--><p class="indent" >  Typically, the environments of open quantum system are assumed to form a continuum. In
 ACE, we simply discretize the continuum. For the case of metallic leads, it turns out that using
 <span 
 class="cmmi-10x-x-109">N</span><sub><span 
 class="cmmi-8">E</span></sub> <span 
 class="cmr-10x-x-109">= 10 </span>modes is already not too bad. Consider the driver file <span class="obeylines-h"><span class="verb"><span 
 class="ectt-1095">driver4.param</span></span></span>:
-<!--l. 341--><p class="noindent" >______________________________________
+<!--l. 343--><p class="noindent" >______________________________________
                                                                                 
                                                                                 
   <div class="verbatim" id="verbatim-11">
@@ -512,8 +513,8 @@ te&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A
 &#x00A0;<br />
 &#x00A0;<br />outfile&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;ACE4.out
 </div>
-<!--l. 354--><p class="nopar" >______________________________________
-<!--l. 357--><p class="indent" >  Here, instead of <span class="obeylines-h"><span class="verb"><span 
+<!--l. 356--><p class="nopar" >______________________________________
+<!--l. 359--><p class="indent" >  Here, instead of <span class="obeylines-h"><span class="verb"><span 
 class="ectt-1095">Leads_g</span></span></span>, we use <span class="obeylines-h"><span class="verb"><span 
 class="ectt-1095">Leads_rate</span></span></span> to specify the rate that we would expect in the
 Markov limit. Then, the coupling constant is calculated internally by solving the Fermi&#8217;s
@@ -527,18 +528,18 @@ class="cmr-10x-x-109">(</span><span
 class="cmsy-10x-x-109">-</span><span 
 class="cmmi-10x-x-109">x</span><span 
 class="cmr-10x-x-109">) </span>in the following plot:
-<!--l. 363--><p class="indent" >  <img 
+<!--l. 365--><p class="indent" >  <img 
 src="figs/plot_hopping_N10.png" alt="PIC"  
 width="569" height="272" >
-<!--l. 365--><p class="indent" >  Increasing <span 
+<!--l. 367--><p class="indent" >  Increasing <span 
 class="cmmi-10x-x-109">N</span><sub><span 
 class="cmmi-8">E</span></sub> even further to about 100 while keeping the same density of states (i.e.
 increasing the band width simultaneously) will produce a behaviour very close to the
 Markovian results.
-<!--l. 369--><p class="noindent" >
+<!--l. 371--><p class="noindent" >
   <h4 class="subsectionHead"><span class="titlemark">4.2 </span> <a 
  id="x1-60004.2"></a>Radiative decay</h4>
-<!--l. 370--><p class="noindent" >The coupling of a quantum emitter to the electromagnetic field modes of free space gives rise
+<!--l. 372--><p class="noindent" >The coupling of a quantum emitter to the electromagnetic field modes of free space gives rise
 to radative decay and can be described by the Hamiltonian
   <table 
 class="equation"><tr><td><a 
@@ -551,7 +552,7 @@ H  =    [&#x210F;&#x03C9;ka &#8224;ak + &#x210F;gk (a &#8224;|G &#x27E9;&#x27E8;
 " class="math-display" ></center></td><td class="equation-label">(6)</td></tr></table>
                                                                                 
                                                                                 
-<!--l. 376--><p class="nopar" >
+<!--l. 378--><p class="nopar" >
 where <span 
 class="cmmi-10x-x-109">a</span><sub><span 
 class="cmbx-8">k</span></sub><sup><span 
@@ -562,7 +563,7 @@ class="cmbx-10x-x-109">k </span>is a
 three-dimensional vector and the photon bands <span 
 class="cmbx-10x-x-109">k </span>may be modified by structuring the photon
 environment, e.g. by embedding the emitter in a microcavity.
-<!--l. 383--><p class="indent" >  Here, we assume isotropy (i.e., we work exclusively with the modulus <span 
+<!--l. 385--><p class="indent" >  Here, we assume isotropy (i.e., we work exclusively with the modulus <span 
 class="cmmi-10x-x-109">k </span><span 
 class="cmr-10x-x-109">= </span><span 
 class="cmsy-10x-x-109">|</span><span 
@@ -583,10 +584,10 @@ class="ectt-1095">RadiativeDecay_*</span></span></span>. Additionally, we use th
 class="ectt-1095">RadiativeDecay_M</span></span></span> to specify the cut-off in the number of excitations (dimension of the
 respective Hilbert space, i.e., 1+maximal number of photons per mode; default value:
 2).
-<!--l. 397--><p class="noindent" >
+<!--l. 399--><p class="noindent" >
   <h4 class="subsectionHead"><span class="titlemark">4.3 </span> <a 
  id="x1-70004.3"></a>Phonons/spin-boson model/independent-boson model</h4>
-<!--l. 398--><p class="noindent" >A TLS diagonally coupled to a continuum of independent bosons is known as the
+<!--l. 400--><p class="noindent" >A TLS diagonally coupled to a continuum of independent bosons is known as the
 independent-boson model or spin-boson model. It also describes the coupling between a
 quantum dot (QD) and longitudinal acoustic phonons. In this example, we take the latter as
 our use case. The corresponding Hamiltonian is
@@ -599,8 +600,8 @@ src="documentation6x.png" alt="      &#x2211;
 HE  =    [&#x210F;&#x03C9;qb&#8224;qbq + &#x210F;&#x03B3;q(b&#8224;q + bq)|X &#x27E9;&#x27E8;X|],
        q
 " class="math-display" ></center></td><td class="equation-label">(7)</td></tr></table>
-<!--l. 409--><p class="nopar" >
-<!--l. 411--><p class="indent" >  where <span 
+<!--l. 411--><p class="nopar" >
+<!--l. 413--><p class="indent" >  where <span 
 class="cmmi-10x-x-109">b</span><sub><span 
 class="cmbx-8">q</span></sub><sup><span 
 class="cmsy-8">&#8224;</span></sup> and <span 
@@ -620,8 +621,8 @@ src="documentation7x.png" alt="       &#x2211;
 J(&#x03C9;) =    &#x03B3;2q &#x03B4;(&#x03C9; - &#x03C9;q )
         q
 " class="math-display" ></center></td><td class="equation-label">(8)</td></tr></table>
-<!--l. 419--><p class="nopar" >
-<!--l. 421--><p class="indent" >  Solving the original Hamiltonian is very difficult when the number of phonon modes is large.
+<!--l. 421--><p class="nopar" >
+<!--l. 423--><p class="indent" >  Solving the original Hamiltonian is very difficult when the number of phonon modes is large.
 Thus, we instead solve a replacement Hamiltonian by discretizing the respective spectral
 density <span 
 class="cmmi-10x-x-109">J</span><span 
@@ -640,8 +641,8 @@ QDPhonon_temperature&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x0
 &#x00A0;<br />QDPhonon_M_max&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;3&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;#&#x00A0;default:&#x00A0;4
 &#x00A0;<br />QDPhonon_E_max&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;5&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;#&#x00A0;default:&#x00A0;4
 </div>
-<!--l. 436--><p class="nopar" >
-<!--l. 438--><p class="indent" >  Here, <span class="obeylines-h"><span class="verb"><span 
+<!--l. 438--><p class="nopar" >
+<!--l. 440--><p class="indent" >  Here, <span class="obeylines-h"><span class="verb"><span 
 class="ectt-1095">QDPhonon_N_modes</span></span></span> is the number of modes, i.e. the number of sample points for the
 discretization. <span class="obeylines-h"><span class="verb"><span 
 class="ectt-1095">QDPhonon_E_max</span></span></span> is the cut-off energy determining the maximal value of <span 
@@ -677,7 +678,7 @@ class="cmr-10x-x-109">) </span>is subtracted from (i.e. the modulus is added to)
 the Hamiltonian. This is done to eliminate the effects of the polaron shift when
 comparing calculations with and without phonons, which would otherwise affect resonance
 conditions.
-<!--l. 455--><p class="indent" >  As an alternative to ACE, the process tensor for Gaussian baths can be calculated using
+<!--l. 457--><p class="indent" >  As an alternative to ACE, the process tensor for Gaussian baths can be calculated using
 expressions where the bath is already integrated out [cf. Jørgensen and Pollock Phys. Rev.
 Lett. 123, 240602 (2019)]. This method is usually much more efficient and does not require
 discretization or truncation of the phonon Hilbert spaces (Recall: The advantage of ACE is its
@@ -690,12 +691,13 @@ to the driver file:
 use_process_tensor&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;true
 &#x00A0;<br />temperature&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;4
 </div>
-<!--l. 468--><p class="nopar" >
-<!--l. 497--><p class="noindent" >
+<!--l. 470--><p class="nopar" >
+<!--l. 499--><p class="noindent" >
   <h3 class="sectionHead"><span class="titlemark">5 </span> <a 
  id="x1-80005"></a>Concluding remarks</h3>
-<!--l. 498--><p class="noindent" >Further developments of ACE as well as the code are ongoing projects. The documentation
-naturally lags behind.
+<!--l. 500--><p class="noindent" >Further developments of ACE, the method as well as the code, are ongoing projects. Some
+implemented featured are not described in the documentation yet, but will be added in the
+future.
    
 </body></html> 
 
