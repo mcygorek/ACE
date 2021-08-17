@@ -3,7 +3,7 @@
 
 #include "MPS_Matrix.h"
 #include "IF_OD_Abstract.h"
-#include "OuterProduct.h"
+#include "otimes.h"
 #include "ModePropagator.h"
 #include "Compress_Trafo_At.h"
 
@@ -39,16 +39,16 @@ public:
   }
   void expand_ops(const ModePropagator &mprop){
     int dim_before=init.size();
-    init=VectorOuterProduct(init, H_Matrix_to_L_Vector(mprop.get_bath_init()));
+    init=Vector_otimes(init, H_Matrix_to_L_Vector(mprop.get_bath_init()));
 
 #ifdef DEBUG_REP
 std::cout<<"mprop.env_ops.size(): "<<mprop.env_ops.size()<<std::endl;
 std::cout<<"env_ops.size(): "<<env_ops.size()<<std::endl;
 #endif
-    env_ops[0]=VectorOuterProduct(env_ops[0], H_Matrix_to_L_Vector(Eigen::MatrixXcd::Identity(mprop.get_N_mode(), mprop.get_N_mode())));
+    env_ops[0]=Vector_otimes(env_ops[0], H_Matrix_to_L_Vector(Eigen::MatrixXcd::Identity(mprop.get_N_mode(), mprop.get_N_mode())));
     for(size_t i=0; i<mprop.env_ops.size(); i++){
       if(i+1<env_ops.size()){
-        env_ops[i+1]=VectorOuterProduct(env_ops[i+1], H_Matrix_to_L_Vector(mprop.env_ops[i]));
+        env_ops[i+1]=Vector_otimes(env_ops[i+1], H_Matrix_to_L_Vector(mprop.env_ops[i]));
         if(init.size()!=env_ops[i+1].size()){
           std::cerr<<"Error: Rep_GIF::expand_ops: init.size()!=env_ops["<<i+1<<"].size()!"<<std::endl;
           exit(1);
@@ -69,7 +69,7 @@ std::cout<<"env_ops.size(): "<<env_ops.size()<<std::endl;
 #ifdef DEBUG_REP
 std::cout<<"env_ops.size(): "<<env_ops.size()<<std::endl;
 #endif
-//    ident=VectorOuterProduct(ident, H_Matrix_to_L_Vector(Eigen::MatrixXcd::Identity(mprop.get_N_mode(), mprop.get_N_mode())));
+//    ident=Vector_otimes(ident, H_Matrix_to_L_Vector(Eigen::MatrixXcd::Identity(mprop.get_N_mode(), mprop.get_N_mode())));
   }
  
 
@@ -88,7 +88,7 @@ std::cout<<" L: "<<cta.L.rows()<<" "<<cta.L.cols()<<std::endl;
   }
 
   void regularize(){
-    int N=dict.get_N();
+//    int N=dict.get_N();
     int NL=dict.get_NL();
    
     //Trace after first step:

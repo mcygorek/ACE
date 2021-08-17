@@ -1,0 +1,142 @@
+#ifndef MODE_PROPAGATOR_GENERATOR_FERMION_DEFINED_H
+#define MODE_PROPAGATOR_GENERATOR_FERMION_DEFINED_H
+
+#include "ModePropagatorGenerator.h"
+#include "Parameters.h"
+#include "ReadTemperature.h"
+#include "Operators.h"
+
+class ModePropagatorGenerator_Fermion: public ModePropagatorGenerator{
+public:
+
+  MPG_Discretization_E_g E_g;
+  int continuum_subdiv_N;
+  ModePropagator::low_pass_struct low_pass;
+
+  double EFermi, temperature;
+  Eigen::MatrixXcd sysop;
+  Parameters gparam;
+
+
+  virtual std::string name()const{return std::string("Fermion");}
+
+  double get_E(int k)const{ return E_g.get_E(k); }
+  double get_dE(int k)const{ return E_g.get_dE(k); }
+  double get_g(int k)const{ return E_g.get_g(k); }
+
+  virtual int get_N()const{ 
+    if(sysop.rows()<=2) return 2; 
+    else return sysop.rows();
+  }
+  virtual double k_label(int k)const{ 
+    return get_E(k)/Constants::hbar_in_meV_ps; 
+  }
+
+  virtual std::vector<Eigen::MatrixXcd> get_env_ops() const{
+    Operators2x2 op; 
+    std::vector<Eigen::MatrixXcd> mats;
+    mats.push_back(op.ketbra(1,1));
+    mats.push_back(op.ketbra(0,1));
+    mats.push_back(op.ketbra(1,0));
+    return mats;
+  }
+
+  virtual void setup(Parameters &param){
+    E_g.setup(param, name());
+    set_N_modes(E_g.N);
+    setup_skip(param);
+
+    EFermi=param.get_as_double("EFermi", -1e6);
+    EFermi=param.get_as_double(add_name("EFermi"), EFermi);
+
+    temperature=readTemperature(param, name());
+
+    Operators2x2 op;
+    sysop=op.ketbra(0,1);  
+    if(param.is_specified(add_name("SysOp"))){
+      sysop=param.get_as_operator(add_name("SysOp"));
+    }
+
+
+    double low_pass_cutoff=param.get_as_double(add_name("low_pass_cutoff"),0);
+    if(low_pass_cutoff>1e-16){
+      low_pass.use=true;
+      low_pass.cutoff=low_pass_cutoff;
+      low_pass.factor=param.get_as_double(add_name("low_pass_cutoff"),1.,0,1);
+    }
+
+    continuum_subdiv_N=param.get_as_double(add_name("continuum_subdiv"),0);
+    
+
+    gparam.add_from_prefix(add_name("Propagator"),param);
+
+    std::string print_E_g=param.get_as_string(add_name("print_E_g"));
+    if(print_E_g!=""){
+      std::ofstream ofs(print_E_g.c_str());
+      for(int i=0; i<E_g.N; i++){
+        ofs<<E_g.get_E(i)<<" "<<E_g.get_g(i)<<std::endl;
+      }
+    } 
+
+  }
+
+  virtual ModePropagatorPtr getModePropagator(int k)const{
+    if(k<0||k>=get_N_modes()){
+      std::cerr<<"ModePropagatorGenerator_Fermion: k<0||k>=get_N_modes()!"<<std::endl; 
+      exit(1);
+    }
+
+    int sysdim=sysop.rows();
+    Operators op(sysdim);
+    Operators2x2 op2;
+    Eigen::MatrixXcd HB_diag=otimes(op.id(), op2.ketbra(1,1));
+    Eigen::MatrixXcd HB_base=otimes(sysop, op2.ketbra(1,0)) + \
+                             otimes(sysop.adjoint(), op2.ketbra(0,1));
+
+
+    Eigen::MatrixXcd HB = get_E(k)*HB_diag
+           +Constants::hbar_in_meV_ps*get_g(k)*HB_base;
+
+    
+    Parameters kparam=gparam;
+    ModePropagatorPtr ptr=new ModePropagator(sysdim, get_bath_init(k));
+    ptr->FreePropagator::setup(kparam);
+    ptr->env_ops=get_env_ops();
+    ptr->add_Hamiltonian(HB);
+
+    ptr->low_pass=low_pass;
+
+    if(continuum_subdiv_N>0){  
+      ptr->continuum_subdiv.N=continuum_subdiv_N;
+      ptr->continuum_subdiv.dH=get_dE(k)*HB_diag;
+    }
+
+/* Test: reduced basis:
+    ptr->rBasis->use_reduce=true;
+    ptr->rBasis->U=Eigen::MatrixXcd::Zero(4,4);
+    ptr->rBasis->U(0,0)=1;
+    ptr->rBasis->U(1,2)=1;
+    ptr->rBasis->U(2,1)=0.99;
+    ptr->rBasis->U(3,3)=1;
+*/
+    return ptr;
+
+//    return ModePropagatorPtr(new ModePropagator(sysdim,get_bath_init(k),HB,get_env_ops()));
+  }
+  virtual Eigen::MatrixXcd get_bath_init(int k)const{
+    if(temperature<1e-6){
+      if(get_E(k)>EFermi)return Operators2x2::ketbra(0,0);
+      else return Operators2x2::ketbra(1,1);
+    }
+    double x=get_E(k)/(Constants::kB_in_meV_by_K*temperature);
+    double f=Constants::fermi(x);
+    return (1.-f)*Operators2x2::ketbra(0,0)+f*Operators2x2::ketbra(1,1);
+  }
+
+  ModePropagatorGenerator_Fermion(Parameters &param){
+    setup(param);
+  }
+  virtual ~ModePropagatorGenerator_Fermion(){}
+};
+
+#endif

@@ -12,9 +12,9 @@ public:
   int n_max;
   double dt;
 
-  DiagBB diagBB;
   std::vector<Tensor_Dense> ten;
   Coupling_Groups groups;
+  DiagBB diagBB;
 
   inline int get_grp(int i)const{return groups.grp[i];}  
   inline int get_Ngrps()const{return groups.Ngrps;}
@@ -52,8 +52,8 @@ std::cout<<"InfluenceFunctional: Total blocksize: "<<bs<<std::endl;}
       }else{
         int bs=ten[i-1].get_total_size()/NL;
         for(int b=0; b<bs; b++){
-          for(size_t k=0; k<NL; k++){
-            for(size_t l=0; l<NL; l++){
+          for(int k=0; k<NL; k++){
+            for(int l=0; l<NL; l++){
               ten[i][(k*bs+b)*NL+l]=ten[i-1][k*bs+b]*eS[i](k,l);
             }
           }
@@ -76,10 +76,16 @@ std::cout<<"InfluenceFunctional: Total blocksize: "<<bs<<std::endl;}
   InfluenceFunctional(int n_max_, double dt_, 
                       const Eigen::MatrixXcd &couplings_,
                       RealFunctionPtr SD_, double temperature_, 
-                      bool noSubPS=false)
+                      bool noSubPS=false, 
+                      double omega_min=0., double omega_max=50., 
+                      double E_shift_init=0.)
    : n_max(n_max_), dt(dt_), groups(couplings_),
-     diagBB(Coupling_Groups(couplings_), couplings_, SD_, temperature_, noSubPS) {
+     diagBB(Coupling_Groups(couplings_), couplings_, SD_, temperature_, noSubPS,omega_min, omega_max, E_shift_init) {
 
+    calculate();
+  }
+  InfluenceFunctional(int n_max_, double dt_, DiagBB &diagBB_)
+   : n_max(n_max_), dt(dt_), diagBB(diagBB_) {
     calculate();
   }
   ~InfluenceFunctional(){

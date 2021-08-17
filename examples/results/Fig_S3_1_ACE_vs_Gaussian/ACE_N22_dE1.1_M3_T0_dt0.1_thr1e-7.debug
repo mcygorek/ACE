@@ -1,0 +1,147 @@
+Using initial state: 2LS ground state
+add_Hamiltonian: {-1.5*|1><1|_2}
+Hamiltonian: 
+   (0,0)    (0,0)
+   (0,0) (-1.5,0)
+add_Lindblad: 0.1 {|0><1|_2}
+timegrid: ta: 0 dt: 0.1 te: 20
+n_tot: 200 n_calc: 200 n_mem: 200 n_rep: 0
+use_rep: false  rep_replace: false  rep_regularize: false  rep_unit: -1
+Using compression: SVD: threshold: 1e-07 sum_threshold: 0 compress_maxk: 0
+Using initial state: 2LS ground state
+Calculating process tensor
+Calculating PT for Generator 'Boson'
+Add mode 0/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 1
+Maxdim: new contribution: 9
+Maxdim: after sweep: 6
+Add mode 1/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 6
+Maxdim: new contribution: 9
+Maxdim: after sweep: 8
+Add mode 2/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 8
+Maxdim: new contribution: 9
+Maxdim: after sweep: 14
+Add mode 3/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 14
+Maxdim: new contribution: 9
+Maxdim: after sweep: 14
+Add mode 4/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 14
+Maxdim: new contribution: 9
+Maxdim: after sweep: 17
+Add mode 5/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 17
+Maxdim: new contribution: 9
+Maxdim: after sweep: 17
+Add mode 6/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 17
+Maxdim: new contribution: 9
+Maxdim: after sweep: 22
+Add mode 7/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 22
+Maxdim: new contribution: 9
+Maxdim: after sweep: 25
+Add mode 8/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 25
+Maxdim: new contribution: 9
+Maxdim: after sweep: 27
+Add mode 9/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 27
+Maxdim: new contribution: 9
+Maxdim: after sweep: 27
+Add mode 10/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 27
+Maxdim: new contribution: 9
+Maxdim: after sweep: 31
+Add mode 11/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 31
+Maxdim: new contribution: 9
+Maxdim: after sweep: 35
+Add mode 12/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 35
+Maxdim: new contribution: 9
+Maxdim: after sweep: 37
+Add mode 13/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 37
+Maxdim: new contribution: 9
+Maxdim: after sweep: 39
+Add mode 14/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 39
+Maxdim: new contribution: 9
+Maxdim: after sweep: 41
+Add mode 15/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 41
+Maxdim: new contribution: 9
+Maxdim: after sweep: 42
+Add mode 16/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 42
+Maxdim: new contribution: 9
+Maxdim: after sweep: 45
+Add mode 17/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 45
+Maxdim: new contribution: 9
+Maxdim: after sweep: 46
+Add mode 18/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 46
+Maxdim: new contribution: 9
+Maxdim: after sweep: 50
+Add mode 19/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 50
+Maxdim: new contribution: 9
+Maxdim: after sweep: 51
+Add mode 20/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 51
+Maxdim: new contribution: 9
+Maxdim: after sweep: 52
+Add mode 21/22
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 52
+Maxdim: new contribution: 9
+Maxdim: after sweep: 54
+Calculating
+	Command being timed: "/home/cygo/HW/ACE/bin/ACE ACE_N22_dE1.1_M3_T0_dt0.1_thr1e-7.param"
+	User time (seconds): 924.78
+	System time (seconds): 3.78
+	Percent of CPU this job got: 238%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 6:29.63
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 170412
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1529082
+	Voluntary context switches: 10369
+	Involuntary context switches: 89217
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 32
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

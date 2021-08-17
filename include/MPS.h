@@ -32,6 +32,7 @@ public:
  
   virtual int get_rank() const{return a.size();}
   virtual int get_dim(int i) const{return a[i].dim_i;}
+  size_t size()const{return a.size();}
   virtual void resize(const std::vector<int> &list){
     a.clear();
     a.resize(list.size());
@@ -42,7 +43,7 @@ public:
   void resize(int rank, int dim){
     a.clear();
     a.resize(rank);
-    for(size_t i=0; i<rank; i++){
+    for(int i=0; i<rank; i++){
       a[i].resize(dim,1,1);
     }
   }
@@ -54,12 +55,48 @@ public:
       a[i].fill(1.);
     }
   }
+  void reduce_last(const Eigen::VectorXcd &v){
+    if(a.size()<1)return;
+    MPS_Matrix &a_ref=a.back();
+
+    MPS_Matrix A(a_ref.dim_i, a_ref.dim_d1, 1);
+    check_vector_dim_eq(v, a_ref.dim_d2, "MPS::reduce_last: v");
+    A.set_zero();
+    for(int i=0; i<a_ref.dim_i; i++){
+      for(int d1=0; d1<a_ref.dim_d1; d1++){
+        for(int d2=0; d2<a_ref.dim_d2; d2++){
+          A(i, d1, 0)+=a_ref(i, d1, d2)*v(d2);
+        }
+      }
+    }
+    a_ref.swap(A);
+  }
+  void reduce_first(const Eigen::VectorXcd &v){
+    if(a.size()<1)return;
+    MPS_Matrix &a_ref=a[0];
+
+    MPS_Matrix A(a_ref.dim_i, 1, a_ref.dim_d2);
+    check_vector_dim_eq(v, a_ref.dim_d1, "MPS::reduce_first: v");
+    A.set_zero();
+    for(int i=0; i<a_ref.dim_i; i++){
+      for(int d1=0; d1<a_ref.dim_d1; d1++){
+        for(int d2=0; d2<a_ref.dim_d2; d2++){
+          A(i, 0, d2)+=a_ref(i, d1, d2)*v(d1);
+        }
+      }
+    }
+    a_ref.swap(A);
+  }
 
   void print_dims(std::ostream &os=std::cout) const{
     for(size_t i=0; i<a.size(); i++){
       a[i].print_dims(os);
       os<<std::endl;
     }
+  }
+  void print_dims(const std::string &filename) const{
+    std::ofstream ofs(filename.c_str());
+    print_dims(ofs);
   }
   int get_max_dim()const{
     int max_dim=0;
@@ -68,8 +105,36 @@ public:
     }
     return max_dim;
   }
+  int get_max_dim_pos()const{
+    int max_dim=0;
+    int pos=-1;
+    for(size_t i=0; i<a.size(); i++){
+      if(a[i].dim_d2>max_dim){
+        max_dim=a[i].dim_d2;
+        pos=i;
+      }
+    }
+    return pos;
+  }
   void print_max_dim(std::ostream &os=std::cout) const{
     os<<get_max_dim();
+  }
+  void print_inner_dims(std::ostream &os=std::cout) const{
+    for(size_t i=0; i<a.size(); i++){
+      if(i==0){
+        os<<a[i].dim_d1<<" "<<a[i].dim_d2;
+      }else{
+        os<<" "<<a[i].dim_d2;
+      }
+    }
+  }
+  double max_element_abs()const{
+    double max=0;
+    for(size_t i=0; i<a.size(); i++){
+      double m=a[i].max_element_abs();
+      if(m>max)max=m;
+    }
+    return max;
   }
 
   void check_consistency(const std::vector<int> &i_list=std::vector<int>())const{
@@ -105,8 +170,8 @@ public:
     std::vector<std::complex<double> > v(1,1.);
     for(size_t k=0; k<a.size(); k++){
       std::vector<std::complex<double> > w(a[k].dim_d2, 0.);
-      for(size_t d2=0; d2<a[k].dim_d2; d2++){
-        for(size_t d1=0; d1<a[k].dim_d1; d1++){
+      for(int d2=0; d2<a[k].dim_d2; d2++){
+        for(int d1=0; d1<a[k].dim_d1; d1++){
           w[d2]+=v[d1]*a[k](i_list[k], d1, d2);
         } 
       }
@@ -135,7 +200,7 @@ std::cout<<"sweep low->high: "<<n<<std::endl;
 #endif
 
     if(n<0)return;
-    if(n>=a.size()-1)return;
+    if(n>=(int)a.size()-1)return;
 
     Eigen::MatrixXcd L, R;
     compressor.compress(a[n], L, R, true, keep_weight);
@@ -234,11 +299,13 @@ std::cout<<"forward sweep "<<i<<"/"<<other.a.size()<<std::endl;
 
       a[i].multiply(other.a[i]);
 
-      if(i>sweep_start){
+      if((int)i>sweep_start){
         bool skip=false; 
         if(a[i-1].dim_d1==1 && a[i-1].dim_d2==1)skip=true;
         if(other.a[i-1].dim_d1==1 && other.a[i-1].dim_d2==1)skip=true;
-        sweep_block_low_to_high(i-1, compressor);
+        if(!skip){
+          sweep_block_low_to_high(i-1, compressor);
+        }
       }
     }
     for(int i=other.a.size()-1; i>1; i--){
@@ -267,7 +334,7 @@ std::cout<<"backward sweep "<<i<<"/"<<other.a.size()<<std::endl;
         } 
       }
     }
-    for(size_t i=start; i<a.size()-1; i++){
+    for(int i=start; i<(int)a.size()-1; i++){
       if(cta!=NULL && i==cta->n){
         sweep_block_low_to_high(i, compressor, keep_weight, &cta->R);
       }else{
@@ -286,7 +353,7 @@ std::cout<<"backward sweep "<<i<<"/"<<other.a.size()<<std::endl;
   }
 
   void low_end_multiply(const MPS & other){
-    int sz;
+    size_t sz;
     if(a.size()<other.a.size()){
       sz=a.size();
     }else{
@@ -306,12 +373,20 @@ std::cout<<"backward sweep "<<i<<"/"<<other.a.size()<<std::endl;
   }
 
   void insert(int pos, const MPS_Matrix &b, int n_insert=1){
-    int oldsize=a.size();
+    if(pos<0){
+      std::cerr<<"MPS::insert called with pos<0!"<<std::endl;
+      exit(1);
+    }
+    if(n_insert<0){
+      std::cerr<<"MPS::insert called with n_insert<0!"<<std::endl;
+      exit(1);
+    }
+    size_t oldsize=a.size();
     std::vector<MPS_Matrix> mvec(oldsize+n_insert);
-    for(size_t n=0; n<pos; n++){
+    for(size_t n=0; n<(size_t)pos; n++){
       mvec[n].swap(a[n]);
     }
-    for(size_t n=pos; n<pos+n_insert; n++){
+    for(size_t n=pos; n<(size_t)(pos+n_insert); n++){
       mvec[n].copy(b);
     }
     for(size_t n=pos; n<oldsize; n++){
@@ -320,20 +395,20 @@ std::cout<<"backward sweep "<<i<<"/"<<other.a.size()<<std::endl;
     
     a.clear();
     a.resize(oldsize+n_insert);
-    for(size_t n=0; n<oldsize+n_insert; n++){
+    for(size_t n=0; n<(size_t)(oldsize+n_insert); n++){
       a[n].swap(mvec[n]);
     }
   }
   void write_binary(std::ostream &ofs)const{
-    int sz=a.size();
+    size_t sz=a.size();
 std::cout<<"sz: "<<sz<<std::endl;
     ofs.write((char*)&sz, sizeof(int));
-    for(int i=0; i<sz; i++){
+    for(size_t i=0; i<sz; i++){
       ofs.write((char*)&a[i].dim_i, sizeof(int));
       ofs.write((char*)&a[i].dim_d1, sizeof(int));
       ofs.write((char*)&a[i].dim_d2, sizeof(int));
     }
-    for(int i=0; i<sz; i++){
+    for(size_t i=0; i<sz; i++){
       ofs.write((char*)a[i].mem, sizeof(std::complex<double>)*a[i].dim_i*a[i].dim_d1*a[i].dim_d2);
     }
   }
@@ -346,14 +421,14 @@ std::cout<<"sz: "<<sz<<std::endl;
     ifs.read((char*)&itmp, sizeof(int));
     std::cout<<"Reading size: "<<itmp<<std::endl;
     a.resize(itmp);
-    for(int i=0; i<a.size(); i++){
+    for(size_t i=0; i<a.size(); i++){
       int dim_i, dim_d1, dim_d2;
       ifs.read((char*)&dim_i, sizeof(int));
       ifs.read((char*)&dim_d1, sizeof(int));
       ifs.read((char*)&dim_d2, sizeof(int));
       a[i].resize(dim_i, dim_d1, dim_d2);
     }
-    for(int i=0; i<a.size(); i++){
+    for(size_t i=0; i<a.size(); i++){
       ifs.read((char*)a[i].mem, sizeof(std::complex<double>)*a[i].dim_i*a[i].dim_d1*a[i].dim_d2);
     }
   }

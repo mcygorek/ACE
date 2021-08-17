@@ -1,0 +1,141 @@
+Using explicit initial state: '{|0><0|_2}'
+(1,0) (0,0)
+(0,0) (0,0)
+add_Hamiltonian: {hbar/2.* (4*2+0.5) *pi/10 *sigma_x}
+Hamiltonian: 
+       (0,0) (0.878829,0)
+(0.878829,0)        (0,0)
+add_Output: {|1><1|_2}
+add_Output: {|0><0|_2}
+add_Output: {|0><1|_2}
+timegrid: ta: 0 dt: 0.01 te: 50
+n_tot: 5000 n_calc: 5000 n_mem: 5000 n_rep: 0
+use_rep: false  rep_replace: false  rep_regularize: false  rep_unit: -1
+Using compression: SVD: threshold: 1e-09 sum_threshold: 0 compress_maxk: 0
+Using explicit initial state: '{|0><0|_2}'
+(1,0) (0,0)
+(0,0) (0,0)
+ '{ |0><0|_3}'add_Hamiltonian: { hbar * 1* ((sigma_z) otimes n_3) + hbar*11*(Id_2 otimes n_3)}
+Hamiltonian: 
+      (0,0)       (0,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0) (6.58212,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0)       (0,0) (13.1642,0)       (0,0)       (0,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (0,0) (7.89854,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (0,0)       (0,0) (15.7971,0)
+apply_Operator: 10 {( Id_2 otimes bdagger_3)}
+time: 10
+'10 {( Id_2 otimes bdagger_3)}
+M: 
+      (0,0)       (0,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (1,0)       (0,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0) (1.41421,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (1,0)       (0,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (0,0) (1.41421,0)       (0,0)
+ '{ |0><0|_3}'add_Hamiltonian: { hbar * 1* ((sigma_z) otimes n_3) + hbar*12*(Id_2 otimes n_3)}
+Hamiltonian: 
+      (0,0)       (0,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0) (7.24033,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0)       (0,0) (14.4807,0)       (0,0)       (0,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (0,0) (8.55676,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (0,0)       (0,0) (17.1135,0)
+apply_Operator: 20 {( Id_2 otimes bdagger_3)}
+time: 20
+'20 {( Id_2 otimes bdagger_3)}
+M: 
+      (0,0)       (0,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (1,0)       (0,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0) (1.41421,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (1,0)       (0,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (0,0) (1.41421,0)       (0,0)
+ '{ |0><0|_3}'add_Hamiltonian: { hbar * 1* ((sigma_z) otimes n_3) + hbar*13*(Id_2 otimes n_3)}
+Hamiltonian: 
+      (0,0)       (0,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0) (7.89854,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0)       (0,0) (15.7971,0)       (0,0)       (0,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (0,0) (9.21497,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (0,0)       (0,0) (18.4299,0)
+apply_Operator: 30 {( Id_2 otimes bdagger_3)}
+time: 30
+'30 {( Id_2 otimes bdagger_3)}
+M: 
+      (0,0)       (0,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (1,0)       (0,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0) (1.41421,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (1,0)       (0,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (0,0) (1.41421,0)       (0,0)
+ '{ |0><0|_3}'add_Hamiltonian: { hbar * 1* ((sigma_z) otimes n_3) + hbar*14*(Id_2 otimes n_3)}
+Hamiltonian: 
+      (0,0)       (0,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0) (8.55676,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0)       (0,0) (17.1135,0)       (0,0)       (0,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (0,0) (9.87318,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (0,0)       (0,0) (19.7464,0)
+apply_Operator: 40 {( Id_2 otimes bdagger_3)}
+time: 40
+'40 {( Id_2 otimes bdagger_3)}
+M: 
+      (0,0)       (0,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (1,0)       (0,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0) (1.41421,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (0,0)       (0,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (1,0)       (0,0)       (0,0)
+      (0,0)       (0,0)       (0,0)       (0,0) (1.41421,0)       (0,0)
+Calculating process tensor
+Calculating PT for Generator 'SingleModeFromFile'
+Add mode 0/1
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 1
+Maxdim: new contribution: 9
+Maxdim: after sweep: 1
+Calculating PT for Generator 'SingleModeFromFile'
+Add mode 0/1
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 1
+Maxdim: new contribution: 9
+Maxdim: after sweep: 1
+Calculating PT for Generator 'SingleModeFromFile'
+Add mode 0/1
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 1
+Maxdim: new contribution: 9
+Maxdim: after sweep: 1
+Calculating PT for Generator 'SingleModeFromFile'
+Add mode 0/1
+InfluenceFunctional_OD: Dictionary(4): 0 -1 -1 -1 -1 1 -1 -1 -1 -1 2 -1 -1 -1 -1 3
+Maxdim: before combination: 1
+Maxdim: new contribution: 9
+Maxdim: after sweep: 1
+Calculating
+add_Output: {|1><1|_2}
+add_Output: {|0><0|_2}
+add_Output: {|0><1|_2}
+	Command being timed: "ACE 02_instant_Fock.param"
+	User time (seconds): 1.97
+	System time (seconds): 0.08
+	Percent of CPU this job got: 129%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.58
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 223732
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 54098
+	Voluntary context switches: 40
+	Involuntary context switches: 56
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 608
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

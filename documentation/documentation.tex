@@ -9,25 +9,34 @@
 \textit{\Large Moritz Cygorek}
 \end{center}
 \section{Introduction}
-This document is intended to describe how to use the C++ code ACE
+This document describes how to use the C++ code ACE
 for the solution of open quantum systems using the 
 \emph{automated compression of environments} (ACE) method.
 The article explaining the method can be found 
 \href{https://arxiv.org/abs/2101.01653}{here}.
 
-Generally, ACE provides numerically exact simulation of the dynamics of 
-an open quantum systems described by the microscopic Hamiltonian 
+ACE enables numerically exact simulations of the dynamics of 
+an open quantum systems described by the quantum Liouville equation
+\begin{equation}
+\frac{\partial}{\partial t} \rho=-\frac i\hbar [ H , \rho ] 
++\mathcal{L}_\textnormal{nonh.}[\rho]
+\end{equation}
+where the microscopic Hamiltonian 
 %\begin{align}
 \begin{equation}
 H=H_S+H_E = H_S +\sum_{k=1}^{N_E} H_E^k,
 \end{equation}
 %\end{align}
-where $H_S$ is the system Hamiltonian and the environment Hamiltonian $H_E$,
-which also includes the system-environment coupling, is assumed to be 
-separable into $N_E$ independent modes $k$. 
-Throughout this document we will denote the dimension of the system Hilbert
-space by $N$ while the dimension of the $k$-th environment mode
-is $M^k$ (or simply $M$ if all $M^k$ are identical).
+is split up into system $H_S$ and environment Hamiltonians $H_E$.
+The environment Hamiltonian $H_E$, 
+which we define as also including the system-environment coupling, 
+is assumed to be separable into $N_E$ independent modes $k$. 
+%Throughout this document we will denote the dimension of the system Hilbert
+%space by $N$ while the dimension of the $k$-th environment mode
+%is $M^k$ (or simply $M$ if all $M^k$ are identical).
+$\mathcal{L}_{nonh.}[\rho]$ denotes non-Hamiltonian contributions
+to the dynamics such as Lindblad terms affecting the system, the environment,
+or both.
 
 The goal is to obtain the reduced system density matrix discretized on
 a time grid $t_l = t_a + l \Delta t$ up to a given final time 
@@ -44,13 +53,14 @@ This can be done using the path integral expression
 \end{equation}
 where ${\rho}_{\alpha_l}={\rho}_{\nu_l \mu_l}$ is the reduced 
 system density matrix at time step $l$, $\mathcal{M}$ describes the
-free time evolution of the system, and $\mathcal{I}$ is the 
+free time evolution of the system without the environment, 
+and $\mathcal{I}$ is the 
 \emph{process tensor} (PT) accounting for the 
 effects of the environment.
 To keep the notation compact, we combine two Hilbert space indices
 on the system density matrix $\nu_l$ and $\mu_l$ into a single 
 Liouville space index $\alpha_l=(\nu_l, \mu_l)$.
-The GIF can always expressed in the form of a matrix product operator (MPO)
+The PT can always expressed in the form of a matrix product operator (MPO)
 %
 \begin{equation}
 \mathcal{I}^{(\alpha_{n},\tilde{\alpha}_{n})(\alpha_{n-1},\tilde{\alpha}_{n-1})
@@ -74,7 +84,7 @@ are the main convergence parameters of ACE.
 The working principle of ACE is to construct the PT in compressed MPO form
 by calculating the PTs for the individual environment modes $k$ 
 and then combining them one by one. 
-After each combination step, the GIF MPO is compressed using
+After each combination step, the PT MPO is compressed using
 SVDs to reduce the inner dimensions to a manageable size at all times.
 Once the compressed PT is calculated,
 the reduced system density matrix for a given 
@@ -82,84 +92,171 @@ system Hamiltonian and system initial state can be obtained by contracting
 a simple tensor network.
 
 \section{Code, Compilation, Dependencies, and Design Choices}
-The code has been written in C++ to combine low-level optimization 
-(memory storage, access to LAPACK routines) with high-level abstraction
-for better usability. Although nothing in the code depends explicitly on the
-operating system, the code has been tested only on Linux.
+The code is written in C++ to combine low-level optimization 
+(memory storage, access to LAPACK routines) with high-level abstraction.
+It has been most thoroughly tested on the Linux
+operating system but it also compiles and runs on Mac and Windows.
 
 We have tried to keep the dependencies on other codes minimal.
 However, the \href{http://eigen.tuxfamily.org}{Eigen} library is very handy
-and provides useful and efficient routines, e.g., for matrix exponentials.
-We use it in particular to specify Hamiltonians and density matrices.
-The numerically most demanding part of ACE is the calculation of SVDs. 
-Here, we make use of the corresponding LAPACK routines. In my experience, the 
-\href{https://software.intel.com/content/www/us/en/develop/tools/math-kernel-library.html}{Intel MKL} 
-implementation of the SVD LAPACK routines can be significantly faster than
-other implementations, sometimes by orders of magnitudes.
-Therefore, we assume that Eigen as well as the Intel MKL is installed on the
-computer. 
+and provides useful and efficient routines, e.g., for matrix exponentials,
+so we make use of it at multiple places in the code. This dependency is 
+harmless, as Eigen is ``header only'', i.e. it does not require installation
+beyond downloading the header files.
 
-The installation of ACE via Makefiles needs to be able to find 
-these libraries. To this end, the corresponding Linux environment variables 
-have to be set.
-A successful installation of MKL should automatically set the 
-\texttt{MKLROOT} environment variable to the correct directory.
-We assume that the Eigen library is installed in the directory
-\texttt{/usr/include/eigen3/}. If not, please set the variable 
-\texttt{EIGEN\_HOME} manually in such a way that the file 
-\texttt{\$EIGEN\_HOME/Eigen/Eigen} exists.
+The numerically most demanding part of ACE is the calculation of SVDs, 
+for which LAPACK routines are available (optional), e.g., within the
+\href{https://software.intel.com/content/www/us/en/develop/tools/math-kernel-library.html}{Intel MKL}.
+These routines provide 
+some degree of parallelization and, according to a few tests, reduce the 
+computation time typically by a factor of 2-5. Note, however, using LAPACK
+routines, we have encountered instabilities for very small threshold values 
+($\epsilon \ll 10^{-12}$). 
+Whether or not to use these routines is decided by the user at the compilation
+stage.
 
-To compile the code, go into the main directory of ACE and type in the
+On Linux or Mac, Makefiles can be used for the compilation and some tuning
+can be done by command line arguments. For example, for the compiler to find
+the Eigen library, please set the variable 
+\texttt{EIGEN\_HOME} manually (only required for the compilation step)
+in such a way that the file \texttt{\$EIGEN\_HOME/Eigen/Eigen} exists.
+If the variable is not set, the script will try the most common directory
+\texttt{/usr/include/eigen3/}, which is, e.g., the place where Eigen is 
+installed on Ubuntu Linux by the command \texttt{sudo apt install libeigen3-dev}.
+
+If the MKL is installed on your system, the \texttt{MKLROOT} 
+environment variable should be set to the correct directory.
+If this variable is set at the compilation stage, 
+ACE will use the corresponding SVD routines.
+
+
+To compile the code, set the corresponding environment variables, 
+go into the main directory of ACE and type in the
 console
 \begin{verbatim}
 > make 
 \end{verbatim}
-This should compile the code and copy the binaries into the \texttt{bin/}
+This compiles the code and moves the binaries into the \texttt{bin/}
 subdirectory. For easy access later on, we suggest to add this directory
 to your Linux environment via the \texttt{PATH} variable. For example, 
 add the follwing line to your \texttt{$\sim$/.bashrc} file 
 \begin{verbatim}
 PATH=/.../ACE/bin/:$PATH 
 \end{verbatim}
-where the $\dots$ are to be replaced to point to the correct absolute directory.
-Log out and log in again to activate the changes. Then, go to a temporary
-directory and run
+where $\dots$ is to be replaced by the correct absolute path to the ACE 
+directory. Log out and log in again to activate the changes. 
+Then, go to a temporary directory and run
 \begin{verbatim}
 > ACE
 \end{verbatim}
 This should generate a file \texttt{ACE.out} whose first lines are
 \begin{verbatim}
-0 0 0 1 0 0 0 inf inf
-0.01 0 0 1 0 0 0 1 0
-0.02 0 0 1 0 0 0 1 0
-0.03 0 0 1 0 0 0 1 0
-0.04 0 0 1 0 0 0 1 0
+0 0 0 1 0 0 0
+0.01 0 0 1 0 0 0
+0.02 0 0 1 0 0 0
+0.03 0 0 1 0 0 0
+0.04 0 0 1 0 0 0
 ...
 \end{verbatim}
 Congratulations! You have just executed your first (rather boring) simulation
 using ACE.
 
-\section{System dynamics}
-ACE can be controlled by command line parameters. 
-Alternatively, the command line parameters can be written into a driver file
-and the driver file can be specified via the \texttt{-driver} command line 
-option.
-%
-The ACE method can deal with arbitrary system-environment couplings, but it
-is difficult to provide hard-coded support for the specification of arbitrary 
-time-dependent and mode-dependent Hamiltonians. 
-So far, only a few specific environments are implemented. 
-For others, there is no way around adding more C++-code. 
-%This will be described in section~\ref{new_env}. 
-However, time-independent system Hamiltonians or Lindblad operators as well as
-a few predefine time-dependent Hamiltonians (e.g., Gaussian pulses) 
-can be specified by command line options using a bra-ket notation.
 
-First, let us discuss some of the most important parameters:
+Compilation on Windows has been tested using the GCC compiler in
+\href{http://mingw-w64.org/doku.php}{MinGW}. We provide a compile script 
+with \texttt{compile.bat} in the ACE directory. Please take a look and 
+modify the path to the Eigen library according to your system specifics.
+
+\section{General usage}
+ACE is designed to be fully controllable by command line parameters, so
+the source code does not have to be modified and 
+no prior knowledge in C++ required.
+Alternatively, the command line parameters can be composed into a driver file,
+which can then be passed to the code via the \texttt{-driver} command line 
+option or simply as the first command line argument.
+%
+
+Initial states, Hamiltonians, Lindblad terms, and observables for the system 
+as well as for individual environment modes can be specified directly and
+quite generally, 
+but additional sets of parameters are implemented that allow a more convenient
+control of certain typical types of environments.
+
+Generally, times, energies, and temperatures are expected to be provided
+in units of ps, meV, and K, but it's easy to work with dimensionless 
+quantities by rescaling the total Hamiltonian as well as the time, which 
+are related by
+$\frac{\partial}{\partial (t/\lambda)} |\psi\rangle = (\lambda H) |\psi\rangle$.
+
+Many objects, such as initial states, Hamiltonians, or observables are
+complex matrices. The ACE code has a rudimentary parser that interprets 
+``matrix valued expressions'' which are identified by curly braces.
+The bra-ket notation (or rather ket-bra expressions) is supported. 
+Note that to generate the corresponding matrices, the Hilbert space dimension 
+has to specified. Concretely, \verb+{|i><j|_d}+ is interpreted as the 
+operator that describes a transition from state $j$ to state $i$ in a 
+$d$-dimensional space, where we use the convention that $i,j=0,1,\dots, d-1$.
+
+For example, the Pauli matrix $\sigma_y$ can be expressed as
+\verb#{ -i*|1><0|_2 + i*|0><1|_2}# or 
+\verb#{i*( -|1><0|_2 + |0><1|_2 )}#.
+Some operators are also known by name, such as the Pauli matrices 
+\verb+sigma_x+, \verb+sigma_y+, \verb+sigma_z+, or the identity matrix 
+\verb+Id_d+, where \texttt{d} has the be replaced by the respective dimension 
+of the Hilbert space. Also supported are bosonic creation, annihilation, and
+number operators \verb+bdagger_d+, \verb+b_d+, and \verb+n_d+, and direct 
+products of matrices can be defined using \verb+otimes+ as in 
+\verb#{ hbar*1*(|0><1|_2 otimes bdagger_4 + |1><0|_2 otimes b_4)}#,
+which describes the Jaynes-Cummings interaction with coupling strength 1 
+between a TLS and a bosonic mode containing up to (4-1)=3 photons.
+Furthermore, some constants like \texttt{hbar} 
+(in units of meV ps) or \texttt{pi} can be used as well as the square root
+function \texttt{sqrt(...)}.
+
+
+Note that when specified directly on the command line, 
+quotes are required around the curly braces to avoid interpretation 
+of the curly braces by the \texttt{bash} shell. No quotes are used in 
+parameter files.
+
+Initial system states are given in terms of the initial system density matrix,
+which is of matrix valued expression form specified by the parameter
+\texttt{initial}.
+To extract relevant information, the values of a set of observables for 
+each time step are written into an output file (file name specified by
+parameter \texttt{outfile}, default value: ``ACE.out'').
+These observables are desribed by operators on the system Hilbert space, e.g., 
+$\langle \hat{A}\rangle = \textrm{Tr}_S( \hat{A} \rho_S)$, 
+where $\rho_S$ is the reduced system density matrix. 
+The operators $\hat{A}$ have to be provided as matrix valued expressions
+to the parameter \verb+add_Output+. This parameter can occur 
+multiple times, with every occurrence adding another two columns to the output
+file, corresponding to real and imaginary parts of the respective operator
+average. If no parameter \verb+add_Output+ is specified, default values are
+used which are equivalent to the command line
+\verb+-add_Output "{|1><1|_2}" -add_Output "{|0><0|_2}" -add_Output "{|0><1|_2}"+. 
+This implies that it is absolutely necessary to specify \verb+add_Output+
+explicitly when dealing with a system with more than two levels.
+
+It is generally advised to specify the three parts---initial 
+density matrix, system Hamiltonian, and output observables---in every 
+parameter file. Of course, the dimensions have to be the same of all 
+three types of matrices.
+
+
+A few hands-on examples demonstrating the usage in concrete applications are
+given in the next sections.
+
+\section{Free system dynamics}
+
+In this section, we focus on the usage of the ACE code
+on examples without explicit environment parts,
+i.e., closed few-level systems or Lindblad master equations.
+
+We begin with some of the most important parameters:
 The starting time, the final time, and the time step width can be specified
 by the command line options \texttt{-ta}, \texttt{-te}, and \texttt{-dt}, 
-respectively, which have the default values 0, 10, and 0.01 
-(times are assumed to be measured in picoseconds if not otherwise specified).
+respectively, which have the default values 0, 10, and 0.01.
 You will find the corresponding time grid in the first column of output file
 \texttt{ACE.out}, whose name may be changed via the option \texttt{-outfile}.
 By default, there will be no environment, the system is a two-level system
@@ -177,12 +274,7 @@ This will generate an output file \texttt{ACE1.out}, which contains the dynamics
 of a constantly driven TLS from 0 to 20 ps with time steps of 0.001 ps.
 The driving is described by the Hamiltonian 
 $H_S=(\hbar/2)(|X\rangle\langle G|+|G\rangle\langle X|)$ (note: hbar is given
-in units of meV/ps).
-Here, the bra-ket notation for Hamiltonians has the form 
-\texttt{|i><j|\_d}, where $d$ is the dimension of the Hilbert space.
-The curly braces are used to indicate the beginning and end of matrix-valued
-expressions. On the command line, quotes are required to avoid the removal
-of curly braces by the \texttt{bash} shell.
+in units of meVps).
 
 Plotting the second column of \texttt{ACE1.out} 
 (in gnuplot: \verb+plot "ACE1.out" using 1:2 with lines+) reveals clear 
@@ -233,7 +325,7 @@ te                  20
 initial             {|1><1|_2}
 
 #add_Lindblad         0.5  {|0><1|_2}
-add_Pulse            Gauss  10 1 1 0  {(|1><0|_2+|0><1|_2)}
+add_Pulse            Gauss  10 1 {1.*pi} 0  {|1><0|_2}
 
 outfile              ACE2.out
 \end{verbatim}
@@ -243,7 +335,7 @@ This produces the following dynamics:
 
 \includegraphics[width=20cm]{figs/example2.eps}
 
-where the two curves are results of calculation where the Lindblad term is
+where the two curves are results of calculations where the Lindblad term is
 either turned off or on. The \# symbol in a driver file indicates a comment, 
 i.e. anything after it is ignored. The parameters of \texttt{add\_Lindblad}
 are the rate $\gamma$ and the operator $A$ for the Lindblad term
@@ -253,41 +345,95 @@ are the rate $\gamma$ and the operator $A$ for the Lindblad term
 -\tfrac 12\big(A^\dagger A\rho +\rho A^\dagger A \big)\bigg].
 \end{equation}
 
-The parameters of \verb+add_Pulse Gauss+ are the pulse center (here: 10 ps),
-the pulse duration ($\tau_{FWHM}=1$ ps), the pulse area ($1 \pi$), the
-detuning ($0$ meV), and the operator describing the light-matter coupling.
+The parameters of \verb+add_Pulse Gauss+ are the pulse center
+(here: $t_c=10$ ps),
+the pulse duration ($\tau_{FWHM}=1$ ps), the pulse area ($A=1 \pi$), the
+detuning ($\delta=0$ meV), and the operator ($\hat{d}=|1\rangle\langle 0|$)
+describing the light-matter coupling, which enter the driving Hamiltonian
+\begin{equation}
+H_D=\frac{\hbar}{2} \big(f(t) \hat{d} + f^*(t) \hat{d}^\dagger\big) 
+\textrm{ with }
+f(t)=\frac{A \pi}{\sqrt{2\pi}\sigma} e^{-\frac 12 \frac{(t-t_c)^2}{\sigma^2}}
+e^{-i (\delta/\hbar) t},
+\quad \sigma=\tau_{FWHM}/\sqrt{8 \ln(2)}.
+\end{equation}
 
-Finally, we mention that one can also explicitly specify which operator
-average are to be printed into the output file by the parameter 
-\verb+add_Output+, which takes as an argument an expression (in curly braces)
-describing the respective operator. When it is first specified, the default
-output operators are overridden and replaced by the specified operator average.
-Specifying \verb+add_Output+ multiple times adds more columns to the output 
-file.
 
-\section{Environments}
-In the following subsections, the usage of some of the predefined environments 
-is demonstrated.
-The driver files for the examples presented in the published article 
-are contained in the first 4 subdirectories in the \texttt{examples} 
-directory provided with the code. The respective parameter files should 
-produces output files identical to the ones in the directory 
-\texttt{examples/results}.
+\section{Including environments}
+In the following subsections, we demonstrate how environment can be included.
+First of all, note that as we include multiple environment modes, the 
+total environment Liouville space becomes prohibitively large 
+very fast and needs to be compressed to remain tractable, 
+which is the core of the ACE algorithm.
+To enable compression, one has to specify a criterion. Most commonly, we
+use sweeps of singular value decompositions (SVDs) and only keep the subspaces
+related to singular values larger than a threshold $\epsilon \sigma_0$, where
+$\sigma_0$ is the largest singular value. This is enabled in the code by
+specifying a value to the paramter \texttt{threshold}. To provide small values,
+the C/C++ notation for powers of ten is useful, e.g., use 
+\verb+-threshold 1e-7+ in the command line to enable compression with threshold
+$\epsilon =10^{-7}$. 
+The smaller the
+threshold, the more accurate the simulation. 
+However, for very small thresholds also the calculation times as well as
+the memory demands increase.
+Alternatively, one can fix the maximal inner dimension of
+the PT MPO by defining \verb+compress_maxk+. If both are specified, 
+\verb+compress_maxk+ acts as an upper bound for the inner dimension.
+
+In principle, all that is required to add a single mode is the environment
+Hamiltonian $H_E$ including the interaction with the system and the initial
+environment mode density matrix, which can be provided in the form 
+of two matrix valued expressions to the \verb+add_single_mode+ parameter.
+For example, 
+
+\noindent\makebox[5cm]{\rule{7cm}{0.4pt}}
+\begin{verbatim}
+te          10
+dt           0.01
+threshold    1e-7
+
+add_single_mode    {hbar*5* (Id_2 otimes n_3) + hbar*1.*(|0><1|_2 otimes bdagger_3 + |1><0|_2 otimes b_3)}   {|0><0|_3}
+
+
+initial          {|1><1|_2}
+add_Hamiltonian  { 0*Id_2 }
+add_Output       {|1><1|_2}
+
+outfile      singlemode.out 
+\end{verbatim}
+\noindent\makebox[5cm]{\rule{7cm}{0.4pt}}
+
+describes the Jaynes-Cummings coupling of a two-level system with a 
+bosonic mode which is detuned with respect to the two-level system energy
+by a frequency $5$ in units of the system-boson coupling (which is set to 1).  
+This interaction conserves the number of excitations and the dynamics will 
+look like strongly detuned coherent Rabi oscillations.
+Note that because $H_E$ contains the system-environment interaction, it
+lives on the product Hilbert space of system and environment (system part comes
+first if \verb+otimes+ is used), whereas the environment initial density
+matrix lives in the bare environment Hilbert space.
+
+Adding more modes is as simple as adding more \verb+add_single_mode+ lines
+to the parameter file. However, for many practically relevant bath more 
+convenient sets of command line parameters are provided, some of which 
+we discuss in the following subsection.
 
 \subsection{Fermionic environment}
 One of the predefined 
-environments is defined by the hopping Hamiltonian
+environments is defined by the Fermionic hopping Hamiltonian
 \begin{equation}
 H_E^k=\hbar g \big( c^\dagger_k c_S + c^\dagger_S c_k ) 
 + \hbar\omega_k c^\dagger_k c_k
 \end{equation}
-Here, the system is meant to be a Fermionic state that may be occupied or not.
+Here, the system is a Fermionic state that may be occupied 
+$|1\rangle=c_S^\dagger |0\rangle$ or not $|0\rangle$.
 The occupation is created by $c^\dagger_S$ or destroyed by $c_S$. 
-Similarly, the environment consists of several Fermionic states, whose 
+The environment consists of several Fermionic states, whose 
 occupations are created and destroyed by $c^\dagger_k$ and $c_k$, respectively.
 In the limit $N_E\to \infty$, the environment consists of a continuum of state,
-which can be used to model the electronic states in metallic leads in
-proximity to a quantum dot.
+which can be used to model the electronic states in metallic contacts in
+proximity to a molecule or a quantum dot.
 Consider the driver file:
 
 \noindent\makebox[5cm]{\rule{7cm}{0.4pt}}
@@ -296,40 +442,36 @@ te                  5
 dt                  1e-2
 threshold           1e-7
 
-Leads_N_modes       2
-Leads_g             1 
-Leads_omega_min     0
-Leads_omega_max     0
-Leads_EFermi        1e4
+Fermion_N_modes       2
+Fermion_g             1 
+Fermion_omega_min     0
+Fermion_omega_max     0
+Fermion_EFermi        1e4
 
-outfile             ACE3.out
+outfile             Fermion_N2.out
 \end{verbatim}
 \noindent\makebox[5cm]{\rule{7cm}{0.4pt}}
 
-Whenever we add an environment, we should specify a compression 
-\verb+threshold+ (denoted $\epsilon$ in the paper). The smaller the
-threshold, the more accurate the simulation. 
-However, for very smaller thresholds also the calculation times as well as
-the memory demands increase.
-
-\verb+Leads_*+ indicates that what comes after is a parameter for
-the leads-type environment specified by the above Hamiltonian. 
-\verb+Leads_N_modes+ tells the code to use 2 Fermionic states as environment.
-The coupling strength is determined by \verb+Leads_g+ and the energies 
-are equidistantly sampled from \verb+Leads_omega_min+ to \verb+Leads_omega_max+
-(in picoseconds; there also exist \verb+Leads_E_min+ and \verb+Leads_E_max+ 
-if we want to specify the band width in units of meV).
+\verb+Fermion_*+ indicates that what comes after is a parameter for
+the Fermionic environment specified by the above Hamiltonian. 
+\verb+Fermion_N_modes+ tells the code to use 2 Fermionic states as environment.
+The coupling strength is determined by \verb+Fermion_g+ and the energies 
+are equidistantly sampled from \verb+Fermion_omega_min+ to \verb+Fermion_omega_max+
+(in inverse picoseconds; there also exist the alternative 
+\verb+Fermion_E_min+ and \verb+Fermion_E_max+ to specify the band width in 
+units of meV).
 Here, both limits are set to zero, so that both environment modes are 
-resonant to the TLS transition. By setting \verb+Leads_EFermi 1e4+ (note that
-1e4 is the C++ notation for $1\times 10^4$) the Fermi level is set to such
+resonant to the TLS transition. By setting \verb+Fermion_EFermi 1e4+ 
+the Fermi level is set to such
 a high value that all environment states are initially occupied. 
-There is also the parameter \verb+Leads_temperature+ to specify the temperature
+There is also the parameter \verb+Fermion_temperature+ to specify the temperature
 (in units of Kelvin) of the Fermi distribution. 
 If not specified, the global \verb+temperature+ 
-parameter will be used, whose default is 4 K.
-The initial state of the system is empty. Therefore, electrons will 
-start to move from the leads to the system.
-The dynamics is show below and it is discussed further in the article.
+parameter will be used, whose default is 0 K.
+
+Here, the initial state of the system is empty. Therefore, electrons will 
+start to move from the Fermionic environment to the system.
+The dynamics is show below and it is discussed in the ACE article.
 
 \includegraphics[width=20cm]{figs/plot_hopping_N2.eps}
 
@@ -338,7 +480,7 @@ Typically, the environments of open quantum system are assumed to form
 a continuum. In ACE, we simply discretize the continuum. For the case 
 of metallic leads, it turns out that using $N_E=10$ modes is already
 not too bad. 
-Consider the driver file \verb+driver4.param+:
+Consider the driver file \verb+Fermion.param+:
 
 \noindent\makebox[5cm]{\rule{7cm}{0.4pt}}
 \begin{verbatim}
@@ -346,17 +488,17 @@ te                  2.5
 dt                  1e-2
 threshold           1e-7
 
-Leads_N_modes      10
-Leads_rate          1 
-Leads_omega_min    -5
-Leads_omega_max     5
-Leads_EFermi        1e4
+Fermion_N_modes      10
+Fermion_rate          1 
+Fermion_omega_min    -5
+Fermion_omega_max     5
+Fermion_EFermi        1e4
 
-outfile             ACE4.out
+outfile             Fermion_N10.out
 \end{verbatim}
 \noindent\makebox[5cm]{\rule{7cm}{0.4pt}}
 
-Here, instead of \verb+Leads_g+, we use \verb+Leads_rate+ to specify the 
+Here, instead of \verb+Fermion_g+, we use \verb+Fermion_rate+ to specify the 
 rate that we would expect in the Markov limit. Then, the coupling constant  
 is calculated internally by solving the Fermi's golden rule expression for $g$.
 The respective dynamics is compared with the Markovian result
@@ -368,40 +510,196 @@ Increasing $N_E$ even further to about 100 while keeping the same density of
 states (i.e. increasing the band width simultaneously) will produce a behaviour
 very close to the Markovian results.
 
-\subsection{Radiative decay}
-The coupling of a quantum emitter to the electromagnetic field modes of free
-space gives rise to radative decay and can be described by the Hamiltonian
+
+\subsection{Bosonic environments}
+The class of \verb+Boson_*+ environments covers environment 
+Hamiltonians of the form
 \begin{equation}
-H=\sum_{\mathbf{k}} \bigg[\hbar\omega_\mathbf{k}a^\dagger_\mathbf{k}a_\mathbf{k}
-+ \hbar g_\mathbf{k}\big(a^\dagger_\mathbf{k} |G\rangle\langle X|
-+a_\mathbf{k} | X\rangle\langle G| \big) \bigg],
+H_E=
+\sum_{\mathbf{k}} \bigg[\hbar\omega_\mathbf{k}a^\dagger_\mathbf{k}a_\mathbf{k}
++ \hbar g_\mathbf{k}\big(a^\dagger_\mathbf{k} \hat{O}_{sys}
++a_\mathbf{k} \hat{O}_{sys}^\dagger\big) \bigg].
 \end{equation}
-where $a^\dagger_{\mathbf{k}}$ and $a_{\mathbf{k}}$ are Bosonic creation and
-annihilation operators. In practice, $\mathbf{k}$ is a three-dimensional
-vector and the photon bands $\mathbf{k}$ may be modified by structuring the
-photon environment, e.g. by embedding the emitter in a microcavity. 
+In the case $\hat{O}_{sys}=|1><1|_2$, this leads to the independent boson model,
+which is often used to model the effects of vibrational baths (phonons).
+If instead $\hat{O}_{sys}=|0><1|_2$ is used, the Hamiltonian describes 
+Jaynes-Cummings interactions, e.g., a quantum emitter coupled to
+photon modes. This name of the parameter for this operator is 
+\verb+Boson_SysOp+.
 
-%
-Here, we assume isotropy (i.e., we work exclusively with the modulus 
-$k=|\mathbf{k}|$) and a flat spectral density of state (as a function of 
-the modulus $|\mathbf{k}|$), and discretize the light field continuum 
-equidistantly. 
-The only difference between this situation and the coupling
-to Fermionic leads is that the mode operators are Bosonic, i.e., they can
-in principle contain an arbitarily large number of excitations and the 
-initial state is given by a Bose distribution instead of a Fermi distribution.
-Therefore, we use the same set of parameters, just replacing 
-\verb+Leads_*+ by \verb+RadiativeDecay_*+. Additionally, we use
-the parameter \verb+RadiativeDecay_M+ to specify the cut-off in the number
-of excitations (dimension of the respective Hilbert space, i.e., 1+maximal 
-number of photons per mode; default value: 2).
+The command line arguments are similar to that for the Fermionic case, only 
+that \verb+Fermion_*+ is replaced by \verb+Boson_*+.
+The main differences to the Fermionic case are that initial thermal states 
+now follow Bose statistics and that the number of 
+excitations per mode is, in principle, unbounded. Here, we truncate the
+Boson Hilbert space per mode and only account for the $M$ lowest states,
+i.e. $M-1$ excitations. This information if provided to the code by the
+parameter \verb+Boson_M+, whose default value is $M=2$. 
 
-\subsection{Phonons/spin-boson model/independent-boson model}
-A TLS diagonally coupled to a continuum of independent bosons is known
-as the independent-boson model or spin-boson model.
-It also describes the coupling between a quantum dot (QD) and longitudinal
-acoustic phonons. In this example, we take the latter as our use case.
-The corresponding Hamiltonian is
+As a first example, consider the radiative decay of an initially excited
+two-level quantum emitter. The corresponding parameter file 
+\verb+radiative_decay.param+ is
+
+
+\noindent\makebox[5cm]{\rule{7cm}{0.4pt}}
+\begin{verbatim}
+te                  2.5
+dt                  1e-1
+threshold           1e-5
+
+Boson_N_modes       20
+Boson_SysOp         {|0><1|_2}
+Boson_rate           1 
+Boson_omega_min    -10 
+Boson_omega_max     10
+Boson_temperature    0
+
+initial             {|1><1|_2}
+
+outfile             radiative_decay.out
+\end{verbatim}
+\noindent\makebox[5cm]{\rule{7cm}{0.4pt}}
+
+The resulting dynamics resembles the Markovian result with excited state
+occupations
+$\langle (|1\rangle\langle 1|) \rangle= \exp(-t)$. 
+(Again, an environment with larger band width would lead to a more Markovian 
+behaviour, but has to be discretized with more modes and therefore takes
+longer to calculate.).
+
+One caveat for calculations at finite temperatures: The Jaynes-Cummings 
+Hamiltonian acts in the rotating frame. This means that the physical energy 
+of a Bosonic excitation is actually $(\hbar\omega + E_{shift}) n $, where 
+$E_{shift}$ is the energy shift corresponding to the frequency of 
+the rotating frame. Hence, negative values of $\omega$ are physically allowed 
+if their modulus is smaller than $E_{shift}$. For initial thermal states, 
+this value can be provided by \verb+Boson_E_shift_init+ or 
+\verb+Boson_omega_shift_init+. The latter is internally multiplied by $\hbar$.
+
+
+For structured baths where every environment mode is coupled to the system
+with a different strength, i.e., $g_k$ is not constant as a function of $k$,
+there are different ways to pass the values for $E_k=\hbar\omega_k$ and
+$g_k$ to the code. One way is to compile a file with two columns, the first
+listing the values of $E_k$ (or $\omega_k$) and the second listing 
+the corresponding values of $g_k$. Please make sure the number of lines
+matches \verb+Boson_N_modes+. The name of this file can be passed to the 
+code by the argument \verb+Boson_E_g_from_table+ 
+(or \verb+Boson_omega_g_from_table+). 
+For example, if we create the file ``N20.tab'' with the 20 lines
+\begin{verbatim}
+-9.5   {1/sqrt(2*pi)}
+-8.5   {1/sqrt(2*pi)}
+-7.5   {1/sqrt(2*pi)}
+-6.5   {1/sqrt(2*pi)}
+...
+ 9.5   {1/sqrt(2*pi)}
+\end{verbatim}
+the following driver file
+\begin{verbatim}
+te                  2.5  
+dt                  1e-1  
+threshold           1e-5  
+ 
+Boson_N_modes       20  
+Boson_SysOp         {|0><1|_2}  
+Boson_omega_g_from_table   N20.tab 
+Boson_temperature    0  
+ 
+initial             {|1><1|_2}  
+ 
+outfile             radiative_decay_tab.out 
+\end{verbatim}
+exactly reproduces the results in ``radiative\_decay.out''.
+
+Another way, which is highly recommended, is to use instead a spectral density
+defined by
+\begin{equation}
+J(\omega)=\sum_k g_k^2 \delta(\omega-\omega_k)
+\end{equation}
+which is assumed to be a continuous function of $\omega$ 
+in the limit of infinitely fine discretization. 
+The spectral density has a more intuitive interpretation. For example, 
+in the case of radiative decay, the radiative decay rate in the Markov
+limit of a system driven with frequency $\omega$ is $2\pi J(\omega)$, 
+a finding which we reproduce numerically next. 
+In contrast, to reproduce a given rate, the values of $g_k$ have to be modified
+when the discretization changes.
+
+A spectral density can be provided to the ACE code in the form of a file that
+contains two columns corresponding to a set of sample points $\omega_i$ and
+$J(\omega_i)$. The sample points $\omega_i$ are not related to the 
+discretization used for defining the set of environment modes. Instead, the
+frequency domain from \verb+Boson_omega_min+ to \verb+Boson_omega_max+ is
+discretized into \verb+Boson_N_modes+ intervals and the corresponding values
+for $g_k$ are obtained by linearly interpolating between the closest sample
+points to $\omega_k$ in the spectral density file. This way, the spectral 
+density file has to be generated only once and can be reused for calculations
+with different mode discretizations. In the following example, we reproduce 
+the above result for radiative decay, now using a flat spectral density. 
+To this end, generate the file \texttt{Jflat.J} with the following two lines
+\begin{verbatim}
+-100. 1.
+ 100. 1.
+\end{verbatim}
+Therefore, all interpolated values of $J(\omega)$ will be 1. We then 
+use the parameter file
+\begin{verbatim}
+te                  2.5
+dt                  1e-1
+threshold           1e-5
+
+Boson_N_modes       20
+Boson_SysOp         {|0><1|_2}
+Boson_J_from_file    Jflat.J
+Boson_J_scale        {1/(2*pi)}   
+Boson_omega_min    -10
+Boson_omega_max     10
+Boson_temperature    0
+
+initial             {|1><1|_2}
+
+outfile             Jflat.out
+\end{verbatim}
+
+The parameter \verb+Boson_J_scale+ rescales the spectral density by a global
+factor for all sample points, in this case $1/(2\pi)$, so the expected
+Markovian rate will be $2\pi J(\omega)=2\pi (1/(2 \pi))=1$. Please check 
+that this approach reproduces exactly the result for radiative decay 
+discussed above.
+
+
+\subsection{Predefined spectral densities}
+
+Some commonly used spectral densities are predefined and can be 
+enabled by the command line argument \verb+Boson_J_type+. 
+For example, one often uses spectral densities of the form 
+\begin{equation}
+J(\omega)=\alpha \omega^s  H(\omega),
+\end{equation}
+which is characterized by the exponent $s$ distinguishing ohmic $s=1$ from
+sub- ($s<1$) and superohmic ($s>1$) spectral densities. $\alpha$ sets the
+strength of the system-bath coupling and $H(\omega)$ is a cut-off function
+used to make the large-$\omega$ limit well defined. 
+This type of spectral density is activated by setting \verb+Boson_J_type+
+to \verb+ohmic+.
+$\alpha$ and $s$ can be set via \verb+Boson_J_alpha+ and \verb+Boson_J_s+,
+respectively. The finite energy range defined by \verb+Boson_omega_min+ and
+\verb+Boson_omega_max+ already leads to a natural cutoff, but one can 
+also use, e.g., an exponential cutoff $H(\omega)=exp(-\omega/\omega_c)$ 
+by setting \verb+Boson_J_cutoff+ to \verb+exp+ and \verb+Boson_J_omega_c+
+to $\omega_c$.
+
+Keep in mind that the generated spectral density can be printed by 
+providing a file name to the parameter \verb+Boson_J_print+, which can be 
+useful for debugging.
+
+%\subsection{Phonon interactions in quantum dots}
+
+The independent boson model, i.e, a TLS diagonally and linearly coupled 
+to a continuum of harmonic oscillators, is also a good model for 
+the coupling between electronic states in a quantum dot (QD) and longitudinal
+acoustic phonons. The corresponding Hamiltonian is
 
 \begin{equation}
 H_E=\sum_{\mathbf{q}}\bigg[
@@ -412,93 +710,133 @@ H_E=\sum_{\mathbf{q}}\bigg[
 
 where $b^\dagger_{\mathbf{q}}$ and $b_{\mathbf{q}}$ are creation and
 annihilation operators for phonons with wave vector $\mathbf{q}$.
-It can be shown that the effects of such an environment are fully
-characterized by the spectral density
 
-\begin{equation}
-J(\omega)=\sum_{\mathbf{q}} 
-\gamma^2_{\mathbf{q}} \delta(\omega-\omega_{\mathbf{q}})
-\end{equation}
-
-Solving the original Hamiltonian is very difficult when the number of
-phonon modes is large. Thus, we instead solve a replacement Hamiltonian 
-by discretizing the respective spectral density $J(\omega)$. 
-Internally, we can specify arbitrary spectral densities. However, so far only
-the spectral density for phonons (described in the article) is accessible
-via command line options.
-A working driver file may be:
+Due to the ordered structure of solid state crystals, 
+electron-phonon interactions are well understood and can be derived from
+microscopic considerations. It turns out that the dominant 
+deformation potential coupling to longitudinal acoustic phonons is 
+superohmic with exponent $s=3$.
+For a typical GaAs-based semiconductor quantum dot, 
+a set of parameters that enter the spectral density has been worked out 
+by Krummheuer \textit{et al.} in [Phys. Rev. B 71, 235329 (2005)].
+To use them, simply set \verb+Boson_J_type+ to \verb+QDPhonon+.
+Try the following parameter file \verb+QDPhonon_ACE.param+:
 
 \begin{verbatim}
-QDPhonon_temperature           4         # default: 4
+te                   20
+dt                    1e-1
+Nintermediate        20
 
-QDPhonon_subtract_polaron_shift  true    # default: true   
-QDPhonon_N_modes    100          
-QDPhonon_M_max        3                  # default: 4
-QDPhonon_E_max        5                  # default: 4
+threshold             5e-8
+dict_zero             1e-12
+
+add_Hamiltonian            {-1.5*|1><1|_2}
+add_Pulse Gauss  7 5 3 0   {|1><0|_2}
+
+Boson_N_modes                    100
+Boson_M                            3
+Boson_E_max                        5
+Boson_J_type                       QDPhonon
+Boson_subtract_polaron_shift       true
+temperature                        4
+
+outfile                            QDPhonon_ACE.out
 \end{verbatim}
 
-Here, \verb+QDPhonon_N_modes+ is the number of modes, i.e. the 
-number of sample points for the discretization.
-\verb+QDPhonon_E_max+ is the cut-off energy determining the maximal 
-value of $\omega$ for the discretization of $J(\omega)$. 
-\verb+QDPhonon_M_max+ is the dimension of the Hilbert space for a single 
-phonon mode (1+maximal number of phonons per mode). 
-The temperature for the initial state of the bath is given by
-\verb+QDPhonon_temperature+ (if not specified, \verb+temperature+ is checked).
-By setting \verb+QDPhonon_subtract_polaron_shift+ to \verb+true+ (which is
-the default behaviour) the polaron shift 
-$-\sum_{\mathbf{q}}(\gamma^2_{\mathbf{q}})/(\omega_{\mathbf{q}})$ 
-is subtracted from (i.e. the modulus is added to) the Hamiltonian. 
-This is done to eliminate the effects of the polaron shift when comparing
-calculations with and without phonons, which would otherwise affect 
-resonance conditions.
+Two parameters in this file have not been discussed so far, 
+\verb+dict_zero+ and \verb+Boson_subtract_polaron_shift+.
+The former enables a trick to increase efficiency based on 
+group decomposition as discussed in the supplementary material of the
+ACE article on the example of superradiance, which is also related to 
+[Phys. Rev. B 96, 201201(R) (2017)] describing an analogous idea for
+the iQUAPI method:
+For certain types of couplings, MPO matrices 
+$\mathcal{Q}_{d_l d_{l-1}}^{(\alpha_l,\tilde{\alpha}_l)}$ are identical
+for different combinations of $(\alpha_l,\tilde{\alpha}_l)$. 
+In this case, only one representation has to be stored and calculated, which 
+reduces the numerical demands. In the above example with diagonal coupling 
+(\verb+Boson_SysOp+ has the default value of \verb+|1><1|_2+), the
+environment does not induce system transitions, so 
+$\mathcal{Q}_{d_l d_{l-1}}^{(\alpha_l,\tilde{\alpha}_l)}=0$ for 
+$\alpha_l\neq\tilde{\alpha}_l$. These don't have to be stored, reducing 
+the numerical demands by at least a factor of 4 ($2^2$ instead of $2^4$ 
+combinations of $(\alpha_l,\tilde{\alpha}_l)$). Which matrices are zero and
+which are identical with matrices for other combinations of system indices 
+can be computed automatically from the microscopic Hamiltonian. 
+The parameter \verb+dict_zero+ tells the code what can be considered as 
+practically zero or practically identical for this purpose. If a positive
+value is given, automatic detection of groups with identical couplings 
+is enabled.
+
+Setting \verb+Boson_subtract_polaron_shift+ to \verb+true+ tells the code
+to subtract polaron shift from the system energy levels: 
+For the independent boson model, it is well known that the 
+interaction with the bath renormalizes the energies of the system
+by the polaron shift 
+$\Delta E_p=-\sum_{\mathbf{q}}(\gamma^2_{\mathbf{q}})/(\omega_{\mathbf{q}})
+=-\int\limits_0^\infty d\omega\, J(\omega) / d\omega$.
+As this shift is present irrespective of the state of the system or the 
+environment, experimental determination of the energy levels of the TLS
+usually reveals the polaron shifted values. It is therefore convenient to
+subtract the polaron shift, redefine the energy levels, and avoid dealing 
+with renormalization effects explicitly when comparing calculations with
+and without phonons. 
 
 
-As an alternative to ACE, the process tensor for Gaussian baths can be 
+\subsection{Related computational methods}
+Finally, as an alternative to ACE, the process tensor for Gaussian baths can be 
 calculated using expressions where the bath is already integrated out
 [cf. {J{\o}rgensen and Pollock} Phys. Rev. Lett. 123, 240602 (2019)]. 
 This method is usually much more 
 efficient and does not require discretization or truncation of the phonon
 Hilbert spaces (Recall: The advantage of ACE is its generality, while 
 the latter method only works for Gaussian baths.)
-To use this method instead for phonon simulations with our standard 
-phonon spectral density, the following can be added to the driver file:
+To use this method instead for phonon simulations with our standard QD
+phonon spectral density, one only needs to set \verb+use_Gaussian+ to 
+\verb+true+. For example, we can re-use the parameter file from the
+last example and run:
 
 \begin{verbatim}
-use_process_tensor     true
-temperature            4
+> ACE QDPhonon_ACE.param -use_Gaussian true -outfile QDPhonon_Gaussian.out
 \end{verbatim}
 
+With the ACE code, we also provide binaries for the iterative methods 
+iQUAPI and TEMPO. If they are compiled, you can also try
+\begin{verbatim}
+> TEMPO QDPhonon_ACE.param -outfile QDPhonon_TEMPO.out
+\end{verbatim}
+or
+\begin{verbatim}
+> iQUAPI QDPhonon_ACE.param -n_max 12 -dt 0.2 -outfile QDPhonon_iQUAPI.out
+\end{verbatim}
+Note that iQUAPI performs no tensor network compression but instead 
+works by memory truncation, where only a fixed maximal number
+\verb+n_max+ of past time steps are accounted for.
+Because the memory demands scale exponentially with \verb+n_max+, 
+only relatively small values of \verb+n_max+ can be used in practice.
+To cover the memory time of the environment the time step width \verb+dt+ 
+should be choosen as large as possible.
+
+\subsection{Reading, writing, and combining process tensors}
+
+A PT generated by the ACE cod ecan be written into a binary file with a name
+specified by the \verb+write_PT+ parameter. Such a PT can then be read 
+for another simulation using the \verb+read_PT+. 
+Furthermore, multiple PTs can be loaded and used for the propagation by the
+\verb+multi_PT+ argument. The difference between the use of \verb+read_PT+ 
+and \verb+multi_PT+ is that when new baths are specified, e.g., by setting 
+\verb+Boson_N_modes+ or \verb+Fermion_N_modes+ to nonzero values or using 
+an \verb+add_single_mode+ line, these new baths will be incorporated into
+a PT specified by \verb+read_PT+, while the PTs defined by \verb+multi_PT+ 
+are only loaded for the propagation of a concrete simulation.
 
 \iffalse
-\subsection{Spins}
-
-\begin{equation}
-H=\sum_k J_k \mathbf{S}\cdot \mathbf{s}_k 
-\end{equation}
-
-\begin{verbatim}
-#RandomSpin_set_initial_dir 0 0 1
-#RandomSpin_B_eff    0 0 0 
-
-RandomSpin_B_init      0 0 1
-RandomSpin_T           4
-
-RandomSpin_N_modes         10
-RandomSpin_J_max            0.1
-RandomSpin_J_min            0.1
-RandomSpin_seed             1
-
-RandomSpin_print_initial    RandomSpin_T4_B1_normJ_N10_te20_dt1e-2_thr1e-10.init
-\end{verbatim}
-
-\subsection{Combining process tensors}
-
+analyse_PT, extend
 \fi
 
 \section{Concluding remarks}
 Further developments of ACE, the method as well as the code, 
-are ongoing projects. Some implemented featured are not described in the 
+are ongoing projects. Some implemented features are not described in the 
 documentation yet, but will be added in the future.
 
 \end{document}

@@ -37,6 +37,8 @@ public:
   virtual Eigen::MatrixXcd get_Htot(double t)const{
     return Eigen::MatrixXcd::Zero(get_dim(), get_dim());
   }
+
+  virtual ~Propagator(){};
 };
 
 #endif

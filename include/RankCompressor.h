@@ -1,11 +1,14 @@
 #ifndef RANK_COMPRESSOR_DEFINED_H
 #define RANK_COMPRESSOR_DEFINED_H
 
+#include <ctime>
 #include <cmath>
 #include <Eigen/Core>
 #include <Eigen/SVD>
 #include "RRQR.h"
 #include "MPS_Matrix.h"
+#include "otimes.h"
+#include "Parameters.h"
 
 class RankCompressor{
 public:
@@ -121,31 +124,92 @@ public:
 class RankCompressor_SVD: public RankCompressor{
 public:
   double threshold;
+  double sum_threshold;
   int maxk;
-  bool reorthogonalize;
+  int reorthogonalize;
+  int count, DUMP_SVD;
+  bool use_BDCSVD;
 
-    
-  virtual void compress(Eigen::MatrixXcd &A, Eigen::MatrixXcd &L, Eigen::MatrixXcd &R, bool low_to_high){
+  //increase threshold logarithmically from 'threshold' to 'threshold_to' within 'Nrange' SVDs
+  double threshold_to;
+  int Nrange;
+ 
 
+  // check if parameters are set up so that any compression can happen
+  bool has_effect()const{
+    if(threshold>0. || sum_threshold>0. || maxk>0)return true;
+    else return false;
+  }
 
-    Eigen::JacobiSVD<Eigen::MatrixXcd> svd( A, Eigen::ComputeThinU | Eigen::ComputeThinV);
+  //choose how many singular values should be kept:  
+  int get_new_dim(const Eigen::VectorXd &sv){
 
-    int newdim=svd.singularValues().size();
-    if(svd.singularValues().size()<1){
+    int newdim=sv.size();
+    if(sv.size()<1){
       std::cerr<<"Compress (SVD): svd.singularValues().size()<1!"<<std::endl;
       exit(1);
     }
 
+    // truncate based on given maximal inner dimension
     if(maxk>0 && maxk<newdim)newdim=maxk;
 
-    double cutoff=svd.singularValues()(0)*threshold;
-    for(int i=1; i<newdim; i++){
-      if(svd.singularValues()(i)<cutoff){newdim=i; break;}
+    // truncate based on (relative) magnitude of singular values:
+    double this_threshold=threshold;
+    if(Nrange>0){
+      if(count<=0){
+        this_threshold=threshold;
+      }else if(count<=Nrange){
+        this_threshold=threshold_to;
+      }else{
+        double x=(double)count/(double)Nrange;
+        this_threshold=exp(log(threshold)*(1.-x)+log(threshold_to)*x);
+std::cout<<"this threshold: "<<this_threshold<<std::endl;
+      }
     }
+    
+    double cutoff=sv(0)*this_threshold;
+    for(int i=1; i<newdim; i++){
+      if(sv(i)<cutoff){newdim=i; break;}
+    }
+
+    // truncate based on (relative) sum of neglected SVs:
+    if(sum_threshold>0){ 
+      if(sum_threshold>1){
+        std::cerr<<"Compress (SVD): sum_threshold>1!"<<std::endl;
+        exit(1);
+      }
+      double sum=0.;
+      for(int i=sv.size()-1; i>=0; i--){
+        sum+=sv(i);
+      }
+      double cutoff=sum*sum_threshold;
+      double newsum=0.;
+      for(int i=newdim-1; i>=0; i--){
+        newsum+=sv(i);
+        if(newsum>=cutoff){
+          newdim=i+1;
+          break;
+        }
+      }
+    }
+
+
+    return newdim;
+  }
+   
+  template <typename T>
+  void compress_template(Eigen::MatrixXcd &A, Eigen::MatrixXcd &L, Eigen::MatrixXcd &R, bool low_to_high){
+
+//    Eigen::JacobiSVD<Eigen::MatrixXcd>
+    T svd( A, Eigen::ComputeThinU | Eigen::ComputeThinV);
+
+    int newdim=get_new_dim(svd.singularValues());
+
 
 #ifdef PRINT_SVD_DIMS
     std::cout<<"SVD dims: "<<A.rows()<<", "<<A.cols()<<" -> "<<newdim<<std::endl;
 #endif
+
 #ifdef PRINT_SVD
     std::cout<<"SVDs("<<newdim<<"):";
     for(int i=0; i<svd.singularValues().size(); i++){
@@ -156,6 +220,16 @@ public:
    std::cout<<" first: "<<svd.singularValues()(0)<<std::endl;
 #endif
 
+
+    if(DUMP_SVD>=0 && count==DUMP_SVD){
+//Note: Total number of compressions: (2*nmax-3)*N -> middle of chain for last step, backward direction: count ~ (2*nmax-3)*N-nmax/2-1  or (2*nmax-3)*(N-1/4)
+      std::cout<<"Dumping SVD at "<<count<<"-th compression to file 'DUMP_SVD.dat'!"<<std::endl;
+      std::ofstream ofs("DUMP_SVD.dat");
+      for(int i=0; i<svd.singularValues().size(); i++){
+        ofs<<svd.singularValues()(i)<<std::endl;
+      }
+    }
+
 #ifdef PRINT_SVD_MATRIX_DIFF
 std::cout<<"A-U*s*V^+:"<<std::endl;
 std::cout<<A - svd.matrixU().block(0,0,A.rows(), newdim)*
@@ -164,57 +238,75 @@ std::cout<<A - svd.matrixU().block(0,0,A.rows(), newdim)*
 #endif
 
 
-    if(reorthogonalize){
-      Eigen::MatrixXcd V=svd.matrixV().block(0,0,A.cols(),newdim);
 
+
+#ifdef PRINT_SVD_ORTHO
+{
+std::ofstream ofs("PRINT_SVD_ORTHO", std::ios_base::app);
+std::time_t print_svd_ortho_time=std::time(NULL);
+double diffU=max_diff_from_ortho(svd.matrixU());
+double diffV=max_diff_from_ortho(svd.matrixV());
+ofs<<diffU<<" "<<diffV<<" "<<std::asctime(std::localtime(&print_svd_ortho_time))<<std::endl;
+/*
+if(diffU>1e-12){
+std::cout<<"SVD produces non-orthogonal U: "<<diffU<<std::endl;
+print_diff_from_ortho(svd.matrixU());
+}
+if(diffV>1e-12){
+std::cout<<"SVD produces non-orthogonal V: "<<diffV<<std::endl;
+print_diff_from_ortho(svd.matrixV());
+}
+*/
+if(diffU>1e-12||diffV>1e-12){
+std::cout<<"newdim="<<newdim<<std::endl;
+std::cout<<"A-U*s*V^+:"<<std::endl;
+Eigen::MatrixXcd diffmat = A - svd.matrixU().block(0,0,A.rows(), newdim)*
+                           svd.singularValues().head(newdim).asDiagonal()*
+                           svd.matrixV().block(0,0,A.cols(),newdim).adjoint();
+{std::ofstream ofs2("PROBLEMATIC_MATRIX.dat"); ofs2<<A;}
+{std::ofstream ofs2("PROBLEMATIC_SVs.dat"); ofs2<<svd.singularValues();}
+double maxelem=0;
+int maxi=0, maxj=0;
+for(int i=0; i<diffmat.rows(); i++){
+  for(int j=0; j<diffmat.cols(); j++){
+    if(abs(diffmat(i,j))>maxelem){
+      maxelem=abs(diffmat(i,j));
+      maxi=i; maxj=j;
+    }
+  }
+}
+std::cout<<maxi<<" "<<maxj<<" "<<diffmat(maxi,maxj)<<std::endl;
+exit(1);
+}
+}
+#endif
+
+    if(reorthogonalize>0){
       if(low_to_high){
         Eigen::MatrixXcd U=svd.matrixU().block(0,0,A.rows(),newdim);
-        for(int i=0; i<newdim; i++){
-          for(int j=i-1; j>=0; j--){
-            U.col(i)-=(U.col(j).dot(U.col(i)))*U.col(j);
+        for(int run=0; run<reorthogonalize; run++){
+          for(int i=0; i<U.cols(); i++){
+            for(int j=0; j<i; j++){
+              U.col(i)-=(U.col(j).dot(U.col(i)))*U.col(j);
+            }
+            U.col(i).normalize();
           }
-          U.col(i).normalize();
         }
-
         L = U;
-        R = Eigen::MatrixXcd(newdim, A.cols());
-        for(int i=0; i<newdim; i++){
-          R.row(i)=U.col(i).adjoint()*A;
-        } 
-
-        if(true){
-          for(int i=0; i<newdim; i++){
-            double sn=sqrt(R.row(i).norm());
-            R.row(i)/=sn;
-            L.col(i)*=sn;
-          }
-//std::cout<<"."<<std::flush;
-        }
-
+        R = U.adjoint() * A;
       }else{
         Eigen::MatrixXcd V=svd.matrixV().block(0,0,A.cols(),newdim);
-        for(int i=0; i<newdim; i++){
-          for(int j=i-1; j>=0; j--){
-            V.col(i)-=(V.col(j).dot(V.col(i)))*V.col(j);
+        for(int run=0; run<reorthogonalize; run++){
+          for(int i=0; i<V.cols(); i++){
+            for(int j=0; j<i; j++){
+              V.col(i)-=(V.col(j).dot(V.col(i)))*V.col(j);
+            }
+            V.col(i).normalize();
           }
-          V.col(i).normalize();
         }
- 
         R = V.adjoint();
-        L = Eigen::MatrixXcd(A.rows(), newdim);
-        for(int i=0; i<newdim; i++){
-          L.col(i)=A*V.col(i);
-        }
-
-        if(true){
-          for(int i=0; i<newdim; i++){
-            double sn=sqrt(L.col(i).norm());
-            L.col(i)/=sn;
-            R.row(i)*=sn;
-          }
-        }
-      } 
-
+        L = A * V;
+      }
     }else{
       if(low_to_high){
         L = svd.matrixU().block(0,0,A.rows(), newdim);
@@ -227,10 +319,41 @@ std::cout<<A - svd.matrixU().block(0,0,A.rows(), newdim)*
       }
     }
 
+    count++;
   }
 
-  RankCompressor_SVD(double thresh, int maxk_=0, bool reortho=false)
-   : threshold(thresh),maxk(maxk_),reorthogonalize(reortho){
+  virtual void compress(Eigen::MatrixXcd &A, Eigen::MatrixXcd &L, Eigen::MatrixXcd &R, bool low_to_high){
+
+    if(use_BDCSVD){
+      compress_template<Eigen::BDCSVD<Eigen::MatrixXcd> >(A, L, R, low_to_high);
+    }else{
+      compress_template<Eigen::JacobiSVD<Eigen::MatrixXcd> >(A, L, R, low_to_high);
+    }
+  }
+ 
+
+  void setup(Parameters &param){
+    threshold=param.get_as_double("threshold", 0);
+    sum_threshold=param.get_as_double("sum_threshold", 0);
+    maxk=param.get_as_size_t("compress_maxk", 0);
+    reorthogonalize=param.get_as_int("reorthogonalize",0);
+    DUMP_SVD=param.get_as_int("compress_dump",-1);
+    count=param.get_as_size_t("compress_dump_initial_count",0);
+    use_BDCSVD=param.get_as_bool("use_BDCSVD",false);
+
+    if(param.is_specified("threshold_range")){
+      threshold=param.get_as_double("threshold_range",0.,0,0);
+      threshold_to=param.get_as_double("threshold_range",0.,0,1);
+      Nrange=param.get_as_int("threshold_range",0.,0,2);
+    }else{
+      Nrange=0;
+    }
+  }
+  RankCompressor_SVD(Parameters &param){
+    setup(param);
+  }
+  RankCompressor_SVD(double thresh=0., double sum_thr_=0., int maxk_=0, int reortho=0, int dump=-1)
+   : threshold(thresh),sum_threshold(sum_thr_), maxk(maxk_),reorthogonalize(reortho), count(0), DUMP_SVD(dump){
   }
   virtual ~RankCompressor_SVD(){
   }

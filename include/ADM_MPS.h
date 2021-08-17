@@ -34,13 +34,17 @@ public:
     }
   }
 
+  virtual void print_status(std::ostream &os=std::cout)const{
+    os<<"ADM MPS max_dim: "<<ten.get_max_dim()<<std::endl;
+  }
+
   void update_rho(int step){
     int n_mem_eff=ten.get_rank();
 
     int NL=get_NL();
     int N=sqrt(NL);
 
-    int Ngrps2=get_Ngrps2();
+//    int Ngrps2=get_Ngrps2();
 
     if(n_mem_eff<1){
       std::cerr<<"n_mem_eff must be larger than zero!"<<std::endl;
@@ -150,7 +154,7 @@ public:
           }
         }
       }
-      for(int n=2; n<ten2.a.size(); n++){
+      for(int n=2; n<(int)ten2.a.size(); n++){
         ten2.a[n].resize(Ngrps2, Ngrps2*ten.a[n-1].dim_d1, Ngrps2*ten.a[n-1].dim_d2);
         ten2.a[n].fill(0.);
         for(int k=0; k<Ngrps2; k++){ 
@@ -202,7 +206,7 @@ public:
     if(step<=n_mem){ 
       ten.swap(ten2);
     }else{
-      for(int n=0; n<ten.a.size(); n++){
+      for(size_t n=0; n<ten.a.size(); n++){
         ten.a[n].swap(ten2.a[n]);
       }
     }
@@ -217,7 +221,7 @@ public:
         std::cout<<std::endl;
       }
  
-      for(int i=0; i<ten.a.size()-1; i++){
+      for(int i=0; i<(int)ten.a.size()-1; i++){
         ten.sweep_block_low_to_high(i, *compressor);
       }
       for(int i=ten.a.size()-1; i>1; i--){
@@ -238,7 +242,7 @@ public:
   
   
   AugmentedDensityMatrix_MPS(int n_max_, int Ngrps, const Eigen::MatrixXcd &rho_) 
-   : n_max(n_max_), rho(rho_) {
+   : rho(rho_), n_max(n_max_){
 
     int N=rho_.rows();
     if(rho.rows()!=rho.cols() ){

@@ -1,7 +1,7 @@
 #ifndef CAVITYFY_DEFINED_H
 #define CAVITYFY_DEFINED_H
 
-#include "OuterProduct.h"
+#include "otimes.h"
 #include "Operators_Boson.h"
 
 /** Purpose: add a cavity to the system. Expand the IFs and the initia_rho
@@ -25,10 +25,10 @@ void cavityfy(FreePropagator &fprop,
   Eigen::MatrixXcd id=Eigen::MatrixXcd::Identity(n_dim, n_dim);
   //FreePropagator:
   {
-    fprop.const_H=OuterProduct(fprop.const_H, id);
+    fprop.const_H=otimes(fprop.const_H, id);
 
     for(size_t i=0; i<fprop.timedep_H.size(); i++){
-      fprop.timedep_H[i].second=OuterProduct(fprop.timedep_H[i].second,id);
+      fprop.timedep_H[i].second=otimes(fprop.timedep_H[i].second,id);
     }
 
     if(fprop.nonH.rows()>0){
@@ -51,8 +51,8 @@ void cavityfy(FreePropagator &fprop,
         exit(1);
       }
       fprop.const_H+=Constants::hbar_in_meV_ps*g*
- (OuterProduct(Operators2x2::sigma_plus(), Operators_Boson::a(n_dim))
- +OuterProduct(Operators2x2::sigma_minus(), Operators_Boson::adagger(n_dim)));
+ (otimes(Operators2x2::sigma_plus(), Operators_Boson::a(n_dim))
+ +otimes(Operators2x2::sigma_minus(), Operators_Boson::adagger(n_dim)));
     }
   }
 
@@ -98,7 +98,7 @@ std::cout<<"cavity test dict after: ";IFV[ifi]->dict.print_beta(); std::cout<<st
   }
 
   //Initial state:
-  initial_rho=OuterProduct(initial_rho, Operators_Boson::vacuum(n_dim));
+  initial_rho=otimes(initial_rho, Operators_Boson::vacuum(n_dim));
 
   //Output:
   for(size_t o=0; o<output_Op.size(); o++){

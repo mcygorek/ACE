@@ -85,9 +85,10 @@ public:
   }
   InfluenceFunctional_MPS(int n_max_, double dt_, 
                       const Eigen::MatrixXcd &couplings_,
-                      RealFunctionPtr SD_, double temperature_)
+                      RealFunctionPtr SD_, double temperature_,
+                      bool noSubPS=false)
    : dt(dt_), groups(couplings_),
-     diagBB(Coupling_Groups(couplings_), couplings_, SD_, temperature_) {
+     diagBB(Coupling_Groups(couplings_), couplings_, SD_, temperature_,noSubPS) {
 
 
     calculate(n_max_);

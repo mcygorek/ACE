@@ -42,12 +42,12 @@ public:
       RealFunctionPtr J;
       virtual double f(double x) const{
         if(x<1e-6)return 0.;
-        return Constants::hbar_in_meV_ps*J->f(x)/x;
+        return J->f(x)/x;
       }
       f_cl_(RealFunctionPtr J_): J(J_){}
     }f_cl(J);
   
-    return f_cl.integrate(0, Emax, Ndiscr);
+    return Constants::hbar_in_meV_ps * f_cl.integrate(0, Emax/Constants::hbar_in_meV_ps, Ndiscr);
   }
 
 

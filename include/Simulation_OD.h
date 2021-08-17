@@ -8,10 +8,10 @@
 #include "InitialState.h"
 #include "FT_Output.h"
 #include "Which_Env_Ops.h"
-#include "Cavityfy.h"
+//#include "Cavityfy.h"
 
 #include "ModePropagatorGenerator.h"
-#include "Pulse_Printer.h"
+//#include "Pulse_Printer.h"
 
 
 class Simulation_OD{
@@ -19,7 +19,7 @@ public:
 
   Eigen::MatrixXcd rho;
   bool print_timestep;
-
+  bool use_symmetric_Trotter;
 
   Simulation_Results results;
   Output_Ops output_Op;
@@ -36,18 +36,14 @@ public:
     which_env_ops.setup(param);
   }
 
-  void run_nobath(Propagator &prop,
-    double ta, double dt, double te, const Eigen::MatrixXcd &initial_rho){
+  void run_nobath_dt0_nmax(Propagator &prop,
+                           double ta, double dt, double dt0, int n_max, 
+                           const Eigen::MatrixXcd &initial_rho){
 
 std::cout<<"RUN_NOBATH!"<<std::endl;
 
     int N=initial_rho.rows();
     int NL=N*N;
-    int n_max=(te-ta)/dt;
-    if(n_max<1){
-      rho=initial_rho;
-      return;
-    }
 
     Eigen::MatrixXcd state(NL, 1);
     for(int i=0; i<N; i++){
@@ -61,9 +57,14 @@ std::cout<<"RUN_NOBATH!"<<std::endl;
     results.set(0, ta, output_Op, initial_rho);
 
     for(int n=0; n<n_max; n++){
-      double t=ta+n*dt;
+      double t=ta;
+      if(n>0) t+=dt0+(n-1)*dt;
       if(print_timestep)std::cout<<"Step: "<<n<<"/"<<n_max<<" ("<<t<<")"<<std::endl;
-      prop.update(t,dt);
+      if(n==0){
+        prop.update(t,dt0);
+      }else{
+        prop.update(t,dt);
+      }
 
       //do the actual propagation: first only system-free
       {
@@ -83,13 +84,21 @@ std::cout<<"RUN_NOBATH!"<<std::endl;
           rho(i,j) =  state(i*N+j, 0);
         }
       }
-      results.set(n+1, ta+(n+1)*dt, output_Op, rho);
+      results.set(n+1, ta+dt0+n*dt, output_Op, rho);
     }
   }
 
-  void run(Propagator &prop, 
-    std::vector<Smart_Ptr<InfluenceFunctional_OD> > & IFV,
+  void run_nobath(Propagator &prop,
     double ta, double dt, double te, const Eigen::MatrixXcd &initial_rho){
+    
+    run_nobath_dt0_nmax(prop, ta, dt, dt, (te-ta)/dt+1e-12, initial_rho);
+
+  }
+
+  void run_dt0_nmax(Propagator &prop, 
+    std::vector<Smart_Ptr<InfluenceFunctional_OD> > & IFV,
+    double ta, double dt, double dt0, int n_max, 
+    const Eigen::MatrixXcd &initial_rho){
  
     if(initial_rho.rows()!=initial_rho.cols()){
       std::cerr<<"Simulation_OD::calculate: initial_rho.rows()!=initial_rho.cols()!"<<std::endl;
@@ -102,7 +111,7 @@ std::cout<<"RUN_NOBATH!"<<std::endl;
 
     if(IFV.size()<1){
       std::cout<<"Simulation_OD::run: No InfluenceFunctional specified!"<<std::endl;
-      run_nobath(prop, ta, dt, te, initial_rho);
+      run_nobath_dt0_nmax(prop, ta, dt, dt0, n_max, initial_rho);
       return;
     }   
 
@@ -111,15 +120,9 @@ std::cout<<"RUN_NOBATH!"<<std::endl;
     int NL=N*N;
     int Ngrps2=NL;
 
-    int n_max=(te-ta)/dt;
-    if(n_max<1){
-      rho=initial_rho;
-      return; 
-    }
-
 
     for(size_t ifi=0; ifi<IFV.size(); ifi++){
-      std::cout<<"ifi: "<<ifi<<" "<<IFV[ifi]->get_rank()<<std::endl;
+//      std::cout<<"ifi: "<<ifi<<" "<<IFV[ifi]->get_rank()<<std::endl;
       IFV[ifi]->check_within_limits(n_max);
       IFV[ifi]->check_consistency();
 
@@ -148,9 +151,14 @@ std::cout<<"RUN_NOBATH!"<<std::endl;
     for(int n=0; n<n_max; n++){
       double t=ta+n*dt;
       if(print_timestep)std::cout<<"Step: "<<n<<"/"<<n_max<<" ("<<t<<")"<<std::endl;
-      prop.update(t,dt);
 
       //do the actual propagation: first only system-free
+      double dt1=dt; if(n==0)dt1=dt0;
+      if(use_symmetric_Trotter){
+        prop.update(t,dt1/2.);
+      }else{
+        prop.update(t,dt1);
+      }
       {
         Eigen::MatrixXcd state2=Eigen::MatrixXcd::Zero(NL,state.cols());
         for(int d1=0; d1<state.cols(); d1++){
@@ -201,6 +209,23 @@ std::cout<<"RUN_NOBATH!"<<std::endl;
       }
 
 
+      //apply again system propagator for symmetric Trotter decomposition
+      if(use_symmetric_Trotter){
+        prop.update(t+dt/2.,dt/2.);
+
+        Eigen::MatrixXcd state2=Eigen::MatrixXcd::Zero(NL,state.cols());
+        for(int d1=0; d1<state.cols(); d1++){
+          for(int j=0; j<NL; j++){
+            for(int k=0; k<NL; k++){
+              state2(j,d1)+=prop.M(j,k)*state(k,d1);
+            }
+          }
+        }
+        state=state2;
+      }
+
+
+
       //extract reduced system density matrix
       int d2_tot=1;
       for(size_t ifi=0; ifi<IFV.size(); ifi++)d2_tot*=IFV[ifi]->get_a(n).dim_d2;
@@ -229,16 +254,16 @@ std::cout<<"RUN_NOBATH!"<<std::endl;
           rho(i,j) =  c_state(i*N+j, 0);
         }
       }
-      results.set(n+1, ta+(n+1)*dt, output_Op, rho);
+      results.set(n+1, ta+dt0+n*dt, output_Op, rho);
 
 
       //Environment operators
       for(size_t w=0; w<which_env_ops.size(); w++){
-        if(which_env_ops[w].i>=IFV.size()){
+        if(which_env_ops[w].i>=(int)IFV.size()){
           std::cerr<<"Error printing environment operators: which_env_ops[w].i>=IFV.size()!"<<std::endl;
           exit(1);
         }
-        if(which_env_ops[w].o>=IFV[which_env_ops[w].i]->get_env_ops(n).size()){
+        if(which_env_ops[w].o>=(int)IFV[which_env_ops[w].i]->get_env_ops(n).size()){
           std::cerr<<"Error printing environment operators: which_env_ops[w].o>=IFV[which_env_ops[w].i].env_ops[n].size()!"<<std::endl;
           exit(1);
         }
@@ -277,6 +302,20 @@ std::cout<<"RUN_NOBATH!"<<std::endl;
     }// loop over n
   }
 
+  void run(Propagator &prop, 
+    std::vector<Smart_Ptr<InfluenceFunctional_OD> > & IFV,
+    double ta, double dt, double te, const Eigen::MatrixXcd &initial_rho){
+    
+    run_dt0_nmax(prop, IFV, ta, dt, dt, (te-ta)/dt+1e-12, initial_rho);
+  }
+
+  void run(Propagator &prop, 
+    std::vector<Smart_Ptr<InfluenceFunctional_OD> > & IFV,
+    const IF_TimeGrid &tgrid, const Eigen::MatrixXcd &initial_rho){
+    
+    run_dt0_nmax(prop, IFV, tgrid.ta, tgrid.dt, tgrid.dt0, tgrid.n_tot, initial_rho);
+  }
+
   void run(Propagator &prop, Smart_Ptr<InfluenceFunctional_OD> IF,
     double ta, double dt, double te, const Eigen::MatrixXcd &initial_rho){
   
@@ -292,6 +331,7 @@ std::cout<<"RUN_NOBATH!"<<std::endl;
 
   void initialize(){
     print_timestep=false;
+    use_symmetric_Trotter=false;
   }
   Simulation_OD(Propagator &prop, Smart_Ptr<InfluenceFunctional_OD> IF, 
     double ta, double dt, double te, const Eigen::MatrixXcd &initial_rho){

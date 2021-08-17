@@ -21,8 +21,18 @@ const double J_to_meV=1000.*J_to_eV;
 
 const double kg_to_meV_ps2_by_nm2=J_to_meV*1.0e6;      //kg=J*s^2/m^2
 
+const double c_in_m_by_s=299792458; 
+const double c_in_nm_by_ps=299792.458;
+
+double beta_from_T(double T){
+  if(T>1e12)return 0;
+  if(T<1e-12)T=1e-12;
+  return 1./(kB_in_meV_by_K*T);
+}
 double coth(double x){
   if(fabs(x)<1e-10) return 0.; 
+  if(x<0.)return -coth(x);
+  if(x>1e6) return 1.;
   return 1.+2./(exp(2.*x)-1);
 }
 double gauss(double x, double s){
@@ -40,6 +50,16 @@ double fermi(double x){  // x=(E-mu)/(k_B T)
   if(x>1e4)return 0.;
   else if(x<-1e4)return 1.;
   else return 1./(exp(x)+1.);
+}
+
+int factorial(int n, int stop=1){
+  if(n<=stop)return 1;
+  return factorial(n-1)*n;
+}
+
+double logistic(double x){
+  if(x>=0.)return 1./(1.+exp(-x));
+  else return 1.-1./(1.+exp(x));
 }
 
 };

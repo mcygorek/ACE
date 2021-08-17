@@ -1,9 +1,10 @@
 #ifndef READEXPRESSION_DEFINED_H
 #define READEXPRESSION_DEFINED_H
-#include "Reader.h"
+#include "ReaderBasics.h"
 #include <complex>
 #include <Eigen/Dense>
-#include "OuterProduct.h"
+#include "otimes.h"
+#include "Operators_Boson.h"
 
 /* Class to turn a string into a valid complex number */
 
@@ -122,7 +123,7 @@ public:
       type=Value;
       return value;
     }else if(type==Otimes){
-      value=OuterProduct(operands[0].value, operands[1].value);
+      value=otimes(operands[0].value, operands[1].value);
       type=Value;
       return value;
     }else if(type==Sqrt){
@@ -208,7 +209,22 @@ public:
       exit(1);
     }
   }
+
+
+  static int predefined_operator_dim(std::stringstream &ss, const std::string &str){
+    int dim=0;
+    std::string with_us=std::string(str+"_");
+    if(Reader::is_next_in_stream(ss, with_us)){
+      ss>>dim;
+      if(ss.fail() || dim<1){
+        std::cerr<<"No valid dimension number after underscore at '"<<str<<"_'!"<<std::endl;   
+        exit(1);
+      }
+    }
+    return dim;
+  }
  
+
   Eigen::MatrixXcd read(const std::string &str){
 
 #ifdef DEBUG_EXPRESSIONS
@@ -297,16 +313,43 @@ public:
       }
   
       //try to identify basic matrices
-      if(Reader::is_next_in_stream(ss, "Id_")){
-        int dim=0;
-        ss>>dim;
-        if(ss.fail() || dim<1){
-          std::cerr<<"No valid dimension number after underscore at 'Id_'!"<<std::endl;
-          exit(1);
-        }
-        op.add_last_operand(Eigen::MatrixXcd::Identity(dim,dim));
+      int id_dim=predefined_operator_dim(ss,"Id");
+      if(id_dim){
+        op.add_last_operand(Eigen::MatrixXcd::Identity(id_dim,id_dim));
         continue;
       }
+
+      id_dim=predefined_operator_dim(ss,"bdagger");
+      if(id_dim){
+        op.add_last_operand(Operators_Boson::adagger(id_dim));
+        continue;
+      }
+
+      id_dim=predefined_operator_dim(ss,"b");
+      if(id_dim){
+        op.add_last_operand(Operators_Boson::a(id_dim));
+        continue;
+      }
+
+      id_dim=predefined_operator_dim(ss,"n");
+      if(id_dim){
+        op.add_last_operand(Operators_Boson::n(id_dim));
+        continue;
+      }
+
+      if(Reader::is_next_in_stream(ss, "sigma_x")){
+        Operators2x2 op2x2;
+        op.add_last_operand(op2x2.sigma_x());
+      }
+      if(Reader::is_next_in_stream(ss, "sigma_y")){
+        Operators2x2 op2x2;
+        op.add_last_operand(op2x2.sigma_y());
+      }
+      if(Reader::is_next_in_stream(ss, "sigma_z")){
+        Operators2x2 op2x2;
+        op.add_last_operand(op2x2.sigma_z());
+      }
+
       if(peek=='|'){
         const std::string failstr="Cannot read matrix basis element |i><j|_n!";
         char c; ss>>c;

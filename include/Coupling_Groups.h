@@ -3,8 +3,9 @@
 
 #include <Eigen/Core>
 #include <vector>
+#include "Printable.h"
 
-class Coupling_Groups{
+class Coupling_Groups: public Printable{
   public:
 
   int Ngrps;
@@ -20,10 +21,16 @@ class Coupling_Groups{
   }
   void set_default(int N){
     grp.resize(N);
-    for(size_t i=0; i<N; i++)grp[i]=i;
+    for(int i=0; i<N; i++)grp[i]=i;
     Ngrps=N;
   }
-
+  virtual std::ostream &print(std::ostream &os=std::cout)const{
+    os<<Ngrps<<":";
+    for(size_t i=0; i<grp.size(); i++){
+      os<<" "<<grp[i];
+    }
+    return os;
+  }
   void autodetect_groups(const Eigen::MatrixXcd &couplings){
     grp.clear(); grp.resize(couplings.rows(),-1);
     Ngrps=0;
@@ -44,26 +51,27 @@ class Coupling_Groups{
     }
 
 #ifdef DEBUGF
-std::cout<<"autodetected groups "<<Ngrps<<":";
-for(size_t i=0; i<grp.size(); i++)std::cout<<" "<<grp[i];
-std::cout<<std::endl;
+    print();
 #endif
   }
-  Coupling_Groups(const Eigen::MatrixXcd &couplings_){
+  void setup_from_matrix(const Eigen::MatrixXcd &couplings_){
     autodetect_groups(couplings_);
     update_Ngrps();
+  }
+  Coupling_Groups(const Eigen::MatrixXcd &couplings_){
+    setup_from_matrix(couplings_);
   }
   Coupling_Groups(const std::vector<int> &gr) : grp(gr){
     update_Ngrps();
   }
-  Coupling_Groups(int N){
+  Coupling_Groups(int N=2){
     set_default(N);
   }
 };
 
 
 
-class Coupling_Groups_Liouville{
+class Coupling_Groups_Liouville: public Printable{
 public:
   int Ngrps;
   std::vector<int> grp;
@@ -74,8 +82,8 @@ public:
 
 
   void calculate(const Coupling_Groups &groups){
-    int N=groups.grp.size();
-    int NL=N*N;
+    size_t N=groups.grp.size();
+    size_t NL=N*N;
     grp.resize(NL);
     for(size_t i=0; i<N; i++){
       for(size_t j=0; j<N; j++){
@@ -87,7 +95,13 @@ public:
   void set_default(int N){
     calculate(Coupling_Groups(N));
   }
-
+  virtual std::ostream &print(std::ostream &os=std::cout)const{
+    os<<Ngrps<<":";
+    for(size_t i=0; i<grp.size(); i++){
+      os<<" "<<grp[i];
+    }
+    return os;
+  }
   Coupling_Groups_Liouville(const Coupling_Groups &groups){
     calculate(groups);
   }

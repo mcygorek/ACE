@@ -30,15 +30,15 @@ void PowerURV_tall(Eigen::MatrixXcd &A, Eigen::MatrixXcd &L, Eigen::MatrixXcd &R
     return; 
   }
 
-  bool silent=!(debug_mode&1);
+//  bool silent=!(debug_mode&1);
   bool test_result=(debug_mode&2);
-  bool print_pivots=(debug_mode&4);
+//  bool print_pivots=(debug_mode&4);
   bool print_matrices=(debug_mode&8);
-  bool nopivot=(debug_mode &16);
-  double compare_zero=1e-16;
+//  bool nopivot=(debug_mode &16);
+//  double compare_zero=1e-16;
 
-  int threshold_reached=-1;
-  double threshold_remainder=0.;
+//  int threshold_reached=-1;
+//  double threshold_remainder=0.;
   
   if(print_matrices){
     std::cout<<"Original matrix:"<<std::endl;

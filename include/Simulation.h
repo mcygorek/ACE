@@ -10,6 +10,7 @@
 #include "Simulation_Results.h"
 #include "FT_Output.h"
 #include "InitialState.h"
+#include "SpectralDensity_Selector.h"
 #include "RankCompressor_Selector.h"
 
 #include "InfluenceFunctional_Vector.h"
@@ -61,7 +62,7 @@ public:
       exit(1);
     }
 
-    int dim=prop.get_dim();
+//    int dim=prop.get_dim();
     size_t Nsteps=(te-ta)/dt;
 
 
@@ -72,13 +73,16 @@ public:
     Eigen::MatrixXcd Hamil=prop.get_Htot(ta);
     set_results(0, ta, rho, &Hamil);
     for(size_t step=1; step<=Nsteps; step++){
-      if(!silent)std::cout<<"step: "<<step<<"/"<<Nsteps<<std::endl;
+      if(!silent)std::cout<<"step: "<<step<<"/"<<Nsteps<<" "<<std::flush;
 
       double t_in=ta+(step-1)*dt;
       ADM.propagate(prop, IF, t_in, dt, step, compressor);
+      ADM.print_status(std::cout);
    
       Hamil=prop.get_Htot(t_in);
       set_results(step, t_in+dt, ADM.rho, &Hamil);
+
+      if(!silent)std::cout<<std::endl;
     }
     rho=ADM.rho;
   }

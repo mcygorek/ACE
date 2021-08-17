@@ -1,0 +1,20 @@
+te          50
+dt           1e-2
+threshold    1e-9
+dict_zero    1e-16
+
+add_single_mode_from_file 04_dispersive_kappa0.1.mparam1  { |0><0|_5}
+add_single_mode_from_file 04_dispersive_kappa0.1.mparam2  { |0><0|_5}
+add_single_mode_from_file 04_dispersive_kappa0.1.mparam3  { |0><0|_5}
+add_single_mode_from_file 04_dispersive_kappa0.1.mparam4  { |0><0|_5}
+
+initial  {|0><0|_2}
+add_Hamiltonian  {hbar/2.* (4*2+0.5) *pi/10 *sigma_x}
+
+add_Output {|1><1|_2}
+add_Output {|0><0|_2}
+add_Output {|0><1|_2}
+
+
+
+outfile 04_dispersive_kappa0.1.out

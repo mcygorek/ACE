@@ -61,9 +61,9 @@ public:
 //dict.set_default(2);
    
     Operators2x2 op;
-    Eigen::MatrixXcd HB_diag=OuterProduct(op.id(), op.ketbra(1,1));
-    Eigen::MatrixXcd HB_base=OuterProduct(op.ketbra(0,1), op.ketbra(1,0)) +
-                             OuterProduct(op.ketbra(1,0), op.ketbra(0,1));
+    Eigen::MatrixXcd HB_diag=otimes(op.id(), op.ketbra(1,1));
+    Eigen::MatrixXcd HB_base=otimes(op.ketbra(0,1), op.ketbra(1,0)) +
+                             otimes(op.ketbra(1,0), op.ketbra(0,1));
 
     for(int i=0; i<get_Nmodes(); i++){
       std::cout<<"Lead mode "<<i<<"/"<<get_Nmodes()<<std::endl;

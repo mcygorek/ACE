@@ -39,7 +39,7 @@ std::vector<std::complex<double> > slowFT_Simpson(const std::vector<std::complex
 
       for(int k=0; k<Nsubdiv; k++){
         double ddt=(2.*k+1.)*dt2;
-        double t=t0+ddt;
+//        double t=t0+ddt;
         std::complex<double> y=(in[j]+dy*ddt);
         eph*=deph;
         res+= 4./3.*dt2 * eph * y;

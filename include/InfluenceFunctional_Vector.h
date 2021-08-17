@@ -1,5 +1,5 @@
-#ifndef INFLUENCE_FUNCTIONAL_MPS_DEFINED_H
-#define INFLUENCE_FUNCTIONAL_MPS_DEFINED_H
+#ifndef INFLUENCE_FUNCTIONAL_VECTOR_DEFINED_H
+#define INFLUENCE_FUNCTIONAL_VECTOR_DEFINED_H
 
 #include <Eigen/Core>
 #include "SpectralDensity.h"
@@ -11,9 +11,9 @@ class InfluenceFunctional_Vector{
 public:
   double dt;
 
-  DiagBB diagBB;
   Coupling_Groups groups;
   Coupling_Groups_Liouville lgroups;
+  DiagBB diagBB;
  
   std::vector<Eigen::MatrixXcd> b;
 
@@ -31,7 +31,6 @@ public:
 
 
   void calculate(int n_max){
-    int NL=get_dim()*get_dim();
     if(n_max<0){
       std::cerr<<"n_max must not be negative!"<<std::endl;
       exit(1);
@@ -51,11 +50,21 @@ public:
   }
   InfluenceFunctional_Vector(int n_max_, double dt_, 
                       const Eigen::MatrixXcd &couplings_,
-                      RealFunctionPtr SD_, double temperature_)
+                      RealFunctionPtr SD_, double temperature_,
+                      bool noSubPS=false,
+                      double omega_min=0., double omega_max=50.,
+                      double E_shift_init=0.)
    : dt(dt_), groups(couplings_), lgroups(couplings_),
-     diagBB(Coupling_Groups(couplings_), couplings_, SD_, temperature_) {
+     diagBB(Coupling_Groups(couplings_), couplings_, SD_, temperature_, noSubPS, omega_min, omega_max, E_shift_init) {
 
 
+    calculate(n_max_);
+  }
+  InfluenceFunctional_Vector(int n_max_, double dt_, const DiagBB &diagBB_)
+   : dt(dt_), groups(diagBB_.groups), lgroups(diagBB_.groups),
+     diagBB(diagBB_) { 
+
+//    std::cout<<"InfluenceFunctional_Vector: groups: "<<groups<<" lgroups: "<<lgroups<<std::endl;
     calculate(n_max_);
   }
   ~InfluenceFunctional_Vector(){

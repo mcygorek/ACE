@@ -1,7 +1,7 @@
 #ifndef MULTITIMEOP_DEFINED_H
 #define MULTITIMEOP_DEFINED_H
 
-#include "OuterProduct.h"
+#include "otimes.h"
 
 class MultitimeOp{
 public:
@@ -39,13 +39,13 @@ public:
 
   void set(double t_, Eigen::MatrixXcd mat_fw, Eigen::MatrixXcd mat_bw){
     t=t_;
-//    op=OuterProduct(mat_fw, mat_bw.adjoint() );
+//    op=otimes(mat_fw, mat_bw.adjoint() );
 
     int dim=mat_fw.rows();
     Eigen::MatrixXcd id=Eigen::MatrixXcd::Identity(dim,dim);
 
-    op=OuterProduct(mat_fw, id) * OuterProduct(id,mat_bw );
-//    op=OuterProduct(mat_fw, id) * OuterProduct(id,mat_bw.adjoint() );
+    op=otimes(mat_fw, id) * otimes(id,mat_bw );
+//    op=otimes(mat_fw, id) * otimes(id,mat_bw.adjoint() );
 
 //std::cout<<"Test: Multitime: op: "<<std::endl<<op<<std::endl;
   } 

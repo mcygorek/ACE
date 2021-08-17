@@ -17,7 +17,7 @@ public:
   virtual int get_dim(int i) const =0; //dimension for index number i
   virtual int get_total_size() const{
     if(get_rank()<1)return 0;
-    int b=1; for(size_t i=0; i<get_rank(); i++) b*=get_dim(i);
+    int b=1; for(int i=0; i<get_rank(); i++) b*=get_dim(i);
     return b;
   }
   virtual void resize(const std::vector<int> &list) = 0;
@@ -27,7 +27,7 @@ public:
   void print_dims(std::ostream &os){
     if(get_rank()<1)return;
     os<<get_dim(0);
-    for(size_t i=1; i<get_rank(); i++){
+    for(int i=1; i<get_rank(); i++){
       os<<" "<<get_dim(i);
     }
   }
@@ -93,7 +93,7 @@ public:
 std::ostream & operator<<(std::ostream &os, const Tensor_Index & ti){
   if(ti.get_rank()<1)return os;
   os<<ti[0];
-  for(size_t i=1; i<ti.get_rank(); i++){ os<<" "<<ti[i];}
+  for(int i=1; i<ti.get_rank(); i++){ os<<" "<<ti[i];}
   return os;
 }
 
@@ -121,13 +121,13 @@ public:
   }
 
   int get_block_index(const Tensor_Index &ind) const{
-    if(ind.get_rank()!=dim.size()){
+    if(ind.get_rank()!=(int)dim.size()){
       std::cerr<<"Tensor_Dense: operator(): ind.get_rank()!=dim.size()!"<<std::endl;
       exit(1);
     }
     if(dim.size()<1)return 0.;
     int b=ind[0];
-    for(int n=1; n<dim.size(); n++){
+    for(size_t n=1; n<dim.size(); n++){
       b*=dim[n];
       b+=ind[n];
     }

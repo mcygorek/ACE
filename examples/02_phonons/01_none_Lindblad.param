@@ -1,0 +1,15 @@
+
+ta                    0
+dt                    1e-1
+te                   20
+Nintermediate        40
+
+add_Hamiltonian  {-1.5*|1><1|_2} 
+add_Pulse Gauss  7 5 {3*pi} 0   {|1><0|_2}  
+add_Lindblad     0.1         {|0><1|_2}
+
+
+
+
+outfile     01_none_Lindblad.out
+

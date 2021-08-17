@@ -2,6 +2,7 @@
 #define MPS_MATRIX_DEFINED_H
 
 #include <Eigen/Dense>
+#include "CheckMatrix.h"
 
 class MPS_Matrix{
 public:
@@ -37,6 +38,14 @@ public:
   void set_zero(){
     for(int i=0; i<dim_i*dim_d1*dim_d2; i++)mem[i]=0.;
   }
+  double max_element_abs()const{
+    double a=0;
+    int end=dim_d1*dim_d2*dim_i;
+    for(int x=0; x<end; x++){
+      if(abs(mem[x])>a)a=abs(mem[x]);
+    }
+    return a; 
+  }
   void print_dims(std::ostream &os=std::cout)const{
     os<<dim_i<<" "<<dim_d1<<" "<<dim_d2;
   }
@@ -53,7 +62,7 @@ public:
   }
   void copy(const MPS_Matrix &other){
     resize(other.dim_i, other.dim_d1, other.dim_d2);
-    for(size_t i=0; i<dim_i*dim_d1*dim_d2; i++){
+    for(int i=0; i<dim_i*dim_d1*dim_d2; i++){
       mem[i]=other.mem[i];
     }
   }
@@ -112,9 +121,9 @@ public:
     if(dim_d1<2)return;
     MPS_Matrix A(dim_i, 1, dim_d2);
     A.set_zero();
-    for(size_t i=0; i<dim_i; i++){
-      for(size_t d1=0; d1<dim_d1; d1++){
-        for(size_t d2=0; d2<dim_d2; d2++){
+    for(int i=0; i<dim_i; i++){
+      for(int d1=0; d1<dim_d1; d1++){
+        for(int d2=0; d2<dim_d2; d2++){
           A(i,0,d2)+=operator()(i,d1,d2);
         }
       }
@@ -125,9 +134,9 @@ public:
     if(dim_d2<2)return;
     MPS_Matrix A(dim_i, dim_d1, 1);
     A.set_zero();
-    for(size_t i=0; i<dim_i; i++){
-      for(size_t d1=0; d1<dim_d1; d1++){
-        for(size_t d2=0; d2<dim_d2; d2++){
+    for(int i=0; i<dim_i; i++){
+      for(int d1=0; d1<dim_d1; d1++){
+        for(int d2=0; d2<dim_d2; d2++){
           A(i,d1,0)+=operator()(i,d1,d2);
         }
       }

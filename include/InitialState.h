@@ -4,6 +4,7 @@
 #include "Parameters.h"
 #include "Operators.h"
 #include "ReadOperator.h"
+#include "ReadTemperature.h"
 
 class InitialState{
 public:

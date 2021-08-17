@@ -1,0 +1,539 @@
+Using initial state: 2LS ground state
+add_Hamiltonian: {-1.5*|1><1|_2}
+Hamiltonian: 
+   (0,0)    (0,0)
+   (0,0) (-1.5,0)
+timegrid: ta: 0 dt: 0.1 te: 20
+n_tot: 200 n_calc: 200 n_mem: 200 n_rep: 0
+use_rep: false  rep_replace: false  rep_regularize: false  rep_unit: -1
+Using compression: SVD: threshold: 5e-08 sum_threshold: 0 compress_maxk: 0
+Using initial state: 2LS ground state
+Calculating process tensor
+Calculating PT for Generator 'Boson'
+Add mode 0/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 1
+Maxdim: new contribution: 4
+Maxdim: after sweep: 4
+Add mode 1/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 4
+Maxdim: new contribution: 4
+Maxdim: after sweep: 9
+Add mode 2/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 9
+Maxdim: new contribution: 4
+Maxdim: after sweep: 12
+Add mode 3/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 12
+Maxdim: new contribution: 4
+Maxdim: after sweep: 15
+Add mode 4/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 15
+Maxdim: new contribution: 4
+Maxdim: after sweep: 18
+Add mode 5/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 18
+Maxdim: new contribution: 4
+Maxdim: after sweep: 21
+Add mode 6/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 21
+Maxdim: new contribution: 4
+Maxdim: after sweep: 24
+Add mode 7/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 24
+Maxdim: new contribution: 4
+Maxdim: after sweep: 27
+Add mode 8/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 27
+Maxdim: new contribution: 4
+Maxdim: after sweep: 29
+Add mode 9/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 29
+Maxdim: new contribution: 4
+Maxdim: after sweep: 30
+Add mode 10/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 30
+Maxdim: new contribution: 4
+Maxdim: after sweep: 35
+Add mode 11/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 35
+Maxdim: new contribution: 4
+Maxdim: after sweep: 35
+Add mode 12/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 35
+Maxdim: new contribution: 4
+Maxdim: after sweep: 40
+Add mode 13/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 40
+Maxdim: new contribution: 4
+Maxdim: after sweep: 41
+Add mode 14/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 41
+Maxdim: new contribution: 4
+Maxdim: after sweep: 42
+Add mode 15/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 42
+Maxdim: new contribution: 4
+Maxdim: after sweep: 45
+Add mode 16/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 45
+Maxdim: new contribution: 4
+Maxdim: after sweep: 50
+Add mode 17/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 50
+Maxdim: new contribution: 4
+Maxdim: after sweep: 51
+Add mode 18/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 51
+Maxdim: new contribution: 4
+Maxdim: after sweep: 51
+Add mode 19/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 51
+Maxdim: new contribution: 4
+Maxdim: after sweep: 52
+Add mode 20/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 52
+Maxdim: new contribution: 4
+Maxdim: after sweep: 56
+Add mode 21/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 56
+Maxdim: new contribution: 4
+Maxdim: after sweep: 57
+Add mode 22/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 57
+Maxdim: new contribution: 4
+Maxdim: after sweep: 58
+Add mode 23/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 58
+Maxdim: new contribution: 4
+Maxdim: after sweep: 61
+Add mode 24/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 61
+Maxdim: new contribution: 4
+Maxdim: after sweep: 62
+Add mode 25/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 62
+Maxdim: new contribution: 4
+Maxdim: after sweep: 62
+Add mode 26/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 62
+Maxdim: new contribution: 4
+Maxdim: after sweep: 65
+Add mode 27/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 65
+Maxdim: new contribution: 4
+Maxdim: after sweep: 66
+Add mode 28/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 66
+Maxdim: new contribution: 4
+Maxdim: after sweep: 67
+Add mode 29/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 67
+Maxdim: new contribution: 4
+Maxdim: after sweep: 67
+Add mode 30/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 67
+Maxdim: new contribution: 4
+Maxdim: after sweep: 70
+Add mode 31/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 70
+Maxdim: new contribution: 4
+Maxdim: after sweep: 71
+Add mode 32/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 71
+Maxdim: new contribution: 4
+Maxdim: after sweep: 73
+Add mode 33/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 73
+Maxdim: new contribution: 4
+Maxdim: after sweep: 75
+Add mode 34/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 75
+Maxdim: new contribution: 4
+Maxdim: after sweep: 77
+Add mode 35/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 77
+Maxdim: new contribution: 4
+Maxdim: after sweep: 77
+Add mode 36/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 77
+Maxdim: new contribution: 4
+Maxdim: after sweep: 79
+Add mode 37/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 79
+Maxdim: new contribution: 4
+Maxdim: after sweep: 80
+Add mode 38/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 80
+Maxdim: new contribution: 4
+Maxdim: after sweep: 82
+Add mode 39/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 82
+Maxdim: new contribution: 4
+Maxdim: after sweep: 82
+Add mode 40/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 82
+Maxdim: new contribution: 4
+Maxdim: after sweep: 84
+Add mode 41/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 84
+Maxdim: new contribution: 4
+Maxdim: after sweep: 85
+Add mode 42/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 85
+Maxdim: new contribution: 4
+Maxdim: after sweep: 85
+Add mode 43/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 85
+Maxdim: new contribution: 4
+Maxdim: after sweep: 88
+Add mode 44/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 88
+Maxdim: new contribution: 4
+Maxdim: after sweep: 90
+Add mode 45/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 90
+Maxdim: new contribution: 4
+Maxdim: after sweep: 90
+Add mode 46/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 90
+Maxdim: new contribution: 4
+Maxdim: after sweep: 93
+Add mode 47/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 93
+Maxdim: new contribution: 4
+Maxdim: after sweep: 93
+Add mode 48/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 93
+Maxdim: new contribution: 4
+Maxdim: after sweep: 93
+Add mode 49/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 93
+Maxdim: new contribution: 4
+Maxdim: after sweep: 95
+Add mode 50/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 95
+Maxdim: new contribution: 4
+Maxdim: after sweep: 97
+Add mode 51/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 97
+Maxdim: new contribution: 4
+Maxdim: after sweep: 98
+Add mode 52/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 98
+Maxdim: new contribution: 4
+Maxdim: after sweep: 99
+Add mode 53/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 99
+Maxdim: new contribution: 4
+Maxdim: after sweep: 101
+Add mode 54/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 101
+Maxdim: new contribution: 4
+Maxdim: after sweep: 102
+Add mode 55/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 102
+Maxdim: new contribution: 4
+Maxdim: after sweep: 104
+Add mode 56/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 104
+Maxdim: new contribution: 4
+Maxdim: after sweep: 106
+Add mode 57/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 106
+Maxdim: new contribution: 4
+Maxdim: after sweep: 107
+Add mode 58/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 107
+Maxdim: new contribution: 4
+Maxdim: after sweep: 108
+Add mode 59/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 108
+Maxdim: new contribution: 4
+Maxdim: after sweep: 109
+Add mode 60/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 109
+Maxdim: new contribution: 4
+Maxdim: after sweep: 111
+Add mode 61/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 111
+Maxdim: new contribution: 4
+Maxdim: after sweep: 111
+Add mode 62/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 111
+Maxdim: new contribution: 4
+Maxdim: after sweep: 112
+Add mode 63/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 112
+Maxdim: new contribution: 4
+Maxdim: after sweep: 114
+Add mode 64/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 114
+Maxdim: new contribution: 4
+Maxdim: after sweep: 115
+Add mode 65/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 115
+Maxdim: new contribution: 4
+Maxdim: after sweep: 117
+Add mode 66/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 117
+Maxdim: new contribution: 4
+Maxdim: after sweep: 119
+Add mode 67/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 119
+Maxdim: new contribution: 4
+Maxdim: after sweep: 121
+Add mode 68/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 121
+Maxdim: new contribution: 4
+Maxdim: after sweep: 122
+Add mode 69/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 122
+Maxdim: new contribution: 4
+Maxdim: after sweep: 123
+Add mode 70/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 123
+Maxdim: new contribution: 4
+Maxdim: after sweep: 125
+Add mode 71/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 125
+Maxdim: new contribution: 4
+Maxdim: after sweep: 126
+Add mode 72/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 126
+Maxdim: new contribution: 4
+Maxdim: after sweep: 126
+Add mode 73/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 126
+Maxdim: new contribution: 4
+Maxdim: after sweep: 128
+Add mode 74/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 128
+Maxdim: new contribution: 4
+Maxdim: after sweep: 128
+Add mode 75/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 128
+Maxdim: new contribution: 4
+Maxdim: after sweep: 130
+Add mode 76/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 130
+Maxdim: new contribution: 4
+Maxdim: after sweep: 132
+Add mode 77/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 132
+Maxdim: new contribution: 4
+Maxdim: after sweep: 133
+Add mode 78/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 133
+Maxdim: new contribution: 4
+Maxdim: after sweep: 134
+Add mode 79/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 134
+Maxdim: new contribution: 4
+Maxdim: after sweep: 135
+Add mode 80/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 135
+Maxdim: new contribution: 4
+Maxdim: after sweep: 136
+Add mode 81/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 136
+Maxdim: new contribution: 4
+Maxdim: after sweep: 137
+Add mode 82/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 137
+Maxdim: new contribution: 4
+Maxdim: after sweep: 138
+Add mode 83/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 138
+Maxdim: new contribution: 4
+Maxdim: after sweep: 139
+Add mode 84/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 139
+Maxdim: new contribution: 4
+Maxdim: after sweep: 140
+Add mode 85/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 140
+Maxdim: new contribution: 4
+Maxdim: after sweep: 141
+Add mode 86/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 141
+Maxdim: new contribution: 4
+Maxdim: after sweep: 143
+Add mode 87/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 143
+Maxdim: new contribution: 4
+Maxdim: after sweep: 144
+Add mode 88/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 144
+Maxdim: new contribution: 4
+Maxdim: after sweep: 145
+Add mode 89/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 145
+Maxdim: new contribution: 4
+Maxdim: after sweep: 146
+Add mode 90/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 146
+Maxdim: new contribution: 4
+Maxdim: after sweep: 147
+Add mode 91/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 147
+Maxdim: new contribution: 4
+Maxdim: after sweep: 148
+Add mode 92/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 148
+Maxdim: new contribution: 4
+Maxdim: after sweep: 148
+Add mode 93/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 148
+Maxdim: new contribution: 4
+Maxdim: after sweep: 150
+Add mode 94/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 150
+Maxdim: new contribution: 4
+Maxdim: after sweep: 151
+Add mode 95/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 151
+Maxdim: new contribution: 4
+Maxdim: after sweep: 152
+Add mode 96/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 152
+Maxdim: new contribution: 4
+Maxdim: after sweep: 154
+Add mode 97/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 154
+Maxdim: new contribution: 4
+Maxdim: after sweep: 154
+Add mode 98/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 154
+Maxdim: new contribution: 4
+Maxdim: after sweep: 154
+Add mode 99/100
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 154
+Maxdim: new contribution: 4
+Maxdim: after sweep: 156
+Writing process tensor to binary '04_calculate_photon_PT.pt'
+0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+sz: 200
+Calculating
+	Command being timed: "ACE 04_calculate_photon_PT.param"
+	User time (seconds): 48073.10
+	System time (seconds): 218.22
+	Percent of CPU this job got: 124%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 10:46:42
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 2155156
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 180487903
+	Voluntary context switches: 128077
+	Involuntary context switches: 274079
+	Swaps: 0
+	File system inputs: 8
+	File system outputs: 1316728
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

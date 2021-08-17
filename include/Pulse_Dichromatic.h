@@ -1,5 +1,5 @@
 #ifndef PULSE_DICHROMATIC_DEFINED_H
-#define PULSE_DEFINED_H
+#define PULSE_DICHROMATIC_DEFINED_H
 
 #include "Pulse.h"
 

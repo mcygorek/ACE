@@ -31,12 +31,14 @@ public:
       exit(1);
     }
   }
+  virtual void print_status(std::ostream &os=std::cout)const{
+  }
 
   void update_rho(int step){
     //Note: initialization (step 0): n_mem_eff=1
     //      step 1: after special contraction n_mem_eff=1
     //      step 2: after expansion n_mem_eff=2 ...
-    size_t n_mem_eff=step;
+    int n_mem_eff=step;
     if(step<1)n_mem_eff=1;
     if(n_mem_eff>get_n_max())n_mem_eff=get_n_max();
     int NL=get_NL();
@@ -44,8 +46,8 @@ public:
 
     int Ngrps2=get_Ngrps2();
 
-    size_t back_blocksize=1;
-    for(size_t l=1; l<n_mem_eff; l++)back_blocksize*=Ngrps2;
+    int back_blocksize=1;
+    for(int l=1; l<n_mem_eff; l++)back_blocksize*=Ngrps2;
 
     rho=Eigen::MatrixXcd::Zero(N,N);
     for(int i=0; i<N; i++){
@@ -74,8 +76,8 @@ public:
     }
 
     std::vector<int> grp2(NL);
-    for(size_t i=0; i<N; i++){
-      for(size_t j=0; j<N; j++){
+    for(int i=0; i<N; i++){
+      for(int j=0; j<N; j++){
         grp2[i*N+j]=IF.get_grp(i)*Ngrps+IF.get_grp(j);
       }
     }

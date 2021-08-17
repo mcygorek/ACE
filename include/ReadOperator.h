@@ -68,14 +68,14 @@ public:
         std::string stmp=Reader::find_matching_brace_block_complain(ss,'{','}');
         M=ReadOperator("{"+stmp+"}");
         while(Reader::find_matching_brace_block(ss, stmp, '{', '}')){
-          Eigen::MatrixXcd M2=OuterProduct(M, ReadOperator("{"+stmp+"}"));
+          Eigen::MatrixXcd M2=otimes(M, ReadOperator("{"+stmp+"}"));
           M=M2;
         }
         return M;
       }
     }
 
-    int colon_pos=str.find_first_of(':');
+    size_t colon_pos=str.find_first_of(':');
     if(colon_pos==std::string::npos || colon_pos==0){
       std::cerr<<"Error reading operator: no ':' found!"<<std::endl;
       exit(1);

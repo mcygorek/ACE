@@ -304,7 +304,7 @@ public:
     //env_ops:
     Eigen::VectorXcd newtrace=Eigen::VectorXcd::Zero(M*M);
     for(int i=0; i<M; i++)newtrace(i*M+i)=1;
-    Eigen::VectorXcd tracev=VectorOuterProduct(env_ops[0], newtrace);
+    Eigen::VectorXcd tracev=Vector_otimes(env_ops[0], newtrace);
 
     env_ops[0]=Eigen::VectorXcd::Zero(rw.size());
 //    for(size_t i=0; i<rw.size(); i++)env_ops[0](i)=tracev.dot(rw[i].first);

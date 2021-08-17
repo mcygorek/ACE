@@ -2,6 +2,14 @@ htfcss: cmbx  font-weight: bold;
 htfcss: cmbxsl  font-weight: bold; font-style: oblique;
 htfcss: cmbx  font-weight: bold;
 htfcss: cmbxsl  font-weight: bold; font-style: oblique;
+htfcss: ecbx  font-weight: bold;
+htfcss: ecsx  font-weight: bold;
+htfcss: ecbi  font-weight: bold;   font-style: italic;
+htfcss: ecit  font-style: italic; font-family: monospace,monospace;
+htfcss: ecss  font-family: sans-serif;
+htfcss: ecff  font-family: fantasy;
+htfcss: ecti  font-style: italic;
+htfcss: ectt  font-family: monospace,monospace;
 htfcss: cmmi font-style: italic;
 htfcss: cmmib font-style: italic; font-weight: bold;
 htfcss: ecbx  font-weight: bold;
@@ -180,15 +188,25 @@ Css: .figure img.graphics {margin-left:10%;}
 --- needs --- documentation.idv[2] ==> documentation0x.png ---
 --- needs --- documentation.idv[4] ==> documentation1x.png ---
 --- needs --- documentation.idv[6] ==> documentation2x.png ---
-File: figs/example1.png
-File: figs/example2.png
 --- needs --- documentation.idv[8] ==> documentation3x.png ---
 --- needs --- documentation.idv[10] ==> documentation4x.png ---
-File: figs/plot_hopping_N2.png
-File: figs/plot_hopping_N10.png
+File: figs/example1.png
+File: figs/example2.png
 --- needs --- documentation.idv[12] ==> documentation5x.png ---
 --- needs --- documentation.idv[14] ==> documentation6x.png ---
 --- needs --- documentation.idv[16] ==> documentation7x.png ---
+--- needs --- documentation.idv[18] ==> documentation8x.png ---
+File: figs/plot_hopping_N2.png
+File: figs/plot_hopping_N10.png
+--- needs --- documentation.idv[20] ==> documentation9x.png ---
+--- needs --- documentation.idv[22] ==> documentation10x.png ---
+--- needs --- documentation.idv[24] ==> documentation11x.png ---
+--- needs --- documentation.idv[26] ==> documentation12x.png ---
+--- needs --- documentation.idv[28] ==> documentation13x.png ---
+--- needs --- documentation.idv[29] ==> documentation14x.png ---
+--- needs --- documentation.idv[30] ==> documentation15x.png ---
+--- needs --- documentation.idv[31] ==> documentation16x.png ---
+--- needs --- documentation.idv[32] ==> documentation17x.png ---
 --- characters ---
 Font("cmr","10","10","109")
 Font("ecrm","1095","10","100")
@@ -202,12 +220,15 @@ Font("cmmi","10","10","109")
 Font("cmmi","8","8","100")
 Font("cmmi","6","6","100")
 Font("cmsy","10","10","109")
---- needs --- documentation.idv[18] ==> cmsy10-51.png ---
---- needs --- documentation.idv[19] ==> cmsy10-4d.png ---
---- needs --- documentation.idv[20] ==> cmsy10-49.png ---
+--- needs --- documentation.idv[34] ==> cmsy10-51.png ---
+--- needs --- documentation.idv[35] ==> cmsy10-4d.png ---
+--- needs --- documentation.idv[36] ==> cmsy10-4c.png ---
+--- needs --- documentation.idv[37] ==> cmsy10-49.png ---
 Font("cmsy","8","8","100")
 Font("cmsy","6","6","100")
 Font("cmex","10","10","109")
 Font("msbm","10","10","109")
+Font("msbm","10","10","80")
+Font("ecrm","0800","8","100")
 Font("cmbx","10","10","109")
 Font("cmbx","8","8","100")

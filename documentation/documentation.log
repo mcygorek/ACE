@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=latex 2020.6.17)  10 JAN 2021 15:46
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=latex 2020.6.17)  28 JUL 2021 17:47
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -853,61 +853,75 @@ LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 1
 (/usr/share/texlive/texmf-dist/tex/latex/base/t1cmtt.fd
 File: t1cmtt.fd 2019/12/16 v2.5j Standard LaTeX font definitions
 )
-LaTeX Font Info:    Trying to load font information for U+msa on input line 21.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 20.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 21.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 20.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-l. 21 Writing documentation.idv[1] (documentation0x.png)
-l. 36 Writing documentation.idv[2] (documentation1x.png)
+l. 20 Writing documentation.idv[1] (documentation0x.png)
+l. 26 Writing documentation.idv[2] (documentation1x.png)
  [1
 
 ]
-l. 55 Writing documentation.idv[3] (documentation2x.png)
+l. 45 Writing documentation.idv[3] (documentation2x.png)
+l. 65 Writing documentation.idv[4] (documentation3x.png)
  [2] [3] [4]
 [5] [6] [7]
-l. 192 --- needs --- figs/example1.png ---
- [8] [9] [10] [11]
-l. 244 --- needs --- figs/example2.png ---
-l. 251 Writing documentation.idv[4] (documentation3x.png)
- [12]
-l. 280 Writing documentation.idv[5] (documentation4x.png)
- [13]
-l. 334 --- needs --- figs/plot_hopping_N2.png ---
- [14]
-l. 365 --- needs --- figs/plot_hopping_N10.png ---
-l. 374 Writing documentation.idv[6] (documentation5x.png)
- [15]
-l. 406 Writing documentation.idv[7] (documentation6x.png)
- [16]
-l. 418 Writing documentation.idv[8] (documentation7x.png)
+l. 189 Writing documentation.idv[5] (documentation4x.png)
+ [8] [9] [10]
+l. 284 --- needs --- figs/example1.png ---
+ [11] [12] [13] [14]
+l. 336 --- needs --- figs/example2.png ---
+l. 343 Writing documentation.idv[6] (documentation5x.png)
+l. 351 Writing documentation.idv[7] (documentation6x.png)
+l. 353 Writing documentation.idv[8] (documentation7x.png)
+ [15] [16]
+l. 425 Writing documentation.idv[9] (documentation8x.png)
  [17] [18]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 504.
+l. 476 --- needs --- figs/plot_hopping_N2.png ---
  [19]
-Package atveryend Info: Executing hook `AfterLastShipout' on input line 504.
+l. 507 --- needs --- figs/plot_hopping_N10.png ---
+l. 517 Writing documentation.idv[10] (documentation9x.png)
+ [20]
+[21] [22] [23]
+l. 617 Writing documentation.idv[11] (documentation10x.png)
+ [24] [25] [26]
+l. 677 Writing documentation.idv[12] (documentation11x.png)
+ [27]
+l. 704 Writing documentation.idv[13] (documentation12x.png)
+ [28]
+l. 754 Writing documentation.idv[14] (documentation13x.png)
+l. 755 Writing documentation.idv[15] (documentation14x.png)
+l. 760 Writing documentation.idv[16] (documentation15x.png)
+l. 761 Writing documentation.idv[17] (documentation16x.png)
+l. 763 Writing documentation.idv[18] (documentation17x.png)
+ [29] [30] [31] [32]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 842.
+ [33]
+Package atveryend Info: Executing hook `AfterLastShipout' on input line 842.
 \BKM@file=\write5
 \openout5 = `documentation.out.ps'.
 
 
 (./documentation.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 504.
-Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 504.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 504.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 842.
+Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 842.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 842.
  ) 
 Here is how much of TeX's memory you used:
- 13289 strings out of 483058
- 205003 string characters out of 5962327
- 680448 words of memory out of 5000000
- 28025 multiletter control sequences out of 15000+600000
- 545025 words of font info for 55 fonts, out of 8000000 for 9000
+ 13310 strings out of 483058
+ 205332 string characters out of 5962327
+ 682466 words of memory out of 5000000
+ 28044 multiletter control sequences out of 15000+600000
+ 546555 words of font info for 57 fonts, out of 8000000 for 9000
  59 hyphenation exceptions out of 8191
  43i,10n,57p,10597b,465s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on documentation.dvi (19 pages, 65360 bytes).
+Output written on documentation.dvi (33 pages, 114964 bytes).

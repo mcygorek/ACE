@@ -74,10 +74,10 @@ void QRP(Eigen::MatrixXcd &A, Eigen::MatrixXcd &Q, Eigen::MatrixXcd &R, std::vec
   }
 */
 
-  bool silent=!(debug_mode&1);
+//  bool silent=!(debug_mode&1);
   bool nopivot=(debug_mode &16);
   int threshold_reached=-1;
-  double threshold_remainder=0.;
+//  double threshold_remainder=0.;
   
 //-----------------------
   
@@ -224,7 +224,7 @@ void QLV_with_debug(Eigen::MatrixXcd &A, Eigen::MatrixXcd &Q, Eigen::MatrixXcd &
 
   bool print_matrices=(debug_mode&8);
   bool test_result=(debug_mode&2);
-  bool print_pivots=(debug_mode&4);
+//  bool print_pivots=(debug_mode&4);
   bool compare_svd=(debug_mode &32);
   if(print_matrices){
     std::cout<<"Original matrix:"<<std::endl;

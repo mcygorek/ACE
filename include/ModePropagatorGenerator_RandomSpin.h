@@ -15,8 +15,10 @@ public:
 
   double get_J(int k)const{ return J[k]; }
 
+  virtual std::string name()const{return std::string("RandomSpin");}
+
   virtual int get_N()const{ return 2; }
-  virtual int get_N_modes()const{ return J.size(); }
+//  virtual int get_N_modes()const{ return J.size(); }
 
   static bool compare_abs_smaller(const double &p1,
                           const double &p2){
@@ -50,6 +52,8 @@ public:
 
   void setup(int Nmod, double J_max, double J_min=0, size_t seed=1){
 
+    set_N_modes(Nmod);
+
     std::srand(seed);
 
     J.clear();
@@ -69,6 +73,7 @@ public:
  }
 
   virtual void setup(Parameters &param){
+    setup_default(param);
     int N_modes=param.get_as_size_t("RandomSpin_N_modes", 0);
 
     if(!param.is_specified("RandomSpin_J_max")){
@@ -180,14 +185,14 @@ public:
    
     Operators2x2 op;
     Eigen::MatrixXcd HB_base = 0.25 * J[k] * (
-        OuterProduct(op.sigma_x(), op.sigma_x())
-      + OuterProduct(op.sigma_y(), op.sigma_y())
-      + OuterProduct(op.sigma_z(), op.sigma_z()));
+        otimes(op.sigma_x(), op.sigma_x())
+      + otimes(op.sigma_y(), op.sigma_y())
+      + otimes(op.sigma_z(), op.sigma_z()));
 
     Eigen::MatrixXcd HB_B = 0.5 *  (
-        B_eff[k](0) * OuterProduct(op.id(), op.sigma_x())
-      + B_eff[k](1) * OuterProduct(op.id(), op.sigma_y())
-      + B_eff[k](2) * OuterProduct(op.id(), op.sigma_z()));
+        B_eff[k](0) * otimes(op.id(), op.sigma_x())
+      + B_eff[k](1) * otimes(op.id(), op.sigma_y())
+      + B_eff[k](2) * otimes(op.id(), op.sigma_z()));
 
 //    std::cout<<"HB_base["<<k<<"]:"<<std::endl<<HB_base<<std::endl;
 

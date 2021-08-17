@@ -52,7 +52,7 @@ public:
       exit(1);
     }
     for(size_t i=0; i<FT_columns.size(); i++){
-      if(FT_columns[i]>=res[0].second.size()){
+      if(FT_columns[i]>=(int)res[0].second.size()){
         std::cerr<<"Error: FT_Output: column index "<<FT_columns[i]<<" too large!"<<std::endl;
         exit(1);
       }
@@ -90,7 +90,7 @@ public:
     //FT column by column:
     for(size_t c=0; c<FT_columns.size(); c++){
       std::vector<std::complex<double> > in;
-      for(int l=ignore_first; l<res.size(); l++){
+      for(size_t l=ignore_first; l<res.size(); l++){
         in.push_back(res[l].second[FT_columns[c]]);
       }
       std::vector<std::complex<double> > sp=slowFT(in, FT_param);

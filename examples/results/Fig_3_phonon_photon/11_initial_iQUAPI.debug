@@ -1,0 +1,101 @@
+Rotate system part of coupling operator 
+(0,0) (0,0)
+(0,0) (1,0)
+to 
+(0,0) (0,0)
+(0,0) (1,0)
+Using explicit initial state: '{|1><1|_2}'
+(0,0) (0,0)
+(0,0) (1,0)
+add_Lindblad: 0.1 {|0><1|_2}
+Setting up influence functional
+Starting calculation
+step: 1/66 
+step: 2/66 
+step: 3/66 
+step: 4/66 
+step: 5/66 
+step: 6/66 
+step: 7/66 
+step: 8/66 
+step: 9/66 
+step: 10/66 
+step: 11/66 
+step: 12/66 
+step: 13/66 
+step: 14/66 
+step: 15/66 
+step: 16/66 
+step: 17/66 
+step: 18/66 
+step: 19/66 
+step: 20/66 
+step: 21/66 
+step: 22/66 
+step: 23/66 
+step: 24/66 
+step: 25/66 
+step: 26/66 
+step: 27/66 
+step: 28/66 
+step: 29/66 
+step: 30/66 
+step: 31/66 
+step: 32/66 
+step: 33/66 
+step: 34/66 
+step: 35/66 
+step: 36/66 
+step: 37/66 
+step: 38/66 
+step: 39/66 
+step: 40/66 
+step: 41/66 
+step: 42/66 
+step: 43/66 
+step: 44/66 
+step: 45/66 
+step: 46/66 
+step: 47/66 
+step: 48/66 
+step: 49/66 
+step: 50/66 
+step: 51/66 
+step: 52/66 
+step: 53/66 
+step: 54/66 
+step: 55/66 
+step: 56/66 
+step: 57/66 
+step: 58/66 
+step: 59/66 
+step: 60/66 
+step: 61/66 
+step: 62/66 
+step: 63/66 
+step: 64/66 
+step: 65/66 
+step: 66/66 
+	Command being timed: "iQUAPI 11_initial_iQUAPI.param_"
+	User time (seconds): 2.76
+	System time (seconds): 0.04
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:02.83
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 151236
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 42937
+	Voluntary context switches: 12
+	Involuntary context switches: 29
+	Swaps: 0
+	File system inputs: 8
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

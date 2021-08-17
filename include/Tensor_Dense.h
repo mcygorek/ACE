@@ -29,13 +29,13 @@ public:
   } */
 
   int get_block_index(const Tensor_Index &ind) const{
-    if(ind.get_rank()!=dim.size()){
+    if(ind.get_rank()!=(int)dim.size()){
       std::cerr<<"Tensor_Dense: operator(): ind.get_rank()!=dim.size()!"<<std::endl;
       exit(1);
     } 
     if(dim.size()<1)return 0.;
     int b=ind[0];
-    for(int n=1; n<dim.size(); n++){
+    for(size_t n=1; n<dim.size(); n++){
       b*=dim[n];
       b+=ind[n];
     }

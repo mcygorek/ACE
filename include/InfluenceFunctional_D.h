@@ -54,7 +54,7 @@ public:
     int NL=diagBB.get_dim()*diagBB.get_dim();
     double dt=tgrid.dt;
     int n_tot=tgrid.n_tot;
-    int n_max=tgrid.n_calc;
+    int n_max=tgrid.n_mem; //tgrid.n_calc;
 
     std::cout<<"InfluenceFunctional_D: Calculating single line: "<<n_max<<" "<<n_tot<<std::endl;
     IF_Line_MPS_low_to_high line(n_max, dt, diagBB, n_tot);
@@ -65,8 +65,8 @@ public:
     for(int n=1; n<n_tot; n++){
       std::cout<<"calculate_diagBB: "<<n<<"/"<<n_tot<<std::endl;
       std::cout<<"max_dim: "<<get_max_dim()<<std::endl;
-      int n_cut=n_max;
-      if(n_tot-n < n_max)n_cut=n_tot-n;
+//      int n_cut=n_max;
+//      if(n_tot-n < n_max)n_cut=n_tot-n;
 
       line.a.pop_back();
       MPS_Matrix ma(line.a.back().dim_i, line.a.back().dim_d1, 1);

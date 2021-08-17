@@ -5,7 +5,7 @@
 #include <unsupported/Eigen/MatrixFunctions>
 #include "Constants.h"
 #include "FreePropagator.h"
-#include "OuterProduct.h"
+#include "otimes.h"
 #include <iostream>
 #include <cstdlib>
 

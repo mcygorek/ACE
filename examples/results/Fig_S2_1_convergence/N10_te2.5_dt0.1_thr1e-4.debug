@@ -1,0 +1,82 @@
+Using initial state: 2LS ground state
+timegrid: ta: 0 dt: 0.1 te: 2.5
+n_tot: 25 n_calc: 25 n_mem: 25 n_rep: 0
+use_rep: false  rep_replace: false  rep_regularize: false  rep_unit: -1
+Using compression: SVD: threshold: 0.0001 sum_threshold: 0 compress_maxk: 0
+Using initial state: 2LS ground state
+Calculating process tensor
+Calculating PT for Generator 'Fermion'
+Add mode 0/10
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 1
+Maxdim: new contribution: 4
+Maxdim: after sweep: 4
+Add mode 1/10
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 4
+Maxdim: new contribution: 4
+Maxdim: after sweep: 8
+Add mode 2/10
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 8
+Maxdim: new contribution: 4
+Maxdim: after sweep: 9
+Add mode 3/10
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 9
+Maxdim: new contribution: 4
+Maxdim: after sweep: 11
+Add mode 4/10
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 11
+Maxdim: new contribution: 4
+Maxdim: after sweep: 13
+Add mode 5/10
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 13
+Maxdim: new contribution: 4
+Maxdim: after sweep: 13
+Add mode 6/10
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 13
+Maxdim: new contribution: 4
+Maxdim: after sweep: 16
+Add mode 7/10
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 16
+Maxdim: new contribution: 4
+Maxdim: after sweep: 19
+Add mode 8/10
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 19
+Maxdim: new contribution: 4
+Maxdim: after sweep: 19
+Add mode 9/10
+InfluenceFunctional_OD: Dictionary(16): 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Maxdim: before combination: 19
+Maxdim: new contribution: 4
+Maxdim: after sweep: 19
+Calculating
+	Command being timed: "/home/cygo/HW/ACE/bin/ACE N10_te2.5_dt0.1_thr1e-4.param"
+	User time (seconds): 5.16
+	System time (seconds): 0.02
+	Percent of CPU this job got: 396%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.30
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 29776
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 5019
+	Voluntary context switches: 133
+	Involuntary context switches: 92
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

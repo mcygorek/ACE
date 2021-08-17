@@ -1,7 +1,7 @@
 #ifndef IF_OD_ABSTRACT_DEFINED_H
 #define IF_OD_ABSTRACT_DEFINED_H
 
-#include "OuterProduct.h"
+#include "otimes.h"
 #include "IF_TimeGrid.h"
 #include "IF_OD_Dictionary.h"
 
@@ -21,6 +21,9 @@ public:
   //Check if MPO chain is long enough
   virtual void check_within_limits(int n)const=0;
 
+  virtual int get_sys_dim()const{
+    return dict.get_N();
+  }
 
   virtual ~IF_OD_Abstract(){}
 };

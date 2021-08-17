@@ -60,7 +60,7 @@ public:
   }
 };
 
-
+/*
 Eigen::MatrixXcd otimes(const Eigen::MatrixXcd &A, const Eigen::MatrixXcd &B){
   Eigen::MatrixXcd C=Eigen::MatrixXcd::Zero(A.rows()*B.rows(), A.cols()*B.cols());
   for(int i=0; i<A.rows(); i++){
@@ -74,9 +74,10 @@ Eigen::MatrixXcd otimes(const Eigen::MatrixXcd &A, const Eigen::MatrixXcd &B){
   }
   return C;
 }
+*/
 
 #include "Operators_DotCavity.h"
 #include "Operators_Multi2lvl.h"
-#include "OuterProduct.h"
+#include "otimes.h"
 
 #endif

@@ -1,0 +1,22 @@
+ta                    0
+dt                    1e-2
+te                   20
+
+threshold             1e-13
+IF_print_timesteps true
+
+
+initial  { 0.5 * ( Id_2 + |0><1|_2 + |1><0|_2 ) }  
+
+RandomSpin_N_modes        100
+RandomSpin_J_max            0.01
+RandomSpin_J_min            0.01
+
+#RandomSpin_set_initial_dir 0 0 1
+
+outfile            03_unpolarised_N100_thr1e-13.out
+
+add_Output  {0.5*  ( |0><1|_2 + |1><0|_2 ) }      #Sx
+add_Output  {0.5*i*( |1><0|_2 - |0><1|_2 ) }      #Sy
+add_Output  {0.5*  ( |1><1|_2 - |0><0|_2 ) }      #Sz
+

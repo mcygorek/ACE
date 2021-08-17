@@ -15,6 +15,7 @@
 */
 
 template <typename T> class Smart_Ptr{
+public:
   size_t *counter;
   T *obj;
 
@@ -69,29 +70,69 @@ public:
     ++(*counter);
     obj=p.obj;
   }
+
+
   Smart_Ptr<T> & operator=(const Smart_Ptr<T> &p){ 
+
+#ifdef DEBUG_SMARTPTR
+std::cout<<"SMART POINTER ASSIGNMENT OPERATOR (from other Smart_Ptr) CALLED!"<<std::endl;
+std::cout<<"BEFORE: get_count(): "<<p.get_count()<<std::endl;
+#endif
+
     dealloc();
     copy(p);
+
+#ifdef DEBUG_SMARTPTR
+std::cout<<"NOW: get_count(): "<<get_count()<<" other: "<<p.get_count()<<std::endl;
+#endif
+
     return *this;
   }
+
   Smart_Ptr(const Smart_Ptr<T> &p){
+
+#ifdef DEBUG_SMARTPTR
+std::cout<<"SMART POINTER COPY CONSTRUCTOR CALLED!"<<std::endl;
+std::cout<<"BEFORE: get_count(): "<<p.get_count()<<std::endl;
+#endif
+
     copy(p);
+
+#ifdef DEBUG_SMARTPTR
+std::cout<<"NOW: get_count(): "<<get_count()<<" other: "<<p.get_count()<<std::endl;
+#endif
   }
+
   Smart_Ptr(){
     obj=NULL;
     counter=NULL;
+#ifdef DEBUG_SMARTPTR
+std::cout<<"SMART POINTER DEFAULT CONSTRUCTOR CALLED! get_count(): "<<get_count()<<std::endl;
+#endif
   }
+
   Smart_Ptr<T> & operator=(T *p){
     dealloc();
     obj=p;
     counter=new size_t(1);
+
+#ifdef DEBUG_SMARTPTR
+std::cout<<"SMART POINTER ASSIGNMENT FROM POINTER CALLED! get_count(): "<<get_count()<<std::endl;
+#endif
     return *this;
   }
   Smart_Ptr(T *t){
     obj=t;
     counter=new size_t(1);
+#ifdef DEBUG_SMARTPTR
+std::cout<<"SMART POINTER CONSTRUCTOR FROM POINTER CALLED! get_count(): "<<get_count()<<std::endl;
+#endif
   }
+
   virtual ~Smart_Ptr(){
+#ifdef DEBUG_SMARTPTR
+std::cout<<"SMART POINTER DESTRUCTOR CALLED WITH get_count(): "<<get_count()<<std::endl;
+#endif
     dealloc();
   }
 };

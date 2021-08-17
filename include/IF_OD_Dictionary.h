@@ -1,6 +1,8 @@
 #ifndef IF_OD_DICTIONARY_DEFINED_H
 #define IF_OD_DICTIONARY_DEFINED_H
 
+#include "MPS_Matrix.h"
+
 
 /**  maps (alpha, tilde{alpha}) \to beta; store identical only once */
 class IF_OD_Dictionary{
@@ -46,7 +48,7 @@ public:
     N=n;
     beta.clear();
     beta.resize(get_NL2(), -1);
-    for(size_t aa=0; aa<get_NL(); aa++){
+    for(int aa=0; aa<get_NL(); aa++){
       beta[aa*get_NL()+aa]=aa;
     }
     reduced_dim=get_NL();
@@ -96,7 +98,7 @@ public:
     }
 //std::cout<<">";for(size_t i=0; i<newbeta.size(); i++)std::cout<<" "<<newbeta[i];std::cout<<std::endl;
     //remove simultaneous dubilcates
-    for(size_t i=0; i<newbeta.size(); i++){
+    for(int i=0; i<(int)newbeta.size(); i++){
       if(beta[i]<0){ 
         if(other.beta[i]<0)continue;
         for(size_t k=0; k<rev2[other.beta[i]].size(); k++){
@@ -179,7 +181,7 @@ public:
       }
       if(!nonzero){
         beta[aa]=-1;
-        for(int aa3=aa+1; aa3<beta.size(); aa3++)beta[aa3]--;
+        for(int aa3=aa+1; aa3<(int)beta.size(); aa3++)beta[aa3]--;
       }
     }
 
@@ -200,7 +202,7 @@ public:
         }
         if(!different){
           beta[aa]=beta[aa2];
-          for(int aa3=aa+1; aa3<beta.size(); aa3++){
+          for(int aa3=aa+1; aa3<(int)beta.size(); aa3++){
             if(beta[aa3]>=0)beta[aa3]--;
           }
           break;
@@ -320,6 +322,23 @@ IF_bck.beta[(nu1*IF_bck.get_N()+mu1)*IF_bck.get_NL()+(nu2*IF_bck.get_N()+mu2)];
       }
     }
     calculate_reduced_dim();
+  }
+
+  void reduce_MPS_Matrix(MPS_Matrix &M){
+    MPS_Matrix m(get_reduced_dim(), M.dim_d1, M.dim_d2);
+    std::vector<std::vector<int> > rev=get_reverse_beta();
+    for(int i=0; i<m.dim_i; i++){
+      if(rev[i].size()<1){ 
+        std::cerr<<"IF_OD_Dictionary::reduce_MPS_Matrix: rev[i].size()<1!"<<std::endl;
+        exit(1);
+      }
+      for(int d1=0; d1<m.dim_d1; d1++){
+        for(int d2=0; d2<m.dim_d2; d2++){
+          m(i, d1, d2)=M(rev[i][0], d1, d2);
+        }
+      }
+    } 
+    M.swap(m);
   }
  
   void copy(const IF_OD_Dictionary &other){
