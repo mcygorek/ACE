@@ -1,0 +1,88 @@
+<!DOCTYPE HTML>
+
+<!--Converted with LaTeX2HTML 2021.2 (Released July 1, 2021) -->
+<HTML lang="en">
+<HEAD>
+<TITLE>Related computational methods</TITLE>
+<META NAME="description" CONTENT="Related computational methods">
+<META NAME="keywords" CONTENT="documentation">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="viewport" CONTENT="width=device-width, initial-scale=1.0">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2021.2">
+
+<LINK REL="STYLESHEET" HREF="documentation.css">
+
+<LINK REL="next" HREF="node10.html">
+<LINK REL="previous" HREF="node8.html">
+<LINK REL="next" HREF="node10.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A
+ HREF="node10.html">
+<IMG WIDTH="37" HEIGHT="24" ALT="next" SRC="next.png"></A> 
+<A
+ HREF="node5.html">
+<IMG WIDTH="26" HEIGHT="24" ALT="up" SRC="up.png"></A> 
+<A
+ HREF="node8.html">
+<IMG WIDTH="63" HEIGHT="24" ALT="previous" SRC="prev.png"></A>   
+<BR>
+<B> Next:</B> <A
+ HREF="node10.html">Reading, writing, and combining</A>
+<B> Up:</B> <A
+ HREF="node5.html">Including environments</A>
+<B> Previous:</B> <A
+ HREF="node8.html">Predefined spectral densities</A>
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H2><A ID="SECTION00054000000000000000">
+Related computational methods</A>
+</H2>
+Finally, as an alternative to ACE, the process tensor for Gaussian baths can be 
+calculated using expressions where the bath is already integrated out
+[cf. Jørgensen and Pollock Phys. Rev. Lett. 123, 240602 (2019)]. 
+This method is usually much more 
+efficient and does not require discretization or truncation of the phonon
+Hilbert spaces (Recall: The advantage of ACE is its generality, while 
+the latter method only works for Gaussian baths.)
+To use this method instead for phonon simulations with our standard QD
+phonon spectral density, one only needs to set <code>use_Gaussian</code> to 
+<code>true</code>. For example, we can re-use the parameter file from the
+last example and run:
+
+<P>
+<PRE>
+&gt; ACE QDPhonon_ACE.param -use_Gaussian true -outfile QDPhonon_Gaussian.out
+</PRE>
+
+<P>
+With the ACE code, we also provide binaries for the iterative methods 
+iQUAPI and TEMPO. If they are compiled, you can also try
+<PRE>
+&gt; TEMPO QDPhonon_ACE.param -outfile QDPhonon_TEMPO.out
+</PRE>
+or
+<PRE>
+&gt; iQUAPI QDPhonon_ACE.param -n_max 12 -dt 0.2 -outfile QDPhonon_iQUAPI.out
+</PRE>
+Note that iQUAPI performs no tensor network compression but instead 
+works by memory truncation, where only a fixed maximal number
+<code>n_max</code> of past time steps are accounted for.
+Because the memory demands scale exponentially with <code>n_max</code>, 
+only relatively small values of <code>n_max</code> can be used in practice.
+To cover the memory time of the environment the time step width <code>dt</code> 
+should be choosen as large as possible.
+
+<P>
+<BR><HR>
+
+</BODY>
+</HTML>

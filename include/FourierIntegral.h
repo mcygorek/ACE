@@ -3,9 +3,10 @@
 
 #include <fstream>
 #include "continuousFFT.h"
-#include "Simulation_Results.h"
+#include "Simulation_Results.hpp"
 
 
+namespace ACE{
 
 class FourierIntegral{
 public:
@@ -76,4 +77,5 @@ public:
   }
 };
 
+}//namespace
 #endif 

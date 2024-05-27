@@ -1,7 +1,9 @@
 #ifndef OPERATORS_DOT_CAVITY_DEFINED_H
 #define OPERATORS_DOT_CAVITY_DEFINED_H
 
-#include "Operators.h"
+#include "Operators.hpp"
+
+namespace ACE{
 
 class Operators_DotCavity{
 public:
@@ -91,5 +93,5 @@ public:
 
 };
 
-
+}//namespace
 #endif

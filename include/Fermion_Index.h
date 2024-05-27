@@ -5,6 +5,7 @@
 #include <fstream>
 #include "N_Choose_K.h"
 
+namespace ACE{
 class Fermion_Index{
 public:
 
@@ -173,5 +174,5 @@ public:
 
 };
 
-
+}//namespace
 #endif

@@ -2,10 +2,12 @@
 #define INFLUENCE_FUNCTIONAL_MPS_DEFINED_H
 
 #include <Eigen/Core>
-#include "SpectralDensity.h"
-#include "MPS.h"
-#include "DiagBB.h"
+#include "SpectralDensity.hpp"
+#include "MPS.hpp"
+#include "DiagBB.hpp"
 #include <fstream>
+
+namespace ACE{
 
 class InfluenceFunctional_MPS: public MPS{
 public:
@@ -97,4 +99,5 @@ public:
   }
 };
 
+}//namespace
 #endif

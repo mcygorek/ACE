@@ -1,0 +1,26 @@
+te                      {4*64}
+dt                      {1/8192*64}
+
+threshold                 1e-9
+backward_threshold_ratio  0.2
+set_precision            12
+use_symmetric_Trotter   true
+
+buffer_blocksize       512
+use_Gaussian_log  true
+
+
+initial             {|1><1|_2} 
+Boson_SysOp         {0.5* (Id_2+sigma_x)}
+Boson_J_type        QDPhonon 
+Boson_omega_min     0
+Boson_omega_max    10
+Boson_subtract_polaron_shift  true
+temperature         4
+
+add_Output          {|1><1|_2}
+
+
+write_PT            phonon.pt
+outfile             generate_phonon_PT.out
+

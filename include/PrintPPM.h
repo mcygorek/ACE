@@ -1,8 +1,9 @@
 #ifndef PRINT_PPM_DEFINED_H_
 #define PRINT_PPM_DEFINED_H_
 
-#include "Reader.h"
+#include "Reader.hpp"
 
+namespace ACE{
 
 class PPM_Canvas{
   int width, height;
@@ -78,5 +79,5 @@ public:
 
 
 
-
+}//namespace
 #endif

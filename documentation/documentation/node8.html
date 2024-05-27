@@ -1,0 +1,295 @@
+<!DOCTYPE HTML>
+
+<!--Converted with LaTeX2HTML 2021.2 (Released July 1, 2021) -->
+<HTML lang="en">
+<HEAD>
+<TITLE>Predefined spectral densities</TITLE>
+<META NAME="description" CONTENT="Predefined spectral densities">
+<META NAME="keywords" CONTENT="documentation">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="viewport" CONTENT="width=device-width, initial-scale=1.0">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2021.2">
+
+<LINK REL="STYLESHEET" HREF="documentation.css">
+
+<LINK REL="next" HREF="node9.html">
+<LINK REL="previous" HREF="node7.html">
+<LINK REL="next" HREF="node9.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A
+ HREF="node9.html">
+<IMG WIDTH="37" HEIGHT="24" ALT="next" SRC="next.png"></A> 
+<A
+ HREF="node5.html">
+<IMG WIDTH="26" HEIGHT="24" ALT="up" SRC="up.png"></A> 
+<A
+ HREF="node7.html">
+<IMG WIDTH="63" HEIGHT="24" ALT="previous" SRC="prev.png"></A>   
+<BR>
+<B> Next:</B> <A
+ HREF="node9.html">Related computational methods</A>
+<B> Up:</B> <A
+ HREF="node5.html">Including environments</A>
+<B> Previous:</B> <A
+ HREF="node7.html">Bosonic environments</A>
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H2><A ID="SECTION00053000000000000000">
+Predefined spectral densities</A>
+</H2>
+
+<P>
+Some commonly used spectral densities are predefined and can be 
+enabled by the command line argument <code>Boson_J_type</code>. 
+For example, one often uses spectral densities of the form 
+<P></P>
+<DIV CLASS="displaymath"><!-- MATH
+ \begin{equation}
+J(\omega)=\alpha \omega^s  H(\omega),
+\end{equation}
+ -->
+<TABLE CLASS="equation" >
+<TR>
+<TD  style="text-align:center;"><SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.74ex; vertical-align: -0.69ex; " SRC="img111.svg"
+ ALT="$\displaystyle J(\omega)=\alpha \omega^s H(\omega),$"></SPAN></TD>
+<TD  CLASS="eqno" style="text-align:right">
+(<SPAN CLASS="eqn-number">12</SPAN>)</TD></TR>
+</TABLE></DIV>
+<P></P>
+which is characterized by the exponent <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.42ex; vertical-align: -0.11ex; " SRC="img112.svg"
+ ALT="$s$"></SPAN> distinguishing ohmic <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.92ex; vertical-align: -0.11ex; " SRC="img113.svg"
+ ALT="$s=1$"></SPAN> from
+sub- (<SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.01ex; vertical-align: -0.20ex; " SRC="img114.svg"
+ ALT="$s&lt;1$"></SPAN>) and superohmic (<SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.01ex; vertical-align: -0.20ex; " SRC="img115.svg"
+ ALT="$s&gt;1$"></SPAN>) spectral densities. <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.42ex; vertical-align: -0.11ex; " SRC="img116.svg"
+ ALT="$\alpha$"></SPAN> sets the
+strength of the system-bath coupling and <SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.74ex; vertical-align: -0.69ex; " SRC="img117.svg"
+ ALT="$H(\omega)$"></SPAN> is a cut-off function
+used to make the large-<SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.42ex; vertical-align: -0.11ex; " SRC="img98.svg"
+ ALT="$\omega$"></SPAN> limit well defined. 
+This type of spectral density is activated by setting <code>Boson_J_type</code>
+to <code>ohmic</code>.
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.42ex; vertical-align: -0.11ex; " SRC="img116.svg"
+ ALT="$\alpha$"></SPAN> and <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.42ex; vertical-align: -0.11ex; " SRC="img112.svg"
+ ALT="$s$"></SPAN> can be set via <code>Boson_J_alpha</code> and <code>Boson_J_s</code>,
+respectively. The finite energy range defined by <code>Boson_omega_min</code> and
+<code>Boson_omega_max</code> already leads to a natural cutoff, but one can 
+also use, e.g., an exponential cutoff <!-- MATH
+ $H(\omega)=exp(-\omega/\omega_c)$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.74ex; vertical-align: -0.69ex; " SRC="img118.svg"
+ ALT="$H(\omega)=exp(-\omega/\omega_c)$"></SPAN> 
+by setting <code>Boson_J_cutoff</code> to <code>exp</code> and <code>Boson_J_omega_c</code>
+to <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.77ex; vertical-align: -0.45ex; " SRC="img119.svg"
+ ALT="$\omega_c$"></SPAN>.
+
+<P>
+Keep in mind that the generated spectral density can be printed by 
+providing a file name to the parameter <code>Boson_J_print</code>, which can be 
+useful for debugging.
+
+<P>
+The independent boson model, i.e, a TLS diagonally and linearly coupled 
+to a continuum of harmonic oscillators, is also a good model for 
+the coupling between electronic states in a quantum dot (QD) and longitudinal
+acoustic phonons. The corresponding Hamiltonian is
+
+<P>
+<P></P>
+<DIV CLASS="displaymath"><!-- MATH
+ \begin{equation}
+H_E=\sum_{\mathbf{q}}\bigg[
+\hbar\omega_{\mathbf{q}} b^\dagger_{\mathbf{q}}b_{\mathbf{q}}+
+\hbar\gamma_{\mathbf{q}} \big( b^\dagger_{\mathbf{q}}+b_{\mathbf{q}}\big)
+|X\rangle\langle X|\bigg],
+\end{equation}
+ -->
+<TABLE CLASS="equation" >
+<TR>
+<TD  style="text-align:center;"><SPAN CLASS="MATH"><IMG
+ STYLE="height: 7.00ex; vertical-align: -3.34ex; " SRC="img120.svg"
+ ALT="$\displaystyle H_E=\sum_{\mathbf{q}}\bigg[
+\hbar\omega_{\mathbf{q}} b^\dagger_{\...
+... b^\dagger_{\mathbf{q}}+b_{\mathbf{q}}\big)
+\vert X\rangle\langle X\vert\bigg],$"></SPAN></TD>
+<TD  CLASS="eqno" style="text-align:right">
+(<SPAN CLASS="eqn-number">13</SPAN>)</TD></TR>
+</TABLE></DIV>
+<P></P>
+
+<P>
+where <!-- MATH
+ $b^\dagger_{\mathbf{q}}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 3.38ex; vertical-align: -0.76ex; " SRC="img121.svg"
+ ALT="$b^\dagger_{\mathbf{q}}$"></SPAN> and <!-- MATH
+ $b_{\mathbf{q}}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.71ex; vertical-align: -0.78ex; " SRC="img122.svg"
+ ALT="$b_{\mathbf{q}}$"></SPAN> are creation and
+annihilation operators for phonons with wave vector <!-- MATH
+ $\mathbf{q}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.90ex; vertical-align: -0.56ex; " SRC="img123.svg"
+ ALT="$\mathbf{q}$"></SPAN>.
+
+<P>
+Due to the ordered structure of solid state crystals, 
+electron-phonon interactions are well understood and can be derived from
+microscopic considerations. It turns out that the dominant 
+deformation potential coupling to longitudinal acoustic phonons is 
+superohmic with exponent <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.92ex; vertical-align: -0.11ex; " SRC="img124.svg"
+ ALT="$s=3$"></SPAN>.
+For a typical GaAs-based semiconductor quantum dot, 
+a set of parameters that enter the spectral density has been worked out 
+by Krummheuer <SPAN  CLASS="textit">et al.</SPAN> in [Phys. Rev. B 71, 235329 (2005)].
+To use them, simply set <code>Boson_J_type</code> to <code>QDPhonon</code>.
+Try the following parameter file <code>QDPhonon_ACE.param</code>:
+
+<P>
+<PRE>
+te                   20
+dt                    1e-1
+Nintermediate        20
+
+threshold             5e-8
+dict_zero             1e-12
+
+add_Hamiltonian            {-1.5*|1&gt;&lt;1|_2}
+add_Pulse Gauss  7 5 3 0   {|1&gt;&lt;0|_2}
+
+Boson_N_modes                    100
+Boson_M                            3
+Boson_E_max                        5
+Boson_J_type                       QDPhonon
+Boson_subtract_polaron_shift       true
+temperature                        4
+
+outfile                            QDPhonon_ACE.out
+</PRE>
+
+<P>
+Two parameters in this file have not been discussed so far, 
+<code>dict_zero</code> and <code>Boson_subtract_polaron_shift</code>.
+The former enables a trick to increase efficiency based on 
+group decomposition as discussed in the supplementary material of the
+ACE article on the example of superradiance, which is also related to 
+[Phys. Rev. B 96, 201201(R) (2017)] describing an analogous idea for
+the iQUAPI method:
+For certain types of couplings, MPO matrices 
+<!-- MATH
+ $\mathcal{Q}_{d_l d_{l-1}}^{(\alpha_l,\tilde{\alpha}_l)}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 4.13ex; vertical-align: -1.33ex; " SRC="img125.svg"
+ ALT="$\mathcal{Q}_{d_l d_{l-1}}^{(\alpha_l,\tilde{\alpha}_l)}$"></SPAN> are identical
+for different combinations of <!-- MATH
+ $(\alpha_l,\tilde{\alpha}_l)$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.74ex; vertical-align: -0.69ex; " SRC="img126.svg"
+ ALT="$(\alpha_l,\tilde{\alpha}_l)$"></SPAN>. 
+In this case, only one representation has to be stored and calculated, which 
+reduces the numerical demands. In the above example with diagonal coupling 
+(<code>Boson_SysOp</code> has the default value of <code>|1&gt;&lt;1|_2</code>), the
+environment does not induce system transitions, so 
+<!-- MATH
+ $\mathcal{Q}_{d_l d_{l-1}}^{(\alpha_l,\tilde{\alpha}_l)}=0$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 4.13ex; vertical-align: -1.33ex; " SRC="img127.svg"
+ ALT="$\mathcal{Q}_{d_l d_{l-1}}^{(\alpha_l,\tilde{\alpha}_l)}=0$"></SPAN> for 
+<!-- MATH
+ $\alpha_l\neq\tilde{\alpha}_l$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.48ex; vertical-align: -0.56ex; " SRC="img128.svg"
+ ALT="$\alpha_l\neq\tilde{\alpha}_l$"></SPAN>. These don't have to be stored, reducing 
+the numerical demands by at least a factor of 4 (<SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.35ex; vertical-align: -0.11ex; " SRC="img129.svg"
+ ALT="$2^2$"></SPAN> instead of <SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.35ex; vertical-align: -0.11ex; " SRC="img130.svg"
+ ALT="$2^4$"></SPAN> 
+combinations of <!-- MATH
+ $(\alpha_l,\tilde{\alpha}_l)$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.74ex; vertical-align: -0.69ex; " SRC="img126.svg"
+ ALT="$(\alpha_l,\tilde{\alpha}_l)$"></SPAN>). Which matrices are zero and
+which are identical with matrices for other combinations of system indices 
+can be computed automatically from the microscopic Hamiltonian. 
+The parameter <code>dict_zero</code> tells the code what can be considered as 
+practically zero or practically identical for this purpose. If a positive
+value is given, automatic detection of groups with identical couplings 
+is enabled.
+
+<P>
+Setting <code>Boson_subtract_polaron_shift</code> to <code>true</code> tells the code
+to subtract polaron shift from the system energy levels: 
+For the independent boson model, it is well known that the 
+interaction with the bath renormalizes the energies of the system
+by the polaron shift 
+<!-- MATH
+ $\Delta E_p=-\sum_{\mathbf{q}}(\gamma^2_{\mathbf{q}})/(\omega_{\mathbf{q}})
+=-\int\limits_0^\infty d\omega\, J(\omega) / d\omega$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 6.13ex; vertical-align: -2.53ex; " SRC="img131.svg"
+ ALT="$\Delta E_p=-\sum_{\mathbf{q}}(\gamma^2_{\mathbf{q}})/(\omega_{\mathbf{q}})
+=-\int\limits_0^\infty d\omega\, J(\omega) / d\omega$"></SPAN>.
+As this shift is present irrespective of the state of the system or the 
+environment, experimental determination of the energy levels of the TLS
+usually reveals the polaron shifted values. It is therefore convenient to
+subtract the polaron shift, redefine the energy levels, and avoid dealing 
+with renormalization effects explicitly when comparing calculations with
+and without phonons. 
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A
+ HREF="node9.html">
+<IMG WIDTH="37" HEIGHT="24" ALT="next" SRC="next.png"></A> 
+<A
+ HREF="node5.html">
+<IMG WIDTH="26" HEIGHT="24" ALT="up" SRC="up.png"></A> 
+<A
+ HREF="node7.html">
+<IMG WIDTH="63" HEIGHT="24" ALT="previous" SRC="prev.png"></A>   
+<BR>
+<B> Next:</B> <A
+ HREF="node9.html">Related computational methods</A>
+<B> Up:</B> <A
+ HREF="node5.html">Including environments</A>
+<B> Previous:</B> <A
+ HREF="node7.html">Bosonic environments</A></DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

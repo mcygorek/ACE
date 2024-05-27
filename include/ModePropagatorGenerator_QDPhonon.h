@@ -1,9 +1,12 @@
 #ifndef MODE_PROPAGATOR_GENERATOR_QDPHONON_DEFINED_H
 #define MODE_PROPAGATOR_GENERATOR_QDPHONON_DEFINED_H
 
-#include "ModePropagatorGenerator.h"
-#include "Operators_Boson.h"
-#include "SpectralDensity.h"
+#include "ModePropagatorGenerator.hpp"
+#include "Operators_Boson.hpp"
+#include "SpectralDensity.hpp"
+#include "Equilibrium.hpp"
+
+namespace ACE{
 
 class ModePropagatorGenerator_QDPhonon: public ModePropagatorGenerator{
 public:
@@ -16,9 +19,9 @@ public:
 
   virtual std::string name()const{return std::string("QDPhonon");}
 
-  double get_E(int k)const{ return Constants::hbar_in_meV_ps*(get_N_modes()-k)*dw; }
+  double get_E(int k)const{ return hbar_in_meV_ps*(get_N_modes()-k)*dw; }
   double get_g(int k)const{ 
-    double w=get_E(k)/Constants::hbar_in_meV_ps;
+    double w=get_E(k)/hbar_in_meV_ps;
     return sqrt( J->f(w) * dw );
   }
 
@@ -33,10 +36,10 @@ public:
     temperature=param.get_as_double("QDPhonon_temperature", temperature);
    
 
-    double E_max=Constants::hbar_in_meV_ps*param.get_as_double("QDPhonon_omega_max", 10.);
+    double E_max=hbar_in_meV_ps*param.get_as_double("QDPhonon_omega_max", 10.);
            E_max=param.get_as_double("QDPhonon_E_max", E_max);
  
-     dw=E_max/Constants::hbar_in_meV_ps/get_N_modes();
+     dw=E_max/hbar_in_meV_ps/get_N_modes();
 
     M_max=param.get_as_size_t("QDPhonon_M_max", 4);
 
@@ -61,9 +64,9 @@ public:
       std::cerr<<"ModePropagatorGenerator_Leads: k<0||k>=get_N_modes()!"<<std::endl; 
       exit(1);
     }
-    const double & hbar=Constants::hbar_in_meV_ps;
+    const double & hbar=hbar_in_meV_ps;
 
-    Operators2x2 op;
+    Operators op(2);
     Eigen::MatrixXcd HB_diag=otimes(op.id(), Operators_Boson::n(M_max));
     Eigen::MatrixXcd HB_base=otimes(op.ketbra(1,1), 
           Operators_Boson::adagger(M_max)+Operators_Boson::a(M_max));
@@ -84,7 +87,7 @@ public:
   }
   virtual Eigen::MatrixXcd get_bath_init(int k)const{
 //    double x=get_E(k)/(Constants::kB_in_meV_by_K*temperature);
-    return Operators_Boson::equilibrium(M_max,get_E(k),temperature);
+    return Boson_Equilibrium(M_max,get_E(k),temperature);
   }
 
   ModePropagatorGenerator_QDPhonon(){
@@ -96,5 +99,5 @@ public:
 
 
 
-
+}//namespace
 #endif

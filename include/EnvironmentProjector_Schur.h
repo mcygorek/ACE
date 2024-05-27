@@ -3,6 +3,8 @@
 
 #include "EnvironmentProjector.h"
 
+namespace ACE{
+
 class EnvironmentProjector_Schur: public EnvironmentProjector{
 public:
   RankCompressor_SVD compr;
@@ -119,6 +121,6 @@ for(int i=0; i<T.rows(); i++){
   virtual ~EnvironmentProjector_Schur(){}
 };
 
-
+}//namespace
 
 #endif

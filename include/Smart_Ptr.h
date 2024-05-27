@@ -13,6 +13,7 @@
     not _virtual_. 
 
 */
+namespace ACE{
 
 template <typename T> class Smart_Ptr{
 public:
@@ -49,6 +50,7 @@ public:
       counter=NULL;
     }else if(*counter>1){
       --(*counter);
+//      counter=NULL;  //<-This particular instance shall have no access
     }
 
   }
@@ -65,10 +67,14 @@ public:
     copy_obj(o);
   }
 */
-  void copy(const Smart_Ptr<T> &p){
+  template<typename T2> void copy(const Smart_Ptr<T2> &p){
+    if(p.counter==NULL){
+      std::cerr<<"Smart_Ptr: Error: copy uninstantiated Smart_Ptr!"<<std::endl;
+      exit(1);
+    }
     counter=p.counter;
     ++(*counter);
-    obj=p.obj;
+    obj=(T*)p.obj;
   }
 
 
@@ -89,13 +95,27 @@ std::cout<<"NOW: get_count(): "<<get_count()<<" other: "<<p.get_count()<<std::en
     return *this;
   }
 
+  template<typename T2> Smart_Ptr(const Smart_Ptr<T2> &p){
+
+#ifdef DEBUG_SMARTPTR
+std::cout<<"SMART POINTER COPY CONSTRUCTOR CALLED!"<<std::endl;
+std::cout<<"BEFORE: get_count(): "<<p.get_count()<<std::endl;
+#endif
+    
+    copy(p);
+
+#ifdef DEBUG_SMARTPTR
+std::cout<<"NOW: get_count(): "<<get_count()<<" other: "<<p.get_count()<<std::endl;
+#endif
+  }
+ 
   Smart_Ptr(const Smart_Ptr<T> &p){
 
 #ifdef DEBUG_SMARTPTR
 std::cout<<"SMART POINTER COPY CONSTRUCTOR CALLED!"<<std::endl;
 std::cout<<"BEFORE: get_count(): "<<p.get_count()<<std::endl;
 #endif
-
+    
     copy(p);
 
 #ifdef DEBUG_SMARTPTR
@@ -137,5 +157,5 @@ std::cout<<"SMART POINTER DESTRUCTOR CALLED WITH get_count(): "<<get_count()<<st
   }
 };
 
-
+}//namespace
 #endif

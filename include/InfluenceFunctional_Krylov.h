@@ -1,8 +1,9 @@
 #ifndef INFLUENCE_FUNCTIONAL_KRYLOV_DEFINED_H
 #define INFLUENCE_FUNCTIONAL_KRYLOV_DEFINED_H
 
-#include "InfluenceFunctional_OD.h"
+#include "InfluenceFunctional_OD.hpp"
 
+namespace ACE{
 
 struct rw_pair{
   Eigen::VectorXcd r;
@@ -355,5 +356,5 @@ public:
 };
 
 
-
+}//namespace
 #endif

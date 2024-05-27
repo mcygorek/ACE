@@ -1,0 +1,1739 @@
+#include "ProcessTensorBuffer.hpp"
+#include "ProcessTensorForward.hpp"
+#include "ProcessTensorStream_ro.hpp"
+#include "ProcessTensorStream_wo.hpp"
+#include "ProcessTensor.hpp"
+#include "BinaryReader.hpp"
+#include "DummyException.hpp"
+#include <fstream>
+#include <string>
+
+namespace ACE{
+
+void ProcessTensorBuffer::check_buffer_bounds(int n)const{
+  if(n<0||n>=(int)buffer.size()){
+    std::cerr<<"ProcessTensorBuffer::check_buffer_bounds: Out of bounds: "<<n<<"/"<<buffer.size()<<std::endl;
+    std::cerr<<"info: "; print_info(std::cerr); std::cerr<<std::endl;
+    throw DummyException();
+  }
+}
+void ProcessTensorBuffer::check_preload_bounds(int n)const{
+  if(n<0||n>=(int)preload.size()){
+    std::cerr<<"ProcessTensorBuffer::check_preload_bounds: Out of bounds: "<<n<<"/"<<preload.size()<<std::endl;
+    std::cerr<<"info: "; print_info(std::cerr); std::cerr<<std::endl;
+    throw DummyException();
+  }
+}
+void ProcessTensorBuffer::check_write_buffer_bounds(int n)const{
+  if(n<0||n>=(int)write_buffer.size()){
+    std::cerr<<"ProcessTensorBuffer::check_write_buffer_bounds: Out of bounds: "<<n<<"/"<<write_buffer.size()<<std::endl;
+    std::cerr<<"info: "; print_info(std::cerr); std::cerr<<std::endl;
+    throw DummyException();
+  }
+}
+void ProcessTensorBuffer::print_dims(std::ostream &ofs, bool print_both){
+  for(int n=0; n<n_tot; n++){
+    ProcessTensorElement &e=get(n, ForwardPreload);
+    if(n==0)ofs<<e.M.dim_d1;
+    ofs<<" "<<e.M.dim_d2;
+    if(print_both && n<n_tot-1){
+      const ProcessTensorElement &e2=peek(n+1);
+      ofs<<"/"<<e2.M.dim_d1;
+    }
+  }
+}
+void ProcessTensorBuffer::check_consistency(){
+  int dim_d2_last=1;
+  for(int n=0; n<n_tot; n++){
+    ProcessTensorElement &e=get(n, ForwardPreload);
+    if(e.M.dim_d1!=dim_d2_last){
+      std::cerr<<"ProcessTensorBuffer::check_consistency: e.M.dim_d1!=dim_d2_last ("<<e.M.dim_d1<<" vs. "<<dim_d2_last<<") at n="<<n<<std::endl;
+      std::cerr<<"dimensions: "; print_dims(std::cerr); std::cerr<<std::endl;
+      throw DummyException();
+    }
+    dim_d2_last=e.M.dim_d2;
+  }
+}
+
+ProcessTensorElement & ProcessTensorBuffer::get(
+                               int n, ProcessTensorBufferPreloadHint hint){
+//std::cout<<"get("<<n<<") (fname_header='"<<fname_header<<"')."<<std::endl;
+  if(n<0||n>=n_tot){
+    std::cerr<<"ProcessTensorBuffer::get: Out of bounds: "<<n<<"/"<<n_tot<<std::endl;
+    std::cerr<<"info: "; print_info(std::cerr); std::cerr<<std::endl;
+    throw DummyException();
+  }
+  if(!use_file){
+    check_buffer_bounds(n);
+    return buffer[n];
+  }
+  if(blocksize<0){ //max. one file; Then, buffer is expected to be loaded
+    check_buffer_bounds(n);
+    return buffer[n];
+  }
+  int bl=n/blocksize;
+  int in_bl=n%blocksize;
+
+  read_block(bl, hint);
+  check_buffer_bounds(in_bl);
+  return buffer[in_bl];
+}
+
+const ProcessTensorElement & ProcessTensorBuffer::peek(int n){
+  if(n<0||n>=n_tot){
+    std::cerr<<"ProcessTensorBuffer::peek: Out of bounds: "<<n<<"/"<<n_tot<<std::endl;
+    throw DummyException();
+  }
+  if(!use_file){
+    check_buffer_bounds(n);
+    return buffer[n];
+  }
+  if(blocksize<0){ //max. one file; Then, buffer is expected to be loaded
+    check_buffer_bounds(n);
+    return buffer[n];
+  }
+  int bl=n/blocksize;
+  int in_bl=n%blocksize;
+
+  if(bl==current_block){
+    check_buffer_bounds(in_bl);
+    return buffer[in_bl];
+  }
+
+if(false){std::cout<<"called peek("<<n<<"): bl="<<bl<<" not current_block="<<current_block<<" "; print_info(); std::cout<<std::endl;}
+
+  wait_preload();
+  if(bl!=preload_block){
+if(false){std::cout<<"bl!=preload_block ("<<bl<<" vs. "<<preload_block<<")."<<std::endl;}
+    read_block_preload(bl);
+  }
+  check_preload_bounds(in_bl);
+  return preload[in_bl];
+}
+
+
+void ProcessTensorBuffer::clear(){
+  if(blocksize<=0){  
+    clear_buffer();
+  }else{
+    set_preload_none();
+    wait_write();
+    clear_write_buffer();
+    current_block=-1;
+    clear_buffer();
+    delete_files();
+  }
+  n_tot=0;
+}
+void ProcessTensorBuffer::push_back(const ProcessTensorElement &templ){
+  bool debug=false;
+if(debug)std::cout<<"PUSH_BACK START, blocksize="<<blocksize<<std::endl;
+  if(blocksize<=0){ 
+    buffer.push_back(templ);
+    n_tot++;
+  }else{
+    if(!use_file || use_single_file || fname_header==""){
+      std::cerr<<"ProcessTensorBuffer::push: blocksize>0 but !use_file || fname_header==\"\"!"<<std::endl;
+      throw DummyException();
+    }
+    
+    int nr_blocks=get_nr_blocks();
+if(debug){std::cout<<"INFO: "; print_info(); std::cout<<" nr_blocks="<<nr_blocks<<std::endl;}
+    int space_in_last_block=nr_blocks*blocksize-n_tot;
+    if(space_in_last_block>0){
+if(debug)std::cout<<"space_in_last_block>0"<<std::endl;
+      read_block(nr_blocks-1);
+      buffer.push_back(templ);
+      n_tot++;
+    }else{ //start a new block
+if(debug)std::cout<<"space_in_last_block<=0"<<std::endl;
+      if(current_block>=0)write_release_block(current_block);
+      buffer.push_back(templ);
+      n_tot++;
+      current_block=nr_blocks;
+    }
+  }
+  if(use_file){
+    write_header();
+  }
+if(debug)std::cout<<"PUSH_BACK END"<<std::endl;
+}
+
+void ProcessTensorBuffer::create(int n_new, const ProcessTensorElement &templ){
+  if(blocksize<=0){  
+    buffer.resize(n_new, templ);
+    n_tot=n_new;
+  }else{
+    if(!use_file || use_single_file || fname_header==""){
+      std::cerr<<"ProcessTensorBuffer::create: blocksize>0 but !use_file || fname_header==\"\"!"<<std::endl;
+      throw DummyException();
+    }
+    current_block=-1;
+    n_tot=n_new;
+    int nr_blocks=(n_tot+blocksize-1)/blocksize;
+    for(int bl=0; bl<nr_blocks; bl++){
+      int bs = (bl==nr_blocks-1) ? n_tot-bl*blocksize : blocksize;
+      buffer.resize(bs, templ);
+      write_release_block(bl);
+    }
+  }
+  if(use_file){
+    write_header();
+  }
+}
+void ProcessTensorBuffer::append(int n, const ProcessTensorElement &templ){
+  if(n==0)return;
+  if(n<0){
+    std::cerr<<"ProcessTensorBuffer::append: n<0!"<<std::endl;
+    throw DummyException();
+  }
+  if(n_tot==0)create(n, templ);
+  for(int i=0; i<n; i++){
+    push_back(templ);
+  }
+}
+
+void ProcessTensorBuffer::resize(int n_new, const ProcessTensorElement &templ){
+  if(n_new<0){
+    std::cerr<<"ProcessTensorBuffer::resize: n_new<0!"<<std::endl;
+    throw DummyException();
+  } 
+  clear();
+  create(n_new, templ);
+}
+
+void ProcessTensorBuffer::dict_expand(const ReadPT_struct & readPT){
+  for(int n=0; n<n_tot; n++){
+    get(n, ForwardPreload).accessor.dict_expand(readPT);
+  }
+}
+
+void ProcessTensorBuffer::copy_content(ProcessTensorBuffer & other){
+  clear();
+  for(int n=0; n<other.n_tot; n++){
+    push_back(other.get(n));
+  }
+}
+void ProcessTensorBuffer::copy_content(const std::string &filename){
+  ProcessTensorBuffer other(filename);
+  copy_content(other);
+}
+void ProcessTensorBuffer::copy_content(const ReadPT_struct &readPT){
+  ProcessTensorBuffer other(readPT);
+  copy_content(other);
+}
+
+void ProcessTensorBuffer::copy_read_only(ProcessTensorBuffer & other){
+  ProcessTensorBufferSpec::copy(other);
+  read_only=true;
+  n_tot=other.n_tot;
+  buffer=other.buffer;
+  current_block=other.current_block;
+  set_preload_none();
+  set_write_buffer_none();
+}
+
+void ProcessTensorBuffer::copy_InfluenceFunctional_OD(const InfluenceFunctional_OD &IF){
+  clear();
+  int n_tot=IF.size();
+  for(int n=0; n<n_tot; n++){
+/*
+    ProcessTensorElement e;
+    e.clearNF();
+    e.M=IF.a[n];
+    e.closure=IF.c[n];
+    e.env_ops.ops=IF.env_ops[n];
+    e.accessor.set_from_dict(IF.dict);
+    push_back(e);
+*/
+    push_back(ProcessTensorElement(IF,n));
+  }
+}
+
+void ProcessTensorBuffer::delete_files(){
+  bool debug=false;
+  if(debug){std::cout<<"delete files: info: "; print_info(); std::cout<<std::endl;}
+
+  if(read_only || !use_file)return;
+  int nr_blocks=get_nr_blocks();
+  for(int i=0; i<nr_blocks; i++){
+    std::string fname=get_fname(i);
+    if(debug)print_file_exists(fname);
+    std::remove(fname.c_str());
+  }
+  std::remove(fname_header.c_str());
+}
+
+void ProcessTensorBuffer::read_block(int bl, ProcessTensorBufferPreloadHint hint){
+  if(current_block==bl)return;  //nothing to do
+  if(current_block>=0){
+    write_release_block(current_block);
+  }
+
+  //check if preloaded
+  wait_preload();
+  if(preload_block>=0 && preload_block==bl){
+if(false)std::cout<<"found preloaded block: "<<bl<<std::endl;
+    clear_buffer();
+    buffer.swap(preload);
+    current_block=bl;
+    preload_block=-1;
+
+    request_async_preload(bl, hint);
+    return;
+  }
+
+  std::string fname=get_fname(bl);
+
+  //Don't reinvent the wheel: reuse implementation in 'ProcessTensor':
+  clear_buffer();
+  {ProcessTensor PT_tmp(fname); buffer.swap(PT_tmp.elements);}
+  current_block=bl;
+  request_async_preload(bl,hint); 
+
+  //check total size:
+  if(blocksize<0){
+    n_tot=buffer.size();
+  }else{
+    if(buffer.size()>blocksize){
+      std::cerr<<"ProcessTensorBuffer::read_block("<<bl<<"): file '"<<fname<<"': buffer.size()>blocksize() ("<<buffer.size()<<" vs. "<<blocksize<<")!"<<std::endl;
+      throw DummyException();
+    }
+    if(bl*blocksize+buffer.size()>n_tot){
+      std::cerr<<"ProcessTensorBuffer::read_block("<<bl<<"): file '"<<fname<<"': bl*blocksize+buffer.size()>n_tot ("<<bl*blocksize+buffer.size()<<" vs. "<<n_tot<<")!"<<std::endl;
+      throw DummyException();
+    }
+  }
+}
+void ProcessTensorBuffer::read_block_preload(int bl){
+  if(blocksize<0)return;
+  if(preload_block==bl)return;  //nothing to do
+  std::string fname=get_fname(bl);
+
+if(false)std::cout<<"preload block: "<<bl<<std::endl;
+  //Don't reinvent the wheel: reuse implementation in 'ProcessTensor':
+  std::vector<ProcessTensorElement>().swap(preload);
+  {ProcessTensor PT_tmp(fname); preload.swap(PT_tmp.elements);}
+  preload_block=bl;
+
+  //check total size:
+  if(blocksize<0){
+    return;
+  }else{
+    if(preload.size()>blocksize){
+      std::cerr<<"ProcessTensorBuffer::read_block_preload("<<bl<<"): file '"<<fname<<"': preload.size()>blocksize() ("<<preload.size()<<" vs. "<<blocksize<<")!"<<std::endl;
+      throw DummyException();
+    }
+    if(bl*blocksize+preload.size()>n_tot){
+      std::cerr<<"ProcessTensorBuffer::read_block_preload("<<bl<<"): file '"<<fname<<"': bl*blocksize+preload.size()>n_tot ("<<bl*blocksize+preload.size()<<" vs. "<<n_tot<<")!"<<std::endl;
+      throw DummyException();
+    }
+  }
+}
+  
+
+bool ProcessTensorBuffer::request_async_preload_fct(
+                                 ProcessTensorBuffer *PTB, int bl){
+  PTB->read_block_preload(bl);
+  return true;
+}
+void ProcessTensorBuffer::request_async_preload(int bl, ProcessTensorBufferPreloadHint hint){
+  wait_preload();
+
+  switch(hint){
+    case ForwardPreload:
+      if(bl+1<get_nr_blocks()){ 
+        if(write_buffer_block==bl+1){
+          wait_write();
+        }
+        preload_lock=true;
+        preload_future=std::async(request_async_preload_fct, this, bl+1);
+      }
+      break;
+    case BackwardPreload:
+      if(bl-1>=0){
+        if(write_buffer_block==bl-1){
+          wait_write();
+        }
+        preload_lock=true;
+        preload_future=std::async(request_async_preload_fct, this, bl-1);
+      }
+      break;
+    default: 
+      break;
+  }
+}
+void ProcessTensorBuffer::wait_preload(){
+  if(preload_lock){
+    preload_future.get();
+    preload_lock=false;
+  }
+} 
+void ProcessTensorBuffer::wait_write(){
+  if(use_async_write && write_buffer_lock){
+    write_buffer_future.get();
+    write_buffer_lock=false;
+  }
+} 
+
+bool ProcessTensorBuffer::write_release_block_async_fct(
+                                   std::vector<ProcessTensorElement> &wbuf,
+                                   std::string filename, bool debug_){
+  ProcessTensor PT_tmp;
+  PT_tmp.elements.swap(wbuf);
+  PT_tmp.write_binary(filename);
+  if(debug_)std::cout<<"writing block to file '"<<filename<<" finished"<<std::endl;
+  return true;
+}
+void ProcessTensorBuffer::write_release_block(int bl){
+//std::cout<<"write_release_block("<<bl<<") called."<<std::endl;
+  if(read_only||!use_file)return;
+
+  bool debug=false;
+//  bool debug=true;
+  if(!use_single_file && (bl<0 || bl>=get_nr_blocks())){
+    std::cerr<<"ProcessTensorBuffer::write_release_block: fname_header '"<<fname_header<<"': block out of bounds ("<<bl<<"/"<<get_nr_blocks()<<")!"<<std::endl;
+    throw DummyException();
+  }
+  if(use_single_file)bl=0;
+
+  if(debug)std::cout<<"writing block "<<bl<<" to file '"<<get_fname(bl)<<" started"<<std::endl;
+
+  if(use_async_write){
+    wait_write();
+    clear_write_buffer();
+    write_buffer_block=bl;
+    write_buffer_lock=true;
+
+    write_buffer.swap(buffer);
+    current_block=-1;
+    write_header();
+    write_buffer_future=std::async(std::launch::async, 
+          write_release_block_async_fct, std::ref(write_buffer), get_fname(bl), debug);
+  }else{
+    ProcessTensor PT_tmp;
+    PT_tmp.elements.swap(buffer);
+    PT_tmp.write_binary(get_fname(bl));
+if(debug)std::cout<<"wrote block "<<bl<<" to file '"<<get_fname(bl)<<std::endl;
+    current_block=-1;
+    write_header();
+  }
+}
+
+void ProcessTensorBuffer::read(const std::string &filename){
+  fname_header=filename;
+  use_file=true;
+  current_block=-1;
+  set_preload_none();
+  set_write_buffer_none();
+  read_header();
+//  was_modified=false;
+}
+void ProcessTensorBuffer::read(const ReadPT_struct &readPT){
+  read(readPT.fname);
+  dict_expand(readPT);
+}
+
+
+void ProcessTensorBuffer::read_header(){
+  bool debug=false;
+  if(!use_file || fname_header==""){
+    std::cerr<<"ProcessTensorBuffer::read_header: 'fname_header' not set!"<<std::endl;
+    throw DummyException();
+  }
+
+  set_preload_none();
+
+  std::ifstream ifs(fname_header.c_str());
+  //check if file exists and can be read:
+  if(!ifs.good()){
+    std::cerr<<"Cannot open PT header file '"<<fname_header<<"'!"<<std::endl;
+    throw DummyException();
+  }
+
+  //check is single monolithic file without explicit header:
+  std::string magic=binary_read_fixedSizeString(ifs, 4);
+  if(magic=="PT__"||magic=="PTr_"){
+    use_single_file=true;
+    blocksize=-1;
+    ifs.close();
+    read_block(0);
+    n_tot=buffer.size();
+    return;    
+  }
+
+  //remaining case: explicit header file
+  if(magic!="PTBH"){
+    std::cerr<<"File '"<<fname_header<<"' does not match magic number for a valid process tensor file!"<<std::endl; 
+    throw DummyException();
+  }
+
+  is_temporary=false;
+  use_single_file=false;
+  current_block=-1;
+  
+  n_tot=binary_read_int(ifs, fname_header+" n_tot");
+if(debug)std::cout<<"header file '"<<fname_header<<"': n_tot="<<n_tot<<std::endl;
+
+  blocksize=binary_read_int(ifs, fname_header+" blocksize");
+if(debug)std::cout<<"header file '"<<fname_header<<"': blocksize="<<blocksize<<std::endl;
+
+  int nr_blocks=get_nr_blocks();
+  //check if all files exist:
+  for(int i=0; i<nr_blocks; i++){
+    std::string fname2=get_fname(i);
+    std::ifstream ifs2(fname2.c_str());
+    if(!ifs.good()){
+      std::cerr<<"Cannot open PT content file '"<<fname2<<"'!"<<std::endl;
+      throw DummyException();
+    }
+  } 
+}
+
+void ProcessTensorBuffer::write_header(){
+  if(!use_file||use_single_file||read_only)return;
+  std::ofstream ofs(fname_header.c_str());
+  if(!ofs.good()){
+    std::cerr<<"ProcessTensorBuffer::write_header: fname_header='"<<fname_header<<"': !ofs.good()!"<<std::endl;
+    throw DummyException();
+  }
+
+  binary_write_fixedSizeString(ofs, 4, "PTBH");
+  binary_write_int(ofs, n_tot);
+  binary_write_int(ofs, blocksize);
+}
+void ProcessTensorBuffer::write_all(){
+  if(!use_file)return;
+  if(use_single_file){
+//    write_release_block(0); <- don't release !
+//    if(false)//<-force write all
+    if(!read_only){//<-force write all
+      ProcessTensor PT_tmp;
+      PT_tmp.elements.swap(buffer);
+      PT_tmp.write_binary(get_fname(0));
+      PT_tmp.elements.swap(buffer);
+    }
+    return;
+  }
+  if(current_block>=0){
+    write_release_block(current_block);
+    write_header();
+    return;
+  }
+}
+
+
+void ProcessTensorBuffer::print_info(std::ostream &os)const{
+  os<<"use_file="; if(use_file)os<<"true";else os<<"false"; 
+  os<<" is_temporary="; if(is_temporary)os<<"true";else os<<"false"; 
+  os<<" use_single_file="; if(use_single_file)os<<"true";else os<<"false"; 
+  os<<" read_only="; if(read_only)os<<"true";else os<<"false"; 
+  os<<" use_async_write="; if(use_async_write)os<<"true";else os<<"false"; 
+  os<<" blocksize="<<blocksize;
+  os<<" fname_header='"<<fname_header<<"'";
+  os<<" n_tot="<<n_tot;
+  os<<" preload_block="<<preload_block;
+  os<<" current_block="<<current_block;
+}
+
+//Operations:
+void ProcessTensorBuffer::set_trivial(int n_max, int sysdim){
+  if(n_max<1){
+    std::cerr<<"ProcessTensorBuffer::set_trivial: n_max<1!"<<std::endl;
+    throw DummyException();
+  }
+  if(sysdim<2){
+    std::cerr<<"ProcessTensorBuffer::set_trivial: sysdim<2!"<<std::endl;
+    throw DummyException();
+  }
+  ProcessTensorElement element;
+  element.set_trivial(sysdim);
+  resize(n_max, element);
+
+  clear_preload();
+  preload_block=-1;
+}
+void ProcessTensorBuffer::calculate_closures(){
+  if(n_tot<1)return;
+
+  ProcessTensorElement last=get(n_tot-1);
+  last.calculate_closure(NULL);
+  get(n_tot-1)=last;
+  for(int n=n_tot-2; n>=0; n--){
+    get(n).calculate_closure(&last);
+    last=get(n);
+  }
+}
+
+void ProcessTensorBuffer::sweep_forward(const TruncatedSVD &trunc, 
+                                        int verbosity,
+                                        int range_start, int range_end){
+
+  if(range_start<0)range_start=0;
+  if(range_end<0)range_end=n_tot;
+  if(range_start==range_end){
+     return; 
+  }
+  if(range_start>range_end){
+    std::cerr<<"ProcessTensorBuffer::sweep_forward: range_start>range_end!"<<std::endl; 
+    throw DummyException();
+  }
+  if(verbosity>0){
+    std::cout<<"sweep_forward: range: ["<<range_start<<".."<<range_end<<"["<<std::endl;
+  }
+  
+  int maxdim_in=0, maxdim_out=0, maxdim_at=0;
+  PassOn pass_on;
+  for(int n=range_start; n<range_end; n++){
+    ProcessTensorElement & element = get(n, ForwardPreload);
+    if(n==range_start){
+      pass_on=PassOn(element.M.dim_d1);
+      maxdim_in=maxdim_out=element.M.dim_d1;
+    }
+    if(element.M.dim_d2>maxdim_in)maxdim_in=element.M.dim_d2;
+
+    element.sweep_forward(trunc, pass_on, (n==range_end-1));
+
+    if(element.M.dim_d2>maxdim_out){
+      maxdim_out=element.M.dim_d2;
+      maxdim_at=n;
+    }
+  }
+  if(verbosity>0)std::cout<<"Maxdim at n="<<maxdim_at<<": "<<maxdim_in<<" -> "<<maxdim_out<<std::endl;
+}
+void ProcessTensorBuffer::sweep_backward(const TruncatedSVD &trunc,
+                                        int verbosity,
+                                        int range_start, int range_end){
+
+  if(range_start<0)range_start=0;
+  if(range_end<0)range_end=n_tot;
+  if(range_start==range_end){
+     return; 
+  }
+  if(range_start>range_end){
+    std::cerr<<"ProcessTensorBuffer::sweep_backward: range_start>range_end!"<<std::endl; 
+    throw DummyException();
+  }
+  if(verbosity>0){
+    std::cout<<"sweep_backward: range: ["<<range_start<<".."<<range_end<<"["<<std::endl;
+  }
+  
+  PassOn pass_on;
+  int maxdim_in=0, maxdim_out=0, maxdim_at=0;
+  for(int n=range_end-1; n>=range_start; n--){
+    ProcessTensorElement & element = get(n, BackwardPreload);
+    if(n==range_end-1){
+      pass_on=PassOn(element.M.dim_d2);
+      maxdim_in=maxdim_out=element.M.dim_d2;
+      maxdim_at=n;
+    }
+    if(element.M.dim_d1>maxdim_in)maxdim_in=element.M.dim_d1;
+    element.sweep_backward(trunc, pass_on, (n==range_start));
+    if(element.M.dim_d1>maxdim_out){
+      maxdim_out=element.M.dim_d1;
+      maxdim_at=n;
+    }
+  }
+
+  if(verbosity>0)std::cout<<"Maxdim at n="<<maxdim_at<<": "<<maxdim_in<<" -> "<<maxdim_out<<std::endl;
+}
+
+void ProcessTensorBuffer::join_and_sweep_forward(
+                                ProcessTensorBuffer & PTB2,
+                                const TruncatedSVD &trunc, int verbosity,
+                                ShiftExtend shift_extend){
+
+  PassOn pass_on;
+
+//  bool debug=false;
+
+  int n_tot_old=n_tot;
+
+  if(n_tot_old<=shift_extend.shift_second){ //no overlap in this case
+    std::cerr<<"ProcessTensorBuffer::join_and_sweep_forward: ";
+    std::cerr<<"PT_ro1.size()<=shift_extend.shift_second!"<<std::endl;
+    throw DummyException();
+  }
+
+  //determine total length of result
+  int n_tot_new=PTB2.n_tot+shift_extend.shift_second;
+  if(shift_extend.truncate_at>=0){
+    if(shift_extend.truncate_at>n_tot_new){ //no truncation required
+       shift_extend.truncate_at=-1; 
+    }else{
+      n_tot_new=shift_extend.truncate_at;
+    }
+  } 
+  //does PT1 have to be extendend?
+  int extend_first=n_tot_new-n_tot_old;
+  //does PT1 have to be truncated?
+  int n_trunc1=0;
+  if(extend_first<0){
+    n_trunc1=-extend_first;
+    extend_first=0;
+  }
+
+  if(verbosity>0)std::cout<<"join_and_sweep_forward: '"<<fname_header<<"','"<<PTB2.fname_header<<std::endl;
+  int maxdim_in1=0, maxdim_in2=0, maxdim_out=0, maxdim_at=0;
+
+  //first n=shift_extend elements are already set. Combine loop:
+  for(int n=shift_extend.shift_second; n<n_tot_old-n_trunc1; n++){
+    ProcessTensorElement & e = get(n, ForwardPreload);
+    ProcessTensorElement & e2 = PTB2.get(n-shift_extend.shift_second, ForwardPreload);
+    if(e.M.dim_d1>maxdim_in1)maxdim_in1=e.M.dim_d2;
+    if(e2.M.dim_d1>maxdim_in2)maxdim_in2=e2.M.dim_d2;
+    if(n==n_tot_old-n_trunc1-1){
+      e.close_off();
+    }
+    e.join_thisfirst(e2);
+
+    if(n==shift_extend.shift_second){
+      pass_on=PassOn(e.M.dim_d1);
+    }
+    e.sweep_forward(trunc, pass_on, (n==n_tot_new-1));
+    if(e.M.dim_d2>maxdim_out){
+      maxdim_out=e.M.dim_d2;
+      maxdim_at=n;
+    }
+  }
+
+  //write overhanging elements of shiftet PT_ro2 (length: extend_first) )
+  if(extend_first>0){
+    for(int n=n_tot_old; n<n_tot_new; n++){
+      push_back(PTB2.get(n-shift_extend.shift_second, ForwardPreload));
+      ProcessTensorElement & e = get(n);
+      e.sweep_forward(trunc, pass_on, (n==n_tot_new-1));
+    }
+  }
+  get(n_tot_new-1).close_off();
+  
+  if(verbosity>0)std::cout<<"Maxdim at n="<<maxdim_at<<": "<<maxdim_in1<<","<<maxdim_in2<<" -> "<<maxdim_out<<std::endl;
+}
+
+void ProcessTensorBuffer::join_and_sweep_backward(
+                                ProcessTensorBuffer & PTB2,
+                                const TruncatedSVD &trunc, int verbosity,
+                                ShiftExtend shift_extend){
+
+  PassOn pass_on;
+
+//  bool debug=false;
+
+  int n_tot_old=n_tot;
+
+  if(n_tot_old<=shift_extend.shift_second){ //no overlap in this case
+    std::cerr<<"ProcessTensorBuffer::join_select_and_sweep_backward: ";
+    std::cerr<<"PT_ro1.size()<=shift_extend.shift_second!"<<std::endl;
+    throw DummyException();
+  }
+
+  //determine total length of result
+  int n_tot_new=PTB2.n_tot+shift_extend.shift_second;
+  if(shift_extend.truncate_at>=0){
+    if(shift_extend.truncate_at>n_tot_new){
+       shift_extend.truncate_at=-1;
+    }else{
+      n_tot_new=shift_extend.truncate_at;
+    }
+  } 
+  //does PT1 have to be extendend?
+  int extend_first=n_tot_new-n_tot_old;
+  int n_trunc1=0;
+  if(extend_first<0){
+    n_trunc1=-extend_first;
+    extend_first=0;
+  }
+
+  if(verbosity>0)std::cout<<"join_and_sweep_backward: '"<<fname_header<<"','"<<PTB2.fname_header<<std::endl;
+  int maxdim_in1=0, maxdim_in2=0, maxdim_out=0;
+
+  //write overhanging elements of shiftet PT_ro2 (length: extend_first) )
+  if(extend_first>0){
+    for(int n=n_tot_old; n<n_tot_new; n++){
+      if(n==n_tot_new-1){
+        ProcessTensorElement e=PTB2.get(n-shift_extend.shift_second);
+        e.close_off();
+        push_back(e);
+      }else{
+        push_back(PTB2.get(n-shift_extend.shift_second, ForwardPreload));
+      }
+    }
+  }
+  for(int n=n_tot_old-1-n_trunc1; n>=shift_extend.shift_second; n--){
+    ProcessTensorElement & e = get(n, BackwardPreload);
+    ProcessTensorElement & e2 = PTB2.get(n-shift_extend.shift_second, BackwardPreload);
+    if(e.M.dim_d1>maxdim_in1)maxdim_in1=e.M.dim_d1;
+    if(e2.M.dim_d1>maxdim_in2)maxdim_in2=e2.M.dim_d1;
+
+    if(n==n_tot_old-1-n_trunc1 && extend_first<=0){
+      ProcessTensorElement e2_tmp=e2; 
+      e2_tmp.close_off();
+      e.join_thisfirst(e2_tmp);
+    }else{
+      e.join_thisfirst(e2);
+    }
+
+    if(n==n_tot_old-1-n_trunc1){
+      pass_on=PassOn(e.M.dim_d2);
+    }
+    e.sweep_backward(trunc, pass_on, (n==shift_extend.shift_second));
+    if(e.M.dim_d1>maxdim_out)maxdim_out=e.M.dim_d1;
+  }
+  if(verbosity>0)std::cout<<"Maxdim: "<<maxdim_in1<<","<<maxdim_in2<<" -> "<<maxdim_out<<std::endl;
+}
+
+
+void ProcessTensorBuffer::join_select_and_sweep_backward(
+                                ProcessTensorBuffer & PTB2,
+                                const TruncatedSVD &trunc, int verbosity,
+                                ShiftExtend shift_extend){
+
+  bool subsequent_sweep = true;
+  PassOn pass_on(0);
+
+  bool debug=true;
+if(debug)std::cout<<"jnsbw: TEST0"<<std::endl;
+
+  int n_tot_old=n_tot;
+
+  if(n_tot_old<=shift_extend.shift_second){ //no overlap in this case
+    std::cerr<<"ProcessTensorBuffer::join_select_and_sweep_backward: ";
+    std::cerr<<"PT_ro1.size()<=shift_extend.shift_second!"<<std::endl;
+    throw DummyException();
+  }
+
+  //determine total length of result
+  int n_tot_new=PTB2.n_tot+shift_extend.shift_second;
+  if(shift_extend.truncate_at>=0){
+    if(shift_extend.truncate_at>n_tot_new){
+       shift_extend.truncate_at=-1;
+    }else{
+      n_tot_new=shift_extend.truncate_at;
+    }
+  } 
+  //does PT1 have to be extendend?
+  int extend_first=n_tot_new-n_tot_old;
+  int n_trunc1=0;
+  if(extend_first<0){
+    n_trunc1=-extend_first;
+    extend_first=0;
+  }
+if(debug){std::cout<<"n_tot_old="<<n_tot_old<<" n_tot_new="<<n_tot_new<<" extend_first="<<extend_first<<" shift_second="<<shift_extend.shift_second<<std::endl;}
+
+  if(verbosity>0)std::cout<<"join_select_and_sweep_backward: '"<<fname_header<<"','"<<PTB2.fname_header<<std::endl;
+  int maxdim_in1=0, maxdim_in2=0, maxdim_out=0, maxdim_at=-1;
+
+
+if(debug)std::cout<<"jnsbw: TEST1"<<std::endl;
+  //write overhanging elements of shiftet PT_ro2 (length: extend_first) )
+  if(extend_first>0){
+    append(extend_first);
+if(debug){std::cout<<"after append: ";print_info();std::cout<<std::endl;}
+    for(int n=n_tot_new-1; n>=n_tot_old; n--){
+if(debug)std::cout<<"jnsbw: TEST1 n="<<n<<std::endl;
+      ProcessTensorElement & element=get(n, BackwardPreload);
+      if(n==n_tot_new-1){
+        element = PTB2.get(n-shift_extend.shift_second, BackwardPreload);
+        element.close_off();
+        pass_on=PassOn(element.M.dim_d2);
+      }else{
+        element = PTB2.get(n-shift_extend.shift_second, BackwardPreload);
+      }
+
+      if(subsequent_sweep){
+        if(shift_extend.sweep_more==0){ //don't sweep the overhanging element
+          pass_on=PassOn(element.M.dim_d1); //set for later
+        }else if(shift_extend.sweep_more<0){ //sweep all of them
+          element.sweep_backward(trunc, pass_on, (n==0));
+        }else if(n<n_tot_old+shift_extend.sweep_more){ //sweep some of them
+          if(n==n_tot_old+shift_extend.sweep_more-1 || n==n_tot_new-1){
+            pass_on=PassOn(element.M.dim_d2);
+          }
+          element.sweep_backward(trunc, pass_on, (n==0));
+        }
+      }
+    }
+  }
+
+if(debug)std::cout<<"jnsbw: TEST2"<<std::endl;
+  ProcessTensorElement element1=get(n_tot_old-1-n_trunc1, BackwardPreload);
+  ProcessTensorElement element2=PTB2.get(n_tot_old-1-n_trunc1-shift_extend.shift_second, BackwardPreload);
+  if(extend_first==0){  //previous loop was not triggered: close PTs
+    element1.close_off();
+    element2.close_off();
+  }
+
+
+  if(element1.M.dim_d2!=1){
+    std::cerr<<"ProcessTensorBuffer::join_select_and_sweep_backward: element1.M.dim_d2="<<element1.M.dim_d2<<"!=1!"<<std::endl;
+    throw DummyException();
+  }
+  ProcessTensorElement next_element1, next_element2;  
+  SelectIndices k_list_left;
+  SelectIndices k_list_right;
+//k_list_right=element1.get_forwardNF_selected_indices(element2, trunc);
+  k_list_right.set_full(element1.M.dim_d2, element2.M.dim_d2);
+
+  
+  if(!extend_first  && subsequent_sweep){
+    pass_on=PassOn(k_list_right.size());
+  }
+
+  maxdim_in1=element1.M.dim_d2;
+  maxdim_in2=element2.M.dim_d2;
+  maxdim_out=k_list_right.size();
+
+if(debug)std::cout<<"jnsbw: TEST3"<<std::endl;
+  for(int n=n_tot_old-1-n_trunc1; n>=shift_extend.shift_second; n--){
+    if(n==shift_extend.shift_second){
+      k_list_left.set_full(element1.M.dim_d1, element2.M.dim_d1);
+    }else{
+      next_element1=peek(n-1);
+      next_element2=PTB2.peek(n-1-shift_extend.shift_second);
+      k_list_left=next_element1.get_forwardNF_selected_indices(next_element2, trunc);
+    }
+    if(element1.M.dim_d1>maxdim_in1)maxdim_in1=element1.M.dim_d1;
+    if(element2.M.dim_d1>maxdim_in2)maxdim_in2=element2.M.dim_d1;
+
+//std::cout<<"before join_selected n="<<n<<std::endl;
+    element1.join_selected(n, element2, k_list_left, k_list_right);
+//std::cout<<"after join_selected n="<<n<<std::endl;
+
+    if(subsequent_sweep){ 
+      int fin; //end of loop: compress or only multiply with pass_on?
+      if(shift_extend.sweep_more==0 || shift_extend.shift_second==0){
+        fin=shift_extend.shift_second;  //only multiply with pass_on
+      }else{
+        fin=shift_extend.shift_second-1; //also compress
+      }
+      element1.sweep_backward(trunc, pass_on, (n==fin));
+    }
+//std::cout<<"after sweep backward n="<<n<<std::endl;
+
+    if(element1.M.dim_d1>maxdim_out){
+      maxdim_out=element1.M.dim_d1;
+      maxdim_at=n;
+    }
+
+    get(n)=element1;
+    k_list_right=k_list_left;
+    element1=next_element1;
+    element2=next_element2;
+  }
+  
+
+if(debug)std::cout<<"jnsbw: TEST4"<<std::endl;
+  if(subsequent_sweep && !(shift_extend.sweep_more==0 || shift_extend.shift_second==0)){
+    int lim=shift_extend.shift_second-shift_extend.sweep_more; if(lim<0)lim=0;
+    for(int n=shift_extend.shift_second-1; n>=lim; n--){
+      get(n).sweep_backward(trunc, pass_on, (n==lim));
+    }
+  }
+  
+  if(verbosity>0)std::cout<<"Maxdim at n="<<maxdim_at<<": "<<maxdim_in1<<","<<maxdim_in2<<" -> "<<maxdim_out<<std::endl;
+if(debug)std::cout<<"jnsbw: TEST5"<<std::endl;
+}
+
+void ProcessTensorBuffer::expand_DiagBB(DiagBB &diagBB, double dict_zero){
+  if(diagBB.sys_dim()==diagBB.get_dim() && !diagBB.hs_rot.used()){ 
+     return; //nothing to do!
+  }
+  
+  if(diagBB.sys_dim()!=diagBB.get_dim()){
+    std::cout<<"Expanding DiagBB from diagBB.get_dim()="<<diagBB.get_dim()<<" to diagBB.sys_dim()="<<diagBB.sys_dim()<<std::endl;
+  }
+
+  for(int n=0; n<n_tot; n++){
+    if(diagBB.sys_dim()!=diagBB.get_dim()){
+
+      get(n).expand_DiagBB(diagBB);
+    }
+    if(diagBB.hs_rot.used()){
+      get(n).apply_HilbertSpaceRotation(diagBB.hs_rot, dict_zero);
+    }
+  }
+}
+
+void ProcessTensorBuffer::apply_HilbertSpaceRotation(const HilbertSpaceRotation &hs_rot, double dict_zero){
+  if(!hs_rot.used())return;
+  for(int n=0; n<n_tot; n++){
+    get(n).apply_HilbertSpaceRotation(hs_rot, dict_zero);
+  }
+}
+
+void ProcessTensorBuffer::set_from_DiagBB_single_line(DiagBB &diagBB, double dt, int n){
+
+//std::cout<<"TEST: BEGIN"<<std::endl;
+//std::cout<<"diagBB.sys_dim()="<<diagBB.sys_dim()<<" diagBB.get_dim()="<<diagBB.get_dim()<<std::endl;
+  int N=diagBB.get_dim();  //sys_dim();
+  int NL=N*N;
+//std::cout<<"TEST: dt="<<dt<<" n="<<n<<std::endl;
+  if(n<1){
+    std::cerr<<"ProcessTensorBuffer::set_from_DiagBB_single_line: n<1!"<<std::endl;
+    throw DummyException();
+  }
+  resize(n);
+
+  ProcessTensorElement e;
+  if(n==1){  //special case: matrix dimensions NL,1,1
+    e.clear();
+    e.accessor.dict.set_default_diag(N);
+    e.closure=Eigen::VectorXcd::Ones(1);
+    e.env_ops.ops=std::vector<Eigen::VectorXcd>(1, e.closure);
+    e.M.resize(NL,1,1);
+    Eigen::MatrixXcd expS=diagBB.calculate_expS(0,dt);
+    for(int i=0; i<NL; i++){
+      e.M(i,0,0)=expS(i,i);
+    }
+    get(0)=e;
+
+  }else{
+    e.clear();
+    e.accessor.dict.set_default_diag(N);
+    e.closure=Eigen::VectorXcd::Ones(NL);
+    e.env_ops.ops=std::vector<Eigen::VectorXcd>(1, e.closure);
+    e.M.resize(NL,1,NL);
+    e.M.set_zero();
+    Eigen::MatrixXcd expS=diagBB.calculate_expS(0,dt);
+    for(int i=0; i<NL; i++){
+        e.M(i, 0, i)=expS(i,i);
+    }
+    get(0)=e;
+
+    for(int k=1; k<n-1; k++){
+      e.clear();
+      e.accessor.dict.set_default_diag(N);
+      e.closure=Eigen::VectorXcd::Ones(NL);
+      e.env_ops.ops=std::vector<Eigen::VectorXcd>(1, e.closure);
+      e.M.resize(NL,NL,NL);
+      e.M.set_zero();
+      expS=diagBB.calculate_expS(k,dt);
+      for(int i=0; i<NL; i++){
+        for(int j=0; j<NL; j++){
+          e.M(i, j, j)=expS(i,j);
+        }
+      }
+      get(k)=e;
+    }
+
+    e.clear();
+    e.accessor.dict.set_default_diag(N);
+    e.closure=Eigen::VectorXcd::Ones(1);
+    e.env_ops.ops=std::vector<Eigen::VectorXcd>(1, e.closure);
+    e.M.resize(NL,NL,1);
+    e.M.set_zero();
+    expS=diagBB.calculate_expS(n-1,dt);
+    for(int i=0; i<NL; i++){
+      for(int j=0; j<NL; j++){
+        e.M(i, j, 0)=expS(i,j);
+      }
+    }
+    get(n-1)=e;
+  }
+  std::cout<<"info after single line: "; print_info(); std::cout<<std::endl;
+}
+
+void ProcessTensorBuffer::set_from_DiagBB_single_line_auto(DiagBB &diagBB, double dt, int n_tot, int n_mem, const TruncatedSVD & trunc, bool print_info, bool reverse){
+
+//std::cout<<"TEST: dt="<<dt<<" n_tot="<<n_tot<<" n_mem="<<n_mem<<std::endl;
+  if(n_mem==-2){ //encodes automatic detection
+    set_from_DiagBB_single_line(diagBB, dt, n_tot);
+    if(get_n_tot()<1){
+      std::cerr<<"ProcessTensorBuffer::set_from_DiagBB_single_line_auto: PTB_line.get_n_tot()<1!"<<std::endl;
+      throw DummyException();
+    }
+
+    TruncatedSVD trunc2=trunc.get_concrete(0);
+    if(reverse){
+      sweep_backward(trunc2, 0);
+      sweep_forward(trunc2, 0);
+    }else{
+      sweep_forward(trunc2, 0);
+      sweep_backward(trunc2, 0);
+    }
+
+/*
+    for(int n=0; n<PTB_line.get_n_tot(); n++){
+      if(n==0)std::cout<<PTB_line.get(n).M.dim_d1;
+      std::cout<<" "<<PTB_line.get(n).M.dim_d2;
+    }
+    std::cout<<"reduce"<<std::endl;
+*/
+    int n_cut=-1;
+    if(get(n_tot-1).M.dim_d1!=1){
+      n_cut=n_tot;
+    }else{
+      for(int n=n_tot-1; n>=0; n--){
+        if(get(n).M.dim_d1!=1){
+          n_cut=n+1;
+          break;
+        } 
+      }
+//      std::cout<<"cutting off single line at n="<<n_cut<<std::endl;
+      calculate_closures();
+      if(n_cut>0)
+      get(n_cut-1).close_off();
+//    resize(n_cut);
+      {
+        ProcessTensorBuffer tmp_buf; tmp_buf.copy_content(*this);
+        clear();
+        for(int n=0; n<n_cut; n++){
+          push_back(tmp_buf.get(n));
+        }
+      }
+/*
+      for(int n=0; n<PTB_line.get_n_tot(); n++){
+        if(n==0)std::cout<<PTB_line.get(n).M.dim_d1;
+        std::cout<<" "<<PTB_line.get(n).M.dim_d2;
+      }
+*/
+    }
+    if(print_info){
+      std::cout<<"Automatic memory truncation: "<<n_tot<<" -> "<<get_n_tot()<<" time steps; memory time: "<<get_n_tot()*dt<<std::endl;
+    }
+  }else{
+    set_from_DiagBB_single_line(diagBB, dt, n_mem);
+    if(print_info){
+      if(n_mem>=n_tot){
+        std::cout<<"No memory truncation"<<std::endl;
+      }else{
+        std::cout<<"Memory truncation: "<<n_mem<<" of "<<n_tot<<std::endl;
+      }
+    }
+#ifdef DIAGBB_COMPRESS_SINGLE_LINE
+  {  //Compress single line before combination
+    if(print_info){
+      std::cout<<"Compressing single line before contraction"<<std::endl;
+    }
+    TruncatedSVD trunc2=trunc.get_concrete(0);
+    sweep_forward(trunc2, 0);
+    sweep_backward(trunc2, 0);
+  }
+#endif
+  }
+}
+
+void ProcessTensorBuffer::set_from_DiagBB(
+                    DiagBB &diagBB, const TimeGrid &tgrid, 
+                    TruncatedSVD trunc, 
+                    double dict_zero, int verbosity){
+
+  trunc.keep = diagBB.get_dim();
+
+//  bool do_check=false;
+  bool debug=false;
+//  bool debug=true;
+
+  double dt = tgrid.dt;
+  int n_tot_new = tgrid.n_tot;
+  int n_mem = tgrid.n_mem;
+
+  if(verbosity>2){
+    std::cout<<"n_tot="<<n_tot_new<<" n_mem="<<n_mem<<std::endl;
+    std::cout<<"Calculating single line..."<<std::endl;
+  }
+
+  ProcessTensorBuffer PTB_line;
+  PTB_line.set_from_DiagBB_single_line_auto(diagBB, dt, n_tot_new, n_mem, trunc, true); 
+  n_mem=get_n_tot();
+  PTB_line.set_from_DiagBB_single_line(diagBB, dt, n_mem);
+
+
+  copy_content(PTB_line);
+  for(int line=1; line<n_tot_new; line++){
+    ShiftExtend shift_extend;
+    shift_extend.shift_second=line;
+    shift_extend.truncate_at = n_tot_new;
+
+    if(verbosity>0){
+      std::cout<<"line: "<<line<<"/"<<n_tot_new<<std::endl;   
+    }
+    if(verbosity>0 || debug){
+      std::cout<<"PTB1: "; print_info(); std::cout<<std::endl;
+      if(debug){std::cout<<"line: "; PTB_line.print_info(); std::cout<<std::endl;}
+    }
+
+    { 
+      TruncatedSVD trunc2=trunc.get_concrete(0);
+      std::cout<<"trunc2 (main): ";trunc2.print_info(); std::cout<<std::endl;
+//#ifdef DIAGBB_SWEEP_FORWARD_2DT
+    sweep_forward(trunc2, verbosity, shift_extend.shift_second-1, shift_extend.shift_second+1);
+//#endif
+    join_and_sweep_forward(PTB_line, trunc2, verbosity, shift_extend);
+    }
+if(debug){std::cout<<"after PTB1 info: "; print_info(); std::cout<<std::endl;}
+
+    sweep_backward(trunc, verbosity, shift_extend.shift_second, -1);
+//std::cout<<"dimensions: "; print_dims(); std::cout<<std::endl;
+
+    for(int loop=0; loop<trunc.intermediate_sweep_n; loop++){
+      if(verbosity>0){
+        std::cout<<"intermediate loop="<<loop<<"/"<<trunc.intermediate_sweep_n<<std::endl;
+      }
+      int range_start=0, range_end=-1;
+/*      if(loop==0){
+        if(line>n_mem)range_start=line-n_mem; 
+      }*/
+      TruncatedSVD trunc2=trunc.get_concrete(loop+1);
+      std::cout<<"trunc2 (iter="<<loop<<"): ";trunc2.print_info(); std::cout<<std::endl;
+      sweep_forward(trunc2, verbosity, range_start, range_end);
+      sweep_backward(trunc2, verbosity, range_start, range_end);
+    }
+if(debug)std::cout<<"line: "<<line<<" done."<<std::endl;   
+  }
+  apply_HilbertSpaceRotation(diagBB.hs_rot, dict_zero);
+if(debug)std::cout<<"from_DiagBB: done."<<std::endl;
+}
+
+void ProcessTensorBuffer::set_from_DiagBB_reverse(
+                    DiagBB &diagBB, const TimeGrid &tgrid, 
+                    TruncatedSVD trunc, 
+                    double dict_zero, int verbosity){
+
+  trunc.keep = diagBB.get_dim();
+
+//  bool do_check=false;
+  bool debug=false;
+//  bool debug=true;
+
+  double dt = tgrid.dt;
+  int n_tot_new = tgrid.n_tot;
+  int n_mem = tgrid.n_mem;
+
+  if(verbosity>2){
+    std::cout<<"n_tot="<<n_tot_new<<" n_mem="<<n_mem<<std::endl;
+    std::cout<<"Calculating single line..."<<std::endl;
+  }
+
+  ProcessTensorBuffer PTB_line;
+//  PTB.set_new_temporary(*this);
+//  PTB_line.set_from_DiagBB_single_line(diagBB, dt, n_mem);
+  PTB_line.set_from_DiagBB_single_line_auto(diagBB, dt, tgrid.n_tot, tgrid.n_mem, trunc, true, true);
+  n_mem=get_n_tot();
+#ifdef DIAGBB_COMPRESS_SINGLE_LINE
+  PTB_line.sweep_backward(trunc, verbosity);
+  PTB_line.sweep_forward(trunc, verbosity);
+#endif
+
+  copy_content(PTB_line);
+
+  for(int line=1; line<n_tot_new; line++){
+    ShiftExtend shift_extend;
+    shift_extend.shift_second=line;
+    shift_extend.truncate_at = n_tot_new;
+
+    if(verbosity>0){
+      std::cout<<"line: "<<line<<"/"<<n_tot_new<<std::endl;   
+    }
+    if(verbosity>0 || debug){
+      std::cout<<"PTB1: "; print_info(); std::cout<<std::endl;
+      if(debug){std::cout<<"line: "; PTB_line.print_info(); std::cout<<std::endl;}
+    }
+
+    join_and_sweep_backward(PTB_line, trunc, verbosity, shift_extend);
+if(debug){std::cout<<"after PTB1 info: "; print_info(); std::cout<<std::endl;}
+
+    sweep_forward(trunc, verbosity, shift_extend.shift_second, -1);
+
+    for(int loop=0; loop<trunc.intermediate_sweep_n; loop++){
+      if(verbosity>0){
+        std::cout<<"intermediate loop="<<loop<<"/"<<trunc.intermediate_sweep_n<<std::endl;
+      }
+      int range_start=0, range_end=-1;
+      if(loop==0){
+        if(line>n_mem)range_start=line-n_mem; 
+      }
+      sweep_backward(trunc, verbosity, range_start, range_end);
+      sweep_forward(trunc, verbosity, range_start, range_end);
+    }
+if(debug)std::cout<<"line: "<<line<<" done."<<std::endl;   
+  }
+  apply_HilbertSpaceRotation(diagBB.hs_rot, dict_zero);
+if(debug)std::cout<<"from_DiagBB_reverse: done."<<std::endl;
+}
+
+void ProcessTensorBuffer::set_from_DiagBB_select(
+                    DiagBB &diagBB, const TimeGrid &tgrid, 
+                    TruncatedSVD trunc, 
+                    double dict_zero, int verbosity){
+
+  trunc.keep = diagBB.get_dim();
+
+//  bool do_check=false;
+  bool debug=false;
+//  bool debug=true;
+
+  double dt = tgrid.dt;
+  int n_tot_new = tgrid.n_tot;
+  int n_mem = tgrid.n_mem;
+
+  if(verbosity>2){
+    std::cout<<"n_tot="<<n_tot_new<<" n_mem="<<n_mem<<std::endl;
+    std::cout<<"Calculating single line..."<<std::endl;
+  }
+
+  ProcessTensorBuffer PTB_line;
+//  PTB.set_new_temporary(*this);
+  PTB_line.set_from_DiagBB_single_line(diagBB, dt, n_mem);
+  PTB_line.sweep_forward(trunc, verbosity);
+
+  copy_content(PTB_line);
+
+  for(int line=1; line<n_tot_new; line++){
+    ShiftExtend shift_extend;
+    shift_extend.shift_second=line;
+    shift_extend.truncate_at = n_tot_new;
+
+    if(verbosity>0){
+      std::cout<<"line: "<<line<<"/"<<n_tot_new<<std::endl;   
+    }
+
+std::cout<<"dims0: "; print_dims(); std::cout<<std::endl;
+    if(shift_extend.shift_second-2<0){
+      sweep_forward(trunc, verbosity, 0);
+    }else{
+      sweep_forward(trunc, verbosity, shift_extend.shift_second-2);
+    }
+
+    if(verbosity>0 || debug){
+      std::cout<<"PTB1: "; print_info(); std::cout<<std::endl;
+      if(debug){std::cout<<"line: "; PTB_line.print_info(); std::cout<<std::endl;}
+    }
+
+std::cout<<"dims1: "; print_dims(); std::cout<<std::endl;
+    join_select_and_sweep_backward(PTB_line, trunc, verbosity, shift_extend);
+std::cout<<"dims2: "; print_dims(); std::cout<<std::endl;
+  if(shift_extend.shift_second>0){
+    sweep_backward(trunc, verbosity, shift_extend.shift_second-1, shift_extend.shift_second+1);
+  }
+
+if(debug){std::cout<<"after PTB1 info: "; print_info(); std::cout<<std::endl;}
+
+    for(int loop=0; loop<trunc.intermediate_sweep_n; loop++){
+      if(verbosity>0){
+        std::cout<<"intermediate loop="<<loop<<"/"<<trunc.intermediate_sweep_n<<std::endl;
+      }
+      int range_start=0, range_end=-1;
+      if(loop==0){
+        if(line>n_mem)range_start=line-n_mem; 
+      }
+      sweep_forward(trunc, verbosity, range_start, range_end);
+if(debug){std::cout<<"after forward info: "; print_info(); std::cout<<std::endl;}
+
+      sweep_backward(trunc, verbosity, range_start, range_end);
+if(debug){std::cout<<"after backward info: "; print_info(); std::cout<<std::endl;}
+    }
+if(debug)std::cout<<"line: "<<line<<" done."<<std::endl;   
+  }
+  apply_HilbertSpaceRotation(diagBB.hs_rot, dict_zero);
+if(debug)std::cout<<"from_DiagBB_select: done."<<std::endl;
+}
+
+
+void ProcessTensorBuffer::set_from_DiagBB_log(
+                    DiagBB &diagBB, const TimeGrid &tgrid, 
+                    TruncatedSVD trunc, 
+                    double dict_zero, int verbosity){
+
+  trunc.keep = diagBB.get_dim();
+std::cout<<"set_from_DiagBB_log: "; trunc.print_info(); std::cout<<std::endl;
+
+//  bool do_check=false;
+  bool debug=false;
+
+  double dt = tgrid.dt;
+  int n_tot_new = tgrid.n_tot;
+  int n_mem = tgrid.n_mem;
+
+  if(verbosity>2){
+    std::cout<<"n_tot="<<n_tot_new<<" n_mem="<<n_mem<<std::endl;
+    std::cout<<"Calculating single line..."<<std::endl;
+  }
+
+//  set_from_DiagBB_single_line(diagBB, dt, n_mem);
+  set_from_DiagBB_single_line_auto(diagBB, dt, n_tot_new, n_mem, trunc, true);
+  n_mem=get_n_tot();
+
+
+  for(int loop=0; loop<trunc.intermediate_sweep_n; loop++){
+    std::cout<<"initial intermediate loop="<<loop<<"/"<<trunc.intermediate_sweep_n<<std::endl;
+    TruncatedSVD trunc2=trunc.get_concrete(loop+1);
+    std::cout<<"trunc2 (iter="<<loop<<"): ";trunc2.print_info(); std::cout<<std::endl;
+
+    sweep_forward(trunc2, verbosity);
+if(debug){std::cout<<"after forward info: "; print_info(); std::cout<<std::endl;}
+    sweep_backward(trunc2, verbosity);
+if(debug){std::cout<<"after backward info: "; print_info(); std::cout<<std::endl;}
+  }
+
+
+  for(int line=1; line<n_tot_new; line*=2){
+    ShiftExtend shift_extend;
+    shift_extend.shift_second=line;
+    shift_extend.truncate_at = n_tot_new;
+#ifdef DIAGBB_SWEEP_MORE_MEM
+    shift_extend.sweep_more = n_mem;
+    std::cout<<"shift_extend.sweep_more="<<shift_extend.sweep_more<<std::endl;
+#elif defined(DIAGBB_SWEEP_MORE)
+    shift_extend.sweep_more = DIAGBB_SWEEP_MORE;
+    std::cout<<"shift_extend.sweep_more="<<shift_extend.sweep_more<<std::endl;
+#else
+    shift_extend.sweep_more = -1;
+    std::cout<<"shift_extend.sweep_more="<<shift_extend.sweep_more<<std::endl;
+#endif
+
+    if(verbosity>0){
+      std::cout<<"line: "<<line<<"/"<<n_tot_new<<std::endl;   
+    }
+
+/*
+    if(shift_extend.sweep_more>0){
+      int range_start=line/2-shift_extend.sweep_more;
+      if(range_start<0)range_start=0;
+      sweep_forward(trunc, verbosity, range_start);
+    }else{
+      sweep_forward(trunc, verbosity);
+    }
+*/
+    sweep_forward(trunc, verbosity);
+
+if(debug){std::cout<<"before PTB1 info: "; print_info(); std::cout<<std::endl;}
+    ProcessTensorBuffer PTB2;
+if(debug){std::cout<<"before PTB2 info: "; PTB2.print_info(); std::cout<<std::endl;}
+    PTB2.copy_read_only(*this);
+//    PTB2.set_new_temporary(*this);
+//    PTB2.copy_content(*this);
+    if(verbosity>0){
+      std::cout<<"PTB1: "; print_info(); std::cout<<std::endl;
+    }
+if(debug){std::cout<<"after PTB2 info: "; PTB2.print_info(); std::cout<<std::endl;}
+ 
+    { 
+      TruncatedSVD trunc_tmp=trunc.get_select();
+      join_select_and_sweep_backward(PTB2, trunc_tmp, verbosity, shift_extend);
+    }
+
+if(debug){std::cout<<"after PTB1 info: "; print_info(); std::cout<<std::endl;}
+
+//    sweep_backward(trunc, verbosity, 0, shift_extend.shift_second+1);
+
+    for(int loop=0; loop<trunc.intermediate_sweep_n; loop++){
+      if(verbosity>0){
+        std::cout<<"intermediate loop="<<loop<<"/"<<trunc.intermediate_sweep_n<<std::endl;
+      }
+      int range_start=0, range_end=-1;
+      if(loop==0){
+//        if(line>n_mem)range_start=line-n_mem; 
+//        range_start=line-1; 
+      }
+      TruncatedSVD trunc2=trunc.get_concrete(loop+1);
+      std::cout<<"trunc2 (iter="<<loop<<"): ";trunc2.print_info(); std::cout<<std::endl;
+
+      sweep_forward(trunc2, verbosity, range_start, range_end);
+if(debug){std::cout<<"after forward info: "; print_info(); std::cout<<std::endl;}
+      sweep_backward(trunc2, verbosity, range_start, range_end);
+if(debug){std::cout<<"after backward info: "; print_info(); std::cout<<std::endl;}
+    }
+if(debug)std::cout<<"line: "<<line<<" done."<<std::endl;   
+  }
+
+  if(verbosity>0){std::cout<<"finalizing"<<std::endl;}
+  expand_DiagBB(diagBB, dict_zero);
+//  apply_HilbertSpaceRotation(diagBB.hs_rot); //<- now included in expand_DiagBB
+
+if(debug)std::cout<<"from_DiagBB_log: done."<<std::endl;
+}
+
+
+
+void ProcessTensorBuffer::set_from_ModePropagator(
+            ModePropagator &mprop, const TimeGrid &tgrid, double dict_zero){
+
+  clear(); 
+  int n_max=tgrid.n_tot;
+
+//  int N=mprop.get_N_system();
+  int N_mode=mprop.get_N_mode();
+ 
+  ProcessTensorElement element;
+  for(int n=0; n<n_max; n++){
+    element.set_from_ModePropagator(mprop, tgrid.get_t(n), tgrid.get_dt(n), dict_zero);
+    if(n==0){
+      Eigen::VectorXcd bath_init=H_Matrix_to_L_Vector(mprop.get_bath_init());
+      element.M.inner_multiply_left(bath_init.transpose());
+    }
+    if(n==n_max-1){
+      Eigen::VectorXcd Tr=H_Matrix_to_L_Vector(Eigen::MatrixXcd::Identity(N_mode,N_mode));
+      element.closure=Eigen::VectorXcd::Ones(1);
+      element.env_ops.set_ill_defined();
+      element.M.inner_multiply_right(Tr);
+    }
+    push_back(element);
+  } 
+}
+
+void ProcessTensorBuffer::add_modes(
+          ModePropagatorGenerator &mpg, const TimeGrid &tgrid,
+          const TruncatedSVD & trunc, int intermediate_sweep_n,
+          double dict_zero, int verbosity){
+  
+  int n_max=tgrid.n_tot;
+  if(n_max!=n_tot){
+    std::cerr<<"ProcessTensorBuffer::add_modes: n_max!=n_tot!"<<std::endl;
+    throw DummyException();
+  }
+  if(n_max<1){
+    return;
+  }
+  int N=mpg.get_N();
+  if(N!=get(0).get_N()){
+    std::cerr<<"ProcessTensorBuffer::add_modes: N!=get(0).get_N()!"<<std::endl;
+    throw DummyException();
+  }
+  if(verbosity>0){
+    std::cout<<"Calculating PT for Generator '"<<mpg.name()<<"'"<<std::endl;
+  }
+
+  for(int k=mpg.first(); k<mpg.get_N_modes(); k=mpg.next(k)){
+    if(verbosity>0){
+      std::cout<<"Mode "<<k<<"/"<<mpg.get_N_modes()<<std::endl;
+    }
+    ModePropagatorPtr mpp=mpg.getModePropagator(k);
+
+    ProcessTensorBuffer PTB;
+    PTB.set_new_temporary(*this);
+    PTB.set_from_ModePropagator(mpp.ref(), tgrid, dict_zero);
+
+    sweep_forward(trunc, verbosity);
+    PTB.sweep_forward(trunc, verbosity);
+
+    join_select_and_sweep_backward(PTB, trunc, verbosity);
+   
+    for(int loop=0; loop<intermediate_sweep_n; loop++){
+      sweep_forward(trunc, verbosity);
+      sweep_backward(trunc, verbosity);
+    }
+  }
+}
+void ProcessTensorBuffer::add_modes_tree_get(int level, int max_level, 
+          int first_elem, ModePropagatorGenerator &mpg, const TimeGrid &tgrid,
+          const TruncatedSVD & trunc, int intermediate_sweep_n,
+          double dict_zero, int verbosity){
+                                             
+  if(level==0){
+    if(first_elem>=mpg.get_N_modes()){
+      std::cerr<<"add_modes_tree_get: level="<<level<<"/"<<max_level<<" first_elem="<<first_elem<<": first_element>=mpg.get_N_modes()="<<mpg.get_N_modes()<<"!"<<std::endl;
+      throw DummyException();
+    }
+    
+    if(verbosity>0){
+      std::cout<<"--------------------------------------------"<<std::endl;
+      std::cout<<"level: "<<level<<"/"<<max_level<<" first_elem: "<<first_elem<<"/"<<pow(2,max_level-1-level)<<std::endl;
+      std::cout<<"--------------------------------------------"<<std::endl;
+    }
+    if(mpg.skip_list[first_elem]){
+      set_trivial(tgrid.n_tot, mpg.get_N());
+    }else{
+      ModePropagatorPtr mpp=mpg.getModePropagator(first_elem);
+      set_from_ModePropagator(mpp.ref(), tgrid, dict_zero);
+    }
+  }else{  
+    clear();
+    add_modes_tree_get(level-1, max_level, 2*first_elem, mpg, tgrid, trunc, intermediate_sweep_n, dict_zero, verbosity);
+
+    ProcessTensorBuffer PTB2;
+    PTB2.set_new_temporary(*this);
+    PTB2.add_modes_tree_get(level-1, max_level, 2*first_elem+1, mpg, tgrid, trunc, intermediate_sweep_n, dict_zero, verbosity);
+
+    if(verbosity>0){
+      std::cout<<"--------------------------------------------"<<std::endl;
+      std::cout<<"level: "<<level<<"/"<<max_level<<" first_elem: "<<first_elem<<"/"<<pow(2,max_level-1-level)<<std::endl;
+      std::cout<<"--------------------------------------------"<<std::endl;
+    }
+    if(verbosity>0)std::cout<<"sweep first forward"<<std::endl;
+    sweep_forward(trunc, verbosity);
+    if(verbosity>0)std::cout<<"sweep second forward"<<std::endl;
+    PTB2.sweep_forward(trunc, verbosity);
+    if(verbosity>0)std::cout<<"join and sweep backward"<<std::endl;
+   
+    TruncatedSVD trunc_select=trunc.get_select(level, max_level-1);
+    trunc_select.print_info(); std::cout<<std::endl;
+    join_select_and_sweep_backward(PTB2, trunc_select, verbosity);
+  
+    for(int loop=0; loop<intermediate_sweep_n; loop++){
+      if(verbosity>0)std::cout<<"sweep intermediate "<<loop<<"/"<<intermediate_sweep_n<<" forward"<<std::endl;
+      sweep_forward(trunc, verbosity);
+      if(verbosity>0)std::cout<<"sweep intermediate "<<loop<<"/"<<intermediate_sweep_n<<" backward"<<std::endl;
+      sweep_backward(trunc, verbosity);
+    }
+  }
+}
+
+void ProcessTensorBuffer::set_from_modes_tree(
+          ModePropagatorGenerator &mpg, const TimeGrid &tgrid,
+          const TruncatedSVD & trunc, int intermediate_sweep_n,
+          double dict_zero, int verbosity){
+
+  int N_modes=mpg.get_N_modes();
+  if(N_modes<1)return;
+
+  int N_hierarchy=1;
+  {int N_shift=N_modes;
+    while(N_shift>1){
+      N_hierarchy++;
+      N_shift=N_shift>>1;
+    }
+  }
+  if(N_modes!=pow(2, N_hierarchy-1)){
+    std::cerr<<"ProcessTensorBuffer::add_modes_tree: N_modes="<<N_modes<<" != 2^"<<N_hierarchy-1<<"="<<pow(2, N_hierarchy-1)<<" => not a power of 2!"<<std::endl;
+    throw DummyException();
+  } 
+  if(verbosity>0)std::cout<<"N_modes="<<N_modes<<"=2^"<<N_hierarchy-1<<std::endl;
+
+  set_new_temporary(*this);
+  add_modes_tree_get(N_hierarchy-1, N_hierarchy, 0, mpg, tgrid, trunc, 
+                          intermediate_sweep_n, dict_zero, verbosity);
+ 
+}
+void ProcessTensorBuffer::add_modes_tree(
+          ModePropagatorGenerator &mpg, const TimeGrid &tgrid,
+          const TruncatedSVD & trunc, int intermediate_sweep_n,
+          double dict_zero, int verbosity){
+
+  if(n_tot != tgrid.n_tot){
+    std::cerr<<"ProcessTensorBuffer::add_modes_tree: n_tot != tgrid.n_tot ("<<n_tot<<" vs. "<<tgrid.n_tot<<")!"<<std::endl;
+    throw DummyException();
+  }
+
+  sweep_forward(trunc, verbosity);
+  ProcessTensorBuffer PTB2;
+  PTB2.set_from_modes_tree(mpg, tgrid, trunc, intermediate_sweep_n, dict_zero, verbosity);
+
+  if(verbosity>0){
+    std::cout<<"------------------------"<<std::endl;
+    std::cout<<"combine_tree: last step:"<<std::endl;
+    std::cout<<"------------------------"<<std::endl;
+  }
+
+  PTB2.sweep_forward(trunc, verbosity);
+
+  join_select_and_sweep_backward(PTB2, trunc, verbosity);
+ 
+  for(int loop=0; loop<intermediate_sweep_n; loop++){
+    if(verbosity>0)std::cout<<"sweep intermediate "<<loop<<"/"<<intermediate_sweep_n<<" forward"<<std::endl;
+    sweep_forward(trunc, verbosity);
+    if(verbosity>0)std::cout<<"sweep intermediate "<<loop<<"/"<<intermediate_sweep_n<<" backward"<<std::endl;
+    sweep_backward(trunc, verbosity);
+  }
+}
+
+void ProcessTensorBuffer::clean_up(){
+//  std::cout<<"clean up: info: "; print_info(); std::cout<<std::endl;
+  if(use_file){
+    if(is_temporary){ 
+      delete_files();
+    }else if(read_only){
+    }else if(use_single_file){
+      write_release_block(0);
+    }else if(current_block>=0){
+      write_release_block(current_block);
+      write_header();
+      wait_write();
+    }
+  }
+}
+
+
+//Initializers
+void ProcessTensorBuffer::initialize(const ProcessTensorBufferSpec & spec){
+  ProcessTensorBufferSpec::copy(spec);
+  n_tot=0; n=0;
+  current_block=-1;
+  clear_preload();
+  preload_block=-1;
+  clear_buffer();
+  if(is_temporary && fname_header==""){
+    TempFileName tmpname; fname_header=tmpname; tmpname.fname="";
+  }
+}
+void ProcessTensorBuffer::set_new_single_file(const std::string &fname){
+  if(fname==""){
+    std::cerr<<"ProcessTensorBuffer::set_new_single_file: fname is empty!"<<std::endl;
+    throw DummyException();
+  }
+  use_file=true;
+  use_single_file=true;
+  is_temporary=false;
+  blocksize=-1;
+  fname_header=fname;
+  clear_preload();
+  clear_write_buffer();
+  current_block=-1;
+}
+void ProcessTensorBuffer::set_new_file(const std::string &fname, int blocksize_){
+  if(fname==""){
+    std::cerr<<"ProcessTensorBuffer::set_new_file: fname is empty!"<<std::endl;
+    throw DummyException();
+  }
+  if(blocksize_<1){
+    set_new_single_file(fname);
+    return;
+  }
+  initialize();
+  blocksize=blocksize_;
+  use_file=true;
+  is_temporary=false;
+  use_single_file=false;
+  blocksize=blocksize_;
+  fname_header=fname;
+  clear_preload();
+  clear_write_buffer();
+  write_all();
+}
+
+void ProcessTensorBuffer::set_new_temporary(int blocksize_){
+  std::string tmpfile;
+  {TempFileName tmpname; tmpfile=tmpname; tmpname.fname="";}
+
+  set_new_file(tmpfile, blocksize_);
+  is_temporary=true;
+  clear_preload();
+  clear_write_buffer();
+  current_block=-1;
+  write_all();
+}
+
+void ProcessTensorBuffer::set_new_temporary(const ProcessTensorBufferSpec &other){
+  ProcessTensorBufferSpec::copy(other);
+  if(use_file){
+    TempFileName tmpname; fname_header=tmpname; tmpname.fname="";
+  }
+  is_temporary=true;
+  clear_preload();
+  clear_write_buffer();
+  current_block=-1;
+  write_all();
+}
+
+void ProcessTensorBuffer::set_preload_none(){
+  wait_preload();
+  clear_preload();
+  preload_block=-1;
+  preload_lock=false;
+}
+void ProcessTensorBuffer::set_write_buffer_none(){
+  if(use_async_write){
+    wait_write();
+  }
+  clear_write_buffer();
+  write_buffer_block=-1;
+  write_buffer_lock=false;
+}
+
+//Inherited from ProcessTensorForward:
+
+const ProcessTensorElement * ProcessTensorBuffer::current(){
+  return &get(ProcessTensorForward::n); //, ForwardPreload);
+}
+
+}

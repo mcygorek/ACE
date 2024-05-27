@@ -1,0 +1,27 @@
+#times and frequencies rescaled such that Markovian rate is 1/(64 ps)
+te                      {4*64}
+dt                      {1/8192*64}
+threshold               1e-9
+set_precision          12
+use_symmetric_Trotter   true
+
+buffer_blocksize     2048
+use_Gaussian_log  true
+
+
+initial {0.5*0.5*((Id_2+sigma_x) otimes (Id_2+sigma_x))}
+Boson_SysOp         { (sigma_z otimes Id_2 + Id_2 otimes sigma_z)}
+Boson_rate          {1/64}
+Boson_omega_min     {-1000/64}
+Boson_omega_max     {3000/64}
+Boson_J_cutoff_min_logistic     0 {100/64}
+Boson_J_cutoff_max_logistic  {2000/64} {100/64}
+
+add_Hamiltonian {hbar*(1000/64)* 0.5*((Id_2+sigma_x) otimes Id_2 + Id_2 otimes (Id_2+sigma_x))}
+
+add_Output  {0.5*( (Id_2+sigma_x) otimes Id_2 + Id_2 otimes (Id_2+sigma_x))}
+
+
+write_PT photon.pt
+outfile  generate_photon_PT.out
+

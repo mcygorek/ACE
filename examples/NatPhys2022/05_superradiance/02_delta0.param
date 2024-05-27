@@ -1,0 +1,13 @@
+te                          2.5 
+dt                          2e-3 
+
+add_Hamiltonian  { 0*Id_4}
+initial          { |1><1|_2 otimes |1><1|_2}
+
+add_Output       { |1><1|_2 otimes Id_2 }
+add_Output       { Id_2 otimes |1><1|_2 }
+
+
+add_PT   superradiance.pt
+
+outfile  02_delta0.out

@@ -1,0 +1,346 @@
+<!DOCTYPE HTML>
+
+<!--Converted with LaTeX2HTML 2021.2 (Released July 1, 2021) -->
+<HTML lang="en">
+<HEAD>
+<TITLE>Bosonic environments</TITLE>
+<META NAME="description" CONTENT="Bosonic environments">
+<META NAME="keywords" CONTENT="documentation">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="viewport" CONTENT="width=device-width, initial-scale=1.0">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2021.2">
+
+<LINK REL="STYLESHEET" HREF="documentation.css">
+
+<LINK REL="next" HREF="node8.html">
+<LINK REL="previous" HREF="node6.html">
+<LINK REL="next" HREF="node8.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A
+ HREF="node8.html">
+<IMG WIDTH="37" HEIGHT="24" ALT="next" SRC="next.png"></A> 
+<A
+ HREF="node5.html">
+<IMG WIDTH="26" HEIGHT="24" ALT="up" SRC="up.png"></A> 
+<A
+ HREF="node6.html">
+<IMG WIDTH="63" HEIGHT="24" ALT="previous" SRC="prev.png"></A>   
+<BR>
+<B> Next:</B> <A
+ HREF="node8.html">Predefined spectral densities</A>
+<B> Up:</B> <A
+ HREF="node5.html">Including environments</A>
+<B> Previous:</B> <A
+ HREF="node6.html">Fermionic environment</A>
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H2><A ID="SECTION00052000000000000000">
+Bosonic environments</A>
+</H2>
+The class of <code>Boson_*</code> environments covers environment 
+Hamiltonians of the form
+<P></P>
+<DIV CLASS="displaymath"><!-- MATH
+ \begin{equation}
+H_E=
+\sum_{\mathbf{k}} \bigg[\hbar\omega_\mathbf{k}a^\dagger_\mathbf{k}a_\mathbf{k}
++ \hbar g_\mathbf{k}\big(a^\dagger_\mathbf{k} \hat{O}_{sys}
++a_\mathbf{k} \hat{O}_{sys}^\dagger\big) \bigg].
+\end{equation}
+ -->
+<TABLE CLASS="equation" >
+<TR>
+<TD  style="text-align:center;"><SPAN CLASS="MATH"><IMG
+ STYLE="height: 6.84ex; vertical-align: -3.18ex; " SRC="img89.svg"
+ ALT="$\displaystyle H_E=
+\sum_{\mathbf{k}} \bigg[\hbar\omega_\mathbf{k}a^\dagger_\mat...
+...agger_\mathbf{k} \hat{O}_{sys}
++a_\mathbf{k} \hat{O}_{sys}^\dagger\big) \bigg].$"></SPAN></TD>
+<TD  CLASS="eqno" style="text-align:right">
+(<SPAN CLASS="eqn-number">10</SPAN>)</TD></TR>
+</TABLE></DIV>
+<P></P>
+In the case <!-- MATH
+ $\hat{O}_{sys}=|1><1|_2$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 3.29ex; vertical-align: -0.78ex; " SRC="img90.svg"
+ ALT="$\hat{O}_{sys}=\vert 1&gt;&lt;1\vert _2$"></SPAN>, this leads to the independent boson model,
+which is often used to model the effects of vibrational baths (phonons).
+If instead <!-- MATH
+ $\hat{O}_{sys}=|0><1|_2$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 3.29ex; vertical-align: -0.78ex; " SRC="img91.svg"
+ ALT="$\hat{O}_{sys}=\vert&gt;&lt;1\vert _2$"></SPAN> is used, the Hamiltonian describes 
+Jaynes-Cummings interactions, e.g., a quantum emitter coupled to
+photon modes. This name of the parameter for this operator is 
+<code>Boson_SysOp</code>.
+
+<P>
+The command line arguments are similar to that for the Fermionic case, only 
+that <code>Fermion_*</code> is replaced by <code>Boson_*</code>.
+The main differences to the Fermionic case are that initial thermal states 
+now follow Bose statistics and that the number of 
+excitations per mode is, in principle, unbounded. Here, we truncate the
+Boson Hilbert space per mode and only account for the <SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.01ex; vertical-align: -0.11ex; " SRC="img92.svg"
+ ALT="$M$"></SPAN> lowest states,
+i.e. <SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.20ex; vertical-align: -0.30ex; " SRC="img93.svg"
+ ALT="$M-1$"></SPAN> excitations. This information if provided to the code by the
+parameter <code>Boson_M</code>, whose default value is <SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.01ex; vertical-align: -0.11ex; " SRC="img94.svg"
+ ALT="$M=2$"></SPAN>. 
+
+<P>
+As a first example, consider the radiative decay of an initially excited
+two-level quantum emitter. The corresponding parameter file 
+<code>radiative_decay.param</code> is
+
+<P>
+
+<PRE>
+te                  2.5
+dt                  1e-1
+threshold           1e-5
+
+Boson_N_modes       20
+Boson_SysOp         {|0&gt;&lt;1|_2}
+Boson_rate           1 
+Boson_omega_min    -10 
+Boson_omega_max     10
+Boson_temperature    0
+
+initial             {|1&gt;&lt;1|_2}
+
+outfile             radiative_decay.out
+</PRE>
+
+
+<P>
+The resulting dynamics resembles the Markovian result with excited state
+occupations
+<!-- MATH
+ $\langle (|1\rangle\langle 1|) \rangle= \exp(-t)$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.74ex; vertical-align: -0.69ex; " SRC="img95.svg"
+ ALT="$\langle (\vert 1\rangle\langle 1\vert) \rangle= \exp(-t)$"></SPAN>. 
+(Again, an environment with larger band width would lead to a more Markovian 
+behaviour, but has to be discretized with more modes and therefore takes
+longer to calculate.).
+
+<P>
+One caveat for calculations at finite temperatures: The Jaynes-Cummings 
+Hamiltonian acts in the rotating frame. This means that the physical energy 
+of a Bosonic excitation is actually <!-- MATH
+ $(\hbar\omega + E_{shift}) n$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.87ex; vertical-align: -0.81ex; " SRC="img96.svg"
+ ALT="$(\hbar\omega + E_{shift}) n $"></SPAN>, where 
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.71ex; vertical-align: -0.81ex; " SRC="img97.svg"
+ ALT="$E_{shift}$"></SPAN> is the energy shift corresponding to the frequency of 
+the rotating frame. Hence, negative values of <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.42ex; vertical-align: -0.11ex; " SRC="img98.svg"
+ ALT="$\omega$"></SPAN> are physically allowed 
+if their modulus is smaller than <SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.71ex; vertical-align: -0.81ex; " SRC="img97.svg"
+ ALT="$E_{shift}$"></SPAN>. For initial thermal states, 
+this value can be provided by <code>Boson_E_shift_init</code> or 
+<code>Boson_omega_shift_init</code>. The latter is internally multiplied by <SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.02ex; vertical-align: -0.11ex; " SRC="img99.svg"
+ ALT="$\hbar$"></SPAN>.
+
+<P>
+For structured baths where every environment mode is coupled to the system
+with a different strength, i.e., <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.87ex; vertical-align: -0.56ex; " SRC="img100.svg"
+ ALT="$g_k$"></SPAN> is not constant as a function of <SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.03ex; vertical-align: -0.11ex; " SRC="img6.svg"
+ ALT="$k$"></SPAN>,
+there are different ways to pass the values for <!-- MATH
+ $E_k=\hbar\omega_k$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.40ex; vertical-align: -0.48ex; " SRC="img101.svg"
+ ALT="$E_k=\hbar\omega_k$"></SPAN> and
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.87ex; vertical-align: -0.56ex; " SRC="img100.svg"
+ ALT="$g_k$"></SPAN> to the code. One way is to compile a file with two columns, the first
+listing the values of <SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.38ex; vertical-align: -0.48ex; " SRC="img102.svg"
+ ALT="$E_k$"></SPAN> (or <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.80ex; vertical-align: -0.48ex; " SRC="img103.svg"
+ ALT="$\omega_k$"></SPAN>) and the second listing 
+the corresponding values of <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.87ex; vertical-align: -0.56ex; " SRC="img100.svg"
+ ALT="$g_k$"></SPAN>. Please make sure the number of lines
+matches <code>Boson_N_modes</code>. The name of this file can be passed to the 
+code by the argument <code>Boson_E_g_from_table</code> 
+(or <code>Boson_omega_g_from_table</code>). 
+For example, if we create the file &ldquo;N20.tab&rdquo; with the 20 lines
+<PRE>
+-9.5   {1/sqrt(2*pi)}
+-8.5   {1/sqrt(2*pi)}
+-7.5   {1/sqrt(2*pi)}
+-6.5   {1/sqrt(2*pi)}
+...
+ 9.5   {1/sqrt(2*pi)}
+</PRE>
+the following driver file
+<PRE>
+te                  2.5  
+dt                  1e-1  
+threshold           1e-5  
+ 
+Boson_N_modes       20  
+Boson_SysOp         {|0&gt;&lt;1|_2}  
+Boson_omega_g_from_table   N20.tab 
+Boson_temperature    0  
+ 
+initial             {|1&gt;&lt;1|_2}  
+ 
+outfile             radiative_decay_tab.out
+</PRE>
+exactly reproduces the results in &ldquo;radiative_decay.out&rdquo;.
+
+<P>
+Another way, which is highly recommended, is to use instead a spectral density
+defined by
+<P></P>
+<DIV CLASS="displaymath"><!-- MATH
+ \begin{equation}
+J(\omega)=\sum_k g_k^2 \delta(\omega-\omega_k)
+\end{equation}
+ -->
+<TABLE CLASS="equation" >
+<TR>
+<TD  style="text-align:center;"><SPAN CLASS="MATH"><IMG
+ STYLE="height: 5.92ex; vertical-align: -3.18ex; " SRC="img104.svg"
+ ALT="$\displaystyle J(\omega)=\sum_k g_k^2 \delta(\omega-\omega_k)$"></SPAN></TD>
+<TD  CLASS="eqno" style="text-align:right">
+(<SPAN CLASS="eqn-number">11</SPAN>)</TD></TR>
+</TABLE></DIV>
+<P></P>
+which is assumed to be a continuous function of <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.42ex; vertical-align: -0.11ex; " SRC="img98.svg"
+ ALT="$\omega$"></SPAN> 
+in the limit of infinitely fine discretization. 
+The spectral density has a more intuitive interpretation. For example, 
+in the case of radiative decay, the radiative decay rate in the Markov
+limit of a system driven with frequency <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.42ex; vertical-align: -0.11ex; " SRC="img98.svg"
+ ALT="$\omega$"></SPAN> is <!-- MATH
+ $2\pi J(\omega)$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.74ex; vertical-align: -0.69ex; " SRC="img105.svg"
+ ALT="$2\pi J(\omega)$"></SPAN>, 
+a finding which we reproduce numerically next. 
+In contrast, to reproduce a given rate, the values of <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.87ex; vertical-align: -0.56ex; " SRC="img100.svg"
+ ALT="$g_k$"></SPAN> have to be modified
+when the discretization changes.
+
+<P>
+A spectral density can be provided to the ACE code in the form of a file that
+contains two columns corresponding to a set of sample points <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.77ex; vertical-align: -0.45ex; " SRC="img106.svg"
+ ALT="$\omega_i$"></SPAN> and
+<!-- MATH
+ $J(\omega_i)$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.74ex; vertical-align: -0.69ex; " SRC="img107.svg"
+ ALT="$J(\omega_i)$"></SPAN>. The sample points <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.77ex; vertical-align: -0.45ex; " SRC="img106.svg"
+ ALT="$\omega_i$"></SPAN> are not related to the 
+discretization used for defining the set of environment modes. Instead, the
+frequency domain from <code>Boson_omega_min</code> to <code>Boson_omega_max</code> is
+discretized into <code>Boson_N_modes</code> intervals and the corresponding values
+for <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.87ex; vertical-align: -0.56ex; " SRC="img100.svg"
+ ALT="$g_k$"></SPAN> are obtained by linearly interpolating between the closest sample
+points to <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.80ex; vertical-align: -0.48ex; " SRC="img103.svg"
+ ALT="$\omega_k$"></SPAN> in the spectral density file. This way, the spectral 
+density file has to be generated only once and can be reused for calculations
+with different mode discretizations. In the following example, we reproduce 
+the above result for radiative decay, now using a flat spectral density. 
+To this end, generate the file <SPAN  CLASS="texttt">Jflat.J</SPAN> with the following two lines
+<PRE>
+-100. 1.
+ 100. 1.
+</PRE>
+Therefore, all interpolated values of <SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.74ex; vertical-align: -0.69ex; " SRC="img108.svg"
+ ALT="$J(\omega)$"></SPAN> will be 1. We then 
+use the parameter file
+<PRE>
+te                  2.5
+dt                  1e-1
+threshold           1e-5
+
+Boson_N_modes       20
+Boson_SysOp         {|0&gt;&lt;1|_2}
+Boson_J_from_file    Jflat.J
+Boson_J_scale        {1/(2*pi)}   
+Boson_omega_min    -10
+Boson_omega_max     10
+Boson_temperature    0
+
+initial             {|1&gt;&lt;1|_2}
+
+outfile             Jflat.out
+</PRE>
+
+<P>
+The parameter <code>Boson_J_scale</code> rescales the spectral density by a global
+factor for all sample points, in this case <SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.74ex; vertical-align: -0.69ex; " SRC="img109.svg"
+ ALT="$1/(2\pi)$"></SPAN>, so the expected
+Markovian rate will be <!-- MATH
+ $2\pi J(\omega)=2\pi (1/(2 \pi))=1$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.74ex; vertical-align: -0.69ex; " SRC="img110.svg"
+ ALT="$2\pi J(\omega)=2\pi (1/(2 \pi))=1$"></SPAN>. Please check 
+that this approach reproduces exactly the result for radiative decay 
+discussed above.
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A
+ HREF="node8.html">
+<IMG WIDTH="37" HEIGHT="24" ALT="next" SRC="next.png"></A> 
+<A
+ HREF="node5.html">
+<IMG WIDTH="26" HEIGHT="24" ALT="up" SRC="up.png"></A> 
+<A
+ HREF="node6.html">
+<IMG WIDTH="63" HEIGHT="24" ALT="previous" SRC="prev.png"></A>   
+<BR>
+<B> Next:</B> <A
+ HREF="node8.html">Predefined spectral densities</A>
+<B> Up:</B> <A
+ HREF="node5.html">Including environments</A>
+<B> Previous:</B> <A
+ HREF="node6.html">Fermionic environment</A></DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

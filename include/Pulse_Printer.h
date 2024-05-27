@@ -1,10 +1,11 @@
 #ifndef PULSE_PRINTER_DEFINED_H
 #define PULSE_PRINTER_DEFINED_H
 
-#include "Parameters.h"
-#include "FreePropagator.h"
-#include "slowFT.h"
+#include "Parameters.hpp"
+#include "FreePropagator.hpp"
+#include "slowFT.hpp"
 
+namespace ACE{
 
 void Pulse_Printer(Parameters &param, FreePropagator &fprop){
   double ta=param.get_as_double("ta",0.);
@@ -18,9 +19,9 @@ void Pulse_Printer(Parameters &param, FreePropagator &fprop){
     if(sv.size()<1){std::cerr<<errmsg<<std::endl; exit(1);}
 
     double ftlim_a, ftlim_b;
-    if(sv.size()>1){ftlim_a=Reader::readDouble(sv[1], "print_pulse_FT: E_low");}
+    if(sv.size()>1){ftlim_a=readDouble(sv[1], "print_pulse_FT: E_low");}
     else{ ftlim_a=-3.; }
-    if(sv.size()>2){ftlim_b=Reader::readDouble(sv[2], "print_pulse_FT: E_high");}
+    if(sv.size()>2){ftlim_b=readDouble(sv[2], "print_pulse_FT: E_high");}
     else{ ftlim_b=3.; }
 
     int Nsteps=((te-ta)/dt)*(Nintermediate+1)+1;
@@ -37,5 +38,5 @@ void Pulse_Printer(Parameters &param, FreePropagator &fprop){
 }
 
 
-
+}//namespace
 #endif

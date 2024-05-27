@@ -61,7 +61,9 @@ Css: p.indent{text-indent:0;}
 Css: p + p{margin-top:1em;}
 Css: p + div, p + pre {margin-top:1em;}
 Css: div + p, pre + p {margin-top:1em;}
+Css: a { overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; hyphens: auto; }
 Css: @media print {div.crosslinks {visibility:hidden;}}
+Css: table.tabular{border-collapse: collapse; border-spacing: 0;}
 Css: a img { border-top: 0; border-left: 0; border-right: 0; }
 Font_Css("4"): .small-caps{font-variant: small-caps; }
 Font_Css("10"): .htf-cmbx {font-weight: bold; font-style:normal;}
@@ -73,15 +75,18 @@ Css: center { margin-top:1em; margin-bottom:1em; }
 Css: td center { margin-top:0em; margin-bottom:0em; }
 Css: .Canvas { position:relative; }
 Css: img.math{vertical-align:middle;}
+Css: div.par-math-display, div.math-display{text-align:center;}
 Css: li p.indent { text-indent: 0em }
 Css: li p:first-child{ margin-top:0em; }
 Css: li p:last-child, li div:last-child { margin-bottom:0.5em; }
+Css: li p:first-child{ margin-bottom:0; }
 Css: li p~ul:last-child, li p~ol:last-child{ margin-bottom:0.5em; }
 Css: .enumerate1 {list-style-type:decimal;}
 Css: .enumerate2 {list-style-type:lower-alpha;}
 Css: .enumerate3 {list-style-type:lower-roman;}
 Css: .enumerate4 {list-style-type:upper-alpha;}
 Css: div.newtheorem { margin-bottom: 2em; margin-top: 2em;}
+Css: div.newtheorem .head{font-weight: bold;}
 Css: .obeylines-h,.obeylines-v {white-space: nowrap; }
 Css: div.obeylines-v p { margin-top:0; margin-bottom:0; }
 Css: .overline{ text-decoration:overline; }
@@ -89,7 +94,7 @@ Css: .overline img{ border-top: 1px solid black; }
 Css: td.displaylines {text-align:center; white-space:nowrap;}
 Css: .centerline {text-align:center;}
 Css: .rightline {text-align:right;}
-Css: div.verbatim {font-family: monospace,monospace; white-space: nowrap; text-align:left; clear:both; }
+Css: pre.verbatim {font-family: monospace,monospace; text-align:left; clear:both; }
 Css: .fbox {padding-left:3.0pt; padding-right:3.0pt; text-indent:0pt; border:solid black 0.4pt; }
 Css: div.fbox {display:table}
 Css: div.center div.fbox {text-align:center; clear:both; padding-left:3.0pt; padding-right:3.0pt; text-indent:0pt; border:solid black 0.4pt; }
@@ -125,6 +130,7 @@ Css: table[rules] {border-left:solid black 0.4pt; border-right:solid black 0.4pt
 Css: .hline hr, .cline hr{ height : 0px; margin:0px; }
 Css: .hline td, .cline td{ padding: 0; }
 Css: .hline hr, .cline hr{border:none;border-top:1px solid black;}
+Css: .hline {border-top: 1px solid black;}
 Css: .tabbing-right {text-align:right;}
 Css: div.float, div.figure {margin-left: auto; margin-right: auto;}
 Css: div.float img {text-align:center;}
@@ -149,6 +155,7 @@ Css: table.pmatrix {width:100%;}
 Css: span.bar-css {text-decoration:overline;}
 Css: img.cdots{vertical-align:middle;}
 Css: .partToc a, .partToc, .likepartToc a, .likepartToc {line-height: 200%; font-weight:bold; font-size:110%;}
+Css: .chapterToc a, .chapterToc, .likechapterToc a, .likechapterToc, .appendixToc a, .appendixToc {line-height: 200%; font-weight:bold;}
 Css: .index-item, .index-subitem, .index-subsubitem {display:block}
 Css: div.caption {text-indent:-2em; margin-left:3em; margin-right:1em; text-align:left;}
 Css: div.caption span.id{font-weight: bold; white-space: nowrap; }
@@ -157,7 +164,6 @@ Css: p.bibitem { text-indent: -2em; margin-left: 2em; margin-top:0.6em; margin-b
 Css: p.bibitem-p { text-indent: 0em; margin-left: 2em; margin-top:0.6em; margin-bottom:0.6em; }
 Css: .paragraphHead, .likeparagraphHead { margin-top:2em; font-weight: bold;}
 Css: .subparagraphHead, .likesubparagraphHead { font-weight: bold;}
-Css: .quote {margin-bottom:0.25em; margin-top:0.25em; margin-left:1em; margin-right:1em; text-align:justify;}
 Css: .verse{white-space:nowrap; margin-left:2em}
 Css: div.maketitle {text-align:center;}
 Css: h2.titleHead{text-align:center;}
@@ -166,9 +172,9 @@ Css: div.author, div.date {text-align:center;}
 Css: div.thanks{text-align:left; margin-left:10%; font-size:85%; font-style:italic; }
 Css: div.author{white-space: nowrap;}
 Font_Size: 11
-Css: .quotation {margin-bottom:0.25em; margin-top:0.25em; margin-left:1em; }
-Css: .abstract p {margin-left:5%; margin-right:5%;}
+Css: div.abstract p {margin-left:5%; margin-right:5%;}
 Css: div.abstract {width:100%;}
+Css: .abstracttitle{text-align:center;margin-bottom:1em;}
 Css: span.footnote-mark sup.textsuperscript, span.footnote-mark a sup.textsuperscript{ font-size:80%; }
 Css: .equation td{text-align:center; }
 Css: .equation-star td{text-align:center; }
@@ -184,29 +190,54 @@ Css: td.gather {text-align:center; }
 Css: table.gather {width:100%;}
 Css: div.gather-star {text-align:center;}
 Css: .rotatebox{display: inline-block;}
-Css: .figure img.graphics {margin-left:10%;}
 --- needs --- documentation.idv[2] ==> documentation0x.png ---
 --- needs --- documentation.idv[4] ==> documentation1x.png ---
 --- needs --- documentation.idv[6] ==> documentation2x.png ---
 --- needs --- documentation.idv[8] ==> documentation3x.png ---
 --- needs --- documentation.idv[10] ==> documentation4x.png ---
-File: figs/example1.png
-File: figs/example2.png
 --- needs --- documentation.idv[12] ==> documentation5x.png ---
 --- needs --- documentation.idv[14] ==> documentation6x.png ---
 --- needs --- documentation.idv[16] ==> documentation7x.png ---
---- needs --- documentation.idv[18] ==> documentation8x.png ---
+--- needs --- documentation.idv[17] ==> documentation8x.png ---
+--- needs --- documentation.idv[18] ==> documentation9x.png ---
+--- needs --- documentation.idv[19] ==> documentation10x.png ---
+--- needs --- documentation.idv[20] ==> documentation11x.png ---
+--- needs --- documentation.idv[21] ==> documentation12x.png ---
+--- needs --- documentation.idv[22] ==> documentation13x.png ---
+--- needs --- documentation.idv[23] ==> documentation14x.png ---
+--- needs --- documentation.idv[24] ==> documentation15x.png ---
+--- needs --- documentation.idv[25] ==> documentation16x.png ---
+--- needs --- documentation.idv[26] ==> documentation17x.png ---
+--- needs --- documentation.idv[27] ==> documentation18x.png ---
+--- needs --- documentation.idv[28] ==> documentation19x.png ---
+--- needs --- documentation.idv[29] ==> documentation20x.png ---
+--- needs --- documentation.idv[30] ==> documentation21x.png ---
+--- needs --- documentation.idv[31] ==> documentation22x.png ---
+--- needs --- documentation.idv[32] ==> documentation23x.png ---
+--- needs --- documentation.idv[33] ==> documentation24x.png ---
+--- needs --- documentation.idv[34] ==> documentation25x.png ---
+--- needs --- documentation.idv[35] ==> documentation26x.png ---
+--- needs --- documentation.idv[36] ==> documentation27x.png ---
+--- needs --- documentation.idv[38] ==> documentation28x.png ---
+File: figs/example1.png
+File: figs/example2.png
+--- needs --- documentation.idv[40] ==> documentation29x.png ---
+--- needs --- documentation.idv[42] ==> documentation30x.png ---
+--- needs --- documentation.idv[43] ==> documentation31x.png ---
+--- needs --- documentation.idv[45] ==> documentation32x.png ---
+File: figs/plot_pulse_from_file.png
+--- needs --- documentation.idv[47] ==> documentation33x.png ---
 File: figs/plot_hopping_N2.png
 File: figs/plot_hopping_N10.png
---- needs --- documentation.idv[20] ==> documentation9x.png ---
---- needs --- documentation.idv[22] ==> documentation10x.png ---
---- needs --- documentation.idv[24] ==> documentation11x.png ---
---- needs --- documentation.idv[26] ==> documentation12x.png ---
---- needs --- documentation.idv[28] ==> documentation13x.png ---
---- needs --- documentation.idv[29] ==> documentation14x.png ---
---- needs --- documentation.idv[30] ==> documentation15x.png ---
---- needs --- documentation.idv[31] ==> documentation16x.png ---
---- needs --- documentation.idv[32] ==> documentation17x.png ---
+--- needs --- documentation.idv[49] ==> documentation34x.png ---
+--- needs --- documentation.idv[51] ==> documentation35x.png ---
+--- needs --- documentation.idv[53] ==> documentation36x.png ---
+--- needs --- documentation.idv[55] ==> documentation37x.png ---
+--- needs --- documentation.idv[57] ==> documentation38x.png ---
+--- needs --- documentation.idv[58] ==> documentation39x.png ---
+--- needs --- documentation.idv[59] ==> documentation40x.png ---
+--- needs --- documentation.idv[60] ==> documentation41x.png ---
+--- needs --- documentation.idv[61] ==> documentation42x.png ---
 --- characters ---
 Font("cmr","10","10","109")
 Font("ecrm","1095","10","100")
@@ -220,10 +251,13 @@ Font("cmmi","10","10","109")
 Font("cmmi","8","8","100")
 Font("cmmi","6","6","100")
 Font("cmsy","10","10","109")
---- needs --- documentation.idv[34] ==> cmsy10-51.png ---
---- needs --- documentation.idv[35] ==> cmsy10-4d.png ---
---- needs --- documentation.idv[36] ==> cmsy10-4c.png ---
---- needs --- documentation.idv[37] ==> cmsy10-49.png ---
+--- needs --- documentation.idv[63] ==> cmsy10-54.png ---
+--- needs --- documentation.idv[64] ==> cmsy10-51.png ---
+--- needs --- documentation.idv[65] ==> cmsy10-50.png ---
+--- needs --- documentation.idv[66] ==> cmsy10-4f.png ---
+--- needs --- documentation.idv[67] ==> cmsy10-4d.png ---
+--- needs --- documentation.idv[68] ==> cmsy10-4c.png ---
+--- needs --- documentation.idv[69] ==> cmsy10-49.png ---
 Font("cmsy","8","8","100")
 Font("cmsy","6","6","100")
 Font("cmex","10","10","109")

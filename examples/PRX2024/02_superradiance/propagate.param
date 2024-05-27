@@ -1,0 +1,17 @@
+te                      {1/8192*64*32768}
+dt                      {1/8192*64}
+set_precision          12
+
+add_PT photon.pt
+add_PT phonon.pt 0 2
+add_PT phonon.pt 2 0
+
+initial {0.5*0.5*((Id_2+sigma_x) otimes (Id_2+sigma_x))}
+
+add_Hamiltonian {hbar*(1000/64)* 0.5*((Id_2+sigma_x) otimes Id_2 + Id_2 otimes (Id_2+sigma_x))}
+
+add_Output  {0.5*( (Id_2+sigma_x) otimes Id_2 + Id_2 otimes (Id_2+sigma_x))}
+
+
+outfile  propagate.out
+

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=latex 2020.6.17)  28 JUL 2021 17:47
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=latex 2024.3.15)  12 MAY 2024 03:54
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -11,42 +11,52 @@ documentstyle\def\documentstyle{\let\documentstyle\HCode\expandafter\def\csname
 n.tex
  (./documentation.tex
 (/usr/share/texlive/texmf-dist/tex/latex/koma-script/scrartcl.cls
-Document Class: scrartcl 2020/01/24 v3.29 KOMA-Script document class (article)
+Document Class: scrartcl 2021/11/13 v3.35 KOMA-Script document class (article)
 (/usr/share/texlive/texmf-dist/tex/latex/koma-script/scrkbase.sty
-Package: scrkbase 2020/01/24 v3.29 KOMA-Script package (KOMA-Script-dependent b
+Package: scrkbase 2021/11/13 v3.35 KOMA-Script package (KOMA-Script-dependent b
 asics and keyval usage)
 
 (/usr/share/texlive/texmf-dist/tex/latex/koma-script/scrbase.sty
-Package: scrbase 2020/01/24 v3.29 KOMA-Script package (KOMA-Script-independent 
+Package: scrbase 2021/11/13 v3.35 KOMA-Script package (KOMA-Script-independent 
 basics and keyval usage)
 
+(/usr/share/texlive/texmf-dist/tex/latex/koma-script/scrlfile.sty
+Package: scrlfile 2021/11/13 v3.35 KOMA-Script package (file load hooks)
+
+(/usr/share/texlive/texmf-dist/tex/latex/koma-script/scrlfile-hook.sty
+Package: scrlfile-hook 2021/11/13 v3.35 KOMA-Script package (using LaTeX hooks)
+
+
+(/usr/share/texlive/texmf-dist/tex/latex/koma-script/scrlogo.sty
+Package: scrlogo 2021/11/13 v3.35 KOMA-Script package (logo)
+)))
 (/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty
 Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
-\KV@toks@=\toks14
+\KV@toks@=\toks16
 )
-(/usr/share/texlive/texmf-dist/tex/latex/koma-script/scrlfile.sty
-Package: scrlfile 2020/01/24 v3.29 KOMA-Script package (loading files)
-)))
+Applying: [2021/05/01] Usage of raw or classic option list on input line 252.
+Already applied: [0000/00/00] Usage of raw or classic option list on input line
+ 368.
+))
 (/usr/share/texlive/texmf-dist/tex/latex/koma-script/tocbasic.sty
-Package: tocbasic 2020/01/24 v3.29 KOMA-Script package (handling toc-files)
+Package: tocbasic 2021/11/13 v3.35 KOMA-Script package (handling toc-files)
 \scr@dte@tocline@numberwidth=\skip47
-\scr@dte@tocline@numbox=\box45
+\scr@dte@tocline@numbox=\box50
 )
-Package tocbasic Info: omitting babel extension for `toc'
-(tocbasic)             because of feature `nobabel' available
-(tocbasic)             for `toc' on input line 137.
+Package tocbasic Info: babel extension for `toc' omitted
+(tocbasic)             because of missing \bbl@set@language on input line 135.
 Class scrartcl Info: File `scrsize11pt.clo' used instead of
-(scrartcl)           file `scrsize11.clo' to setup font sizes on input line 221
+(scrartcl)           file `scrsize11.clo' to setup font sizes on input line 224
 2.
 
 (/usr/share/texlive/texmf-dist/tex/latex/koma-script/scrsize11pt.clo
-File: scrsize11pt.clo 2020/01/24 v3.29 KOMA-Script font size class option (11pt
+File: scrsize11pt.clo 2021/11/13 v3.35 KOMA-Script font size class option (11pt
 )
 )
 (/usr/share/texlive/texmf-dist/tex/latex/koma-script/typearea.sty
-Package: typearea 2020/01/24 v3.29 KOMA-Script package (type area)
+Package: typearea 2021/11/13 v3.35 KOMA-Script package (type area)
 \ta@bcor=\skip48
-\ta@div=\count167
+\ta@div=\count185
 \ta@hblk=\skip49
 \ta@vblk=\skip50
 \ta@temp=\skip51
@@ -67,60 +77,60 @@ Package typearea Info: These are the values describing the layout:
 (typearea)              \topskip        = 11.0pt
 (typearea)              \footskip       = 47.6pt
 (typearea)              \baselineskip   = 13.6pt
-(typearea)              on input line 1719.
+(typearea)              on input line 1743.
 )
-\c@part=\count168
-\c@section=\count169
-\c@subsection=\count170
-\c@subsubsection=\count171
-\c@paragraph=\count172
-\c@subparagraph=\count173
+\c@part=\count186
+\c@section=\count187
+\c@subsection=\count188
+\c@subsubsection=\count189
+\c@paragraph=\count190
+\c@subparagraph=\count191
 \scr@dte@section@maxnumwidth=\skip53
 Class scrartcl Info: using compatibility default `runin=bysign'
-(scrartcl)           for `\section on input line 4723.
+(scrartcl)           for `\section on input line 4852.
 Class scrartcl Info: using compatibility default `afterindent=bysign'
-(scrartcl)           for `\section on input line 4723.
+(scrartcl)           for `\section on input line 4852.
 \scr@dte@part@maxnumwidth=\skip54
 Class scrartcl Info: using compatibility default `afterindent=false'
-(scrartcl)           for `\part on input line 4731.
+(scrartcl)           for `\part on input line 4860.
 \scr@dte@subsection@maxnumwidth=\skip55
 Class scrartcl Info: using compatibility default `runin=bysign'
-(scrartcl)           for `\subsection on input line 4741.
+(scrartcl)           for `\subsection on input line 4870.
 Class scrartcl Info: using compatibility default `afterindent=bysign'
-(scrartcl)           for `\subsection on input line 4741.
+(scrartcl)           for `\subsection on input line 4870.
 \scr@dte@subsubsection@maxnumwidth=\skip56
 Class scrartcl Info: using compatibility default `runin=bysign'
-(scrartcl)           for `\subsubsection on input line 4751.
+(scrartcl)           for `\subsubsection on input line 4880.
 Class scrartcl Info: using compatibility default `afterindent=bysign'
-(scrartcl)           for `\subsubsection on input line 4751.
+(scrartcl)           for `\subsubsection on input line 4880.
 \scr@dte@paragraph@maxnumwidth=\skip57
 Class scrartcl Info: using compatibility default `runin=bysign'
-(scrartcl)           for `\paragraph on input line 4761.
+(scrartcl)           for `\paragraph on input line 4891.
 Class scrartcl Info: using compatibility default `afterindent=bysign'
-(scrartcl)           for `\paragraph on input line 4761.
+(scrartcl)           for `\paragraph on input line 4891.
 \scr@dte@subparagraph@maxnumwidth=\skip58
 Class scrartcl Info: using compatibility default `runin=bysign'
-(scrartcl)           for `\subparagraph on input line 4771.
+(scrartcl)           for `\subparagraph on input line 4901.
 Class scrartcl Info: using compatibility default `afterindent=bysign'
-(scrartcl)           for `\subparagraph on input line 4771.
+(scrartcl)           for `\subparagraph on input line 4901.
 \abovecaptionskip=\skip59
 \belowcaptionskip=\skip60
-\c@pti@nb@sid@b@x=\box46
-Package tocbasic Info: omitting babel extension for `lof'
-(tocbasic)             because of feature `nobabel' available
-(tocbasic)             for `lof' on input line 6002.
+\c@pti@nb@sid@b@x=\box51
+Package tocbasic Info: babel extension for `lof' omitted
+(tocbasic)             because of missing \bbl@set@language on input line 6076.
+
 \scr@dte@figure@maxnumwidth=\skip61
-\c@figure=\count174
-Package tocbasic Info: omitting babel extension for `lot'
-(tocbasic)             because of feature `nobabel' available
-(tocbasic)             for `lot' on input line 6014.
+\c@figure=\count192
+Package tocbasic Info: babel extension for `lot' omitted
+(tocbasic)             because of missing \bbl@set@language on input line 6091.
+
 \scr@dte@table@maxnumwidth=\skip62
-\c@table=\count175
-Class scrartcl Info: Redefining `\numberline' on input line 6178.
-\bibindent=\dimen134
+\c@table=\count193
+Class scrartcl Info: Redefining `\numberline' on input line 6258.
+\bibindent=\dimen138
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/tex4ht.sty
-version 2019-03-18-15:24
+version 2021-09-14-14:11
 Package: tex4ht 
 --------------------------------------
 --- Note --- for _ at preamble, use the command line option `early_'
@@ -128,68 +138,68 @@ Package: tex4ht
 --------------------------------------
 --- Note --- for ^ at preamble, use the command line option `early^'
 --------------------------------------
-\tmp:toks=\toks15
+\tmp:toks=\toks17
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/usepackage.4ht
-version 2019-12-19-14:27
+version 2022-01-11-14:12
 )
 (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsmath.sty
-Package: amsmath 2020/01/20 v2.17e AMS math features
+Package: amsmath 2021/10/15 v2.17l AMS math features
 \@mathmargin=\skip63
 
 For additional information on amsmath, use the `?' option.
 (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amstext.sty
-Package: amstext 2000/06/29 v2.01 AMS text
+Package: amstext 2021/08/26 v2.01 AMS text
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsgen.sty
 File: amsgen.sty 1999/11/30 v2.0 generic functions
-\@emptytoks=\toks16
-\ex@=\dimen135
+\@emptytoks=\toks18
+\ex@=\dimen139
 ))
 (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsbsy.sty
 Package: amsbsy 1999/11/29 v1.2d Bold Symbols
-\pmbraise@=\dimen136
+\pmbraise@=\dimen140
 )
 (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsopn.sty
-Package: amsopn 2016/03/08 v2.02 operator names
+Package: amsopn 2021/08/26 v2.02 operator names
 )
-\inf@bad=\count176
-LaTeX Info: Redefining \frac on input line 227.
-\uproot@=\count177
-\leftroot@=\count178
-LaTeX Info: Redefining \overline on input line 389.
-\classnum@=\count179
-\DOTSCASE@=\count180
-LaTeX Info: Redefining \ldots on input line 486.
-LaTeX Info: Redefining \dots on input line 489.
-LaTeX Info: Redefining \cdots on input line 610.
-\Mathstrutbox@=\box47
-\strutbox@=\box48
-\big@size=\dimen137
-LaTeX Font Info:    Redeclaring font encoding OML on input line 733.
-LaTeX Font Info:    Redeclaring font encoding OMS on input line 734.
-\macc@depth=\count181
-\c@MaxMatrixCols=\count182
+\inf@bad=\count194
+LaTeX Info: Redefining \frac on input line 234.
+\uproot@=\count195
+\leftroot@=\count196
+LaTeX Info: Redefining \overline on input line 399.
+\classnum@=\count197
+\DOTSCASE@=\count198
+LaTeX Info: Redefining \ldots on input line 496.
+LaTeX Info: Redefining \dots on input line 499.
+LaTeX Info: Redefining \cdots on input line 620.
+\Mathstrutbox@=\box52
+\strutbox@=\box53
+\big@size=\dimen141
+LaTeX Font Info:    Redeclaring font encoding OML on input line 743.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 744.
+\macc@depth=\count199
+\c@MaxMatrixCols=\count266
 \dotsspace@=\muskip16
-\c@parentequation=\count183
-\dspbrk@lvl=\count184
-\tag@help=\toks17
-\row@=\count185
-\column@=\count186
-\maxfields@=\count187
-\andhelp@=\toks18
-\eqnshift@=\dimen138
-\alignsep@=\dimen139
-\tagshift@=\dimen140
-\tagwidth@=\dimen141
-\totwidth@=\dimen142
-\lineht@=\dimen143
-\@envbody=\toks19
+\c@parentequation=\count267
+\dspbrk@lvl=\count268
+\tag@help=\toks19
+\row@=\count269
+\column@=\count270
+\maxfields@=\count271
+\andhelp@=\toks20
+\eqnshift@=\dimen142
+\alignsep@=\dimen143
+\tagshift@=\dimen144
+\tagwidth@=\dimen145
+\totwidth@=\dimen146
+\lineht@=\dimen147
+\@envbody=\toks21
 \multlinegap=\skip64
 \multlinetaggap=\skip65
-\mathdisplay@stack=\toks20
-LaTeX Info: Redefining \[ on input line 2859.
-LaTeX Info: Redefining \] on input line 2860.
+\mathdisplay@stack=\toks22
+LaTeX Info: Redefining \[ on input line 2938.
+LaTeX Info: Redefining \] on input line 2939.
 )
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/amssymb.sty
 Package: amssymb 2013/01/14 v3.01 AMS font symbols
@@ -203,47 +213,50 @@ LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
 (Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
 ))
 (/usr/share/texlive/texmf-dist/tex/latex/graphics/graphicx.sty
-Package: graphicx 2019/11/30 v1.2a Enhanced LaTeX Graphics (DPC,SPQR)
+Package: graphicx 2021/09/16 v1.2d Enhanced LaTeX Graphics (DPC,SPQR)
 
-(/usr/share/texlive/texmf-dist/tex/generic/tex4ht/usepackage.4ht
-version 2019-12-19-14:27
+(/usr/share/texlive/texmf-dist/tex/generic/tex4ht/graphics-hooks.4ht
+version 2020-10-17-13:53
 )
 (/usr/share/texlive/texmf-dist/tex/latex/graphics/graphics.sty
-Package: graphics 2019/11/30 v1.4a Standard LaTeX Graphics (DPC,SPQR)
+Package: graphics 2021/03/04 v1.4d Standard LaTeX Graphics (DPC,SPQR)
 
 (/usr/share/texlive/texmf-dist/tex/latex/graphics/trig.sty
-Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
+Package: trig 2021/08/11 v1.11 sin cos tan (DPC)
 )
 (/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
 File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
 )
-Package graphics Info: Driver file: dvips.def on input line 105.
+Package graphics Info: Driver file: dvips.def on input line 107.
 
 (/usr/share/texlive/texmf-dist/tex/latex/graphics-def/dvips.def
 File: dvips.def 2017/06/20 v3.1d Graphics/color driver for dvips
 ))
-\Gin@req@height=\dimen144
-\Gin@req@width=\dimen145
+\Gin@req@height=\dimen148
+\Gin@req@width=\dimen149
 )
 (/usr/share/texlive/texmf-dist/tex/latex/float/float.sty
 Package: float 2001/11/08 v1.3d Float enhancements (AL)
-\c@float@type=\count188
-\float@exts=\toks21
-\float@box=\box49
-\@float@everytoks=\toks22
-\@floatcapt=\box50
+\c@float@type=\count272
+\float@exts=\toks23
+\float@box=\box54
+\@float@everytoks=\toks24
+\@floatcapt=\box55
+)
+(/usr/share/texlive/texmf-dist/tex/generic/tex4ht/hyperref-hooks.4ht
+version 2021-12-11-13:37
 )
 (/usr/share/texlive/texmf-dist/tex/latex/hyperref/hyperref.sty
-Package: hyperref 2020/01/14 v7.00d Hypertext links for LaTeX
+Package: hyperref 2021-06-07 v7.00m Hypertext links for LaTeX
 
 (/usr/share/texlive/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty
-Package: ltxcmds 2019/12/15 v1.24 LaTeX kernel commands for general use (HO)
+Package: ltxcmds 2020-05-10 v1.25 LaTeX kernel commands for general use (HO)
 )
 (/usr/share/texlive/texmf-dist/tex/generic/iftex/iftex.sty
-Package: iftex 2019/11/07 v1.0c TeX engine tests
+Package: iftex 2020/03/06 v1.0d TeX engine tests
 )
-(/usr/share/texlive/texmf-dist/tex/latex/pdftexcmds/pdftexcmds.sty
-Package: pdftexcmds 2019/11/24 v0.31 Utility functions of pdfTeX for LuaTeX (HO
+(/usr/share/texlive/texmf-dist/tex/generic/pdftexcmds/pdftexcmds.sty
+Package: pdftexcmds 2020-06-27 v0.33 Utility functions of pdfTeX for LuaTeX (HO
 )
 
 (/usr/share/texlive/texmf-dist/tex/generic/infwarerr/infwarerr.sty
@@ -276,16 +289,20 @@ Package auxhook Warning: Cannot patch \document,
 (auxhook)                using \AtBeginDocument instead.
 
 ) (/usr/share/texlive/texmf-dist/tex/latex/kvoptions/kvoptions.sty
-Package: kvoptions 2019/11/29 v3.13 Key value format for package options (HO)
+Package: kvoptions 2020-10-07 v3.14 Key value format for package options (HO)
 )
-\@linkdim=\dimen146
-\Hy@linkcounter=\count189
-\Hy@pagecounter=\count190
+\@linkdim=\dimen150
+\Hy@linkcounter=\count273
+\Hy@pagecounter=\count274
 
 (/usr/share/texlive/texmf-dist/tex/latex/hyperref/pd1enc.def
-File: pd1enc.def 2020/01/14 v7.00d Hyperref: PDFDocEncoding definition (HO)
+File: pd1enc.def 2021-06-07 v7.00m Hyperref: PDFDocEncoding definition (HO)
 Now handling font encoding PD1 ...
 ... no UTF-8 mapping file for font encoding PD1
+)
+(/usr/share/texlive/texmf-dist/tex/latex/hyperref/hyperref-langpatches.def
+File: hyperref-langpatches.def 2021-06-07 v7.00m Hyperref: patches for babel la
+nguages
 )
 (/usr/share/texlive/texmf-dist/tex/generic/intcalc/intcalc.sty
 Package: intcalc 2019/12/15 v1.3 Expandable calculations with integers (HO)
@@ -293,24 +310,29 @@ Package: intcalc 2019/12/15 v1.3 Expandable calculations with integers (HO)
 (/usr/share/texlive/texmf-dist/tex/generic/etexcmds/etexcmds.sty
 Package: etexcmds 2019/12/15 v1.7 Avoid name clashes with e-TeX commands (HO)
 )
-\Hy@SavedSpaceFactor=\count191
-\pdfmajorversion=\count192
-Package hyperref Info: Option `colorlinks' set `true' on input line 4421.
-Package hyperref Info: Hyper figures OFF on input line 4547.
-Package hyperref Info: Link nesting OFF on input line 4552.
-Package hyperref Info: Hyper index ON on input line 4555.
-Package hyperref Info: Plain pages OFF on input line 4562.
-Package hyperref Info: Backreferencing OFF on input line 4567.
+\Hy@SavedSpaceFactor=\count275
+
+(/usr/share/texlive/texmf-dist/tex/latex/hyperref/puenc.def
+File: puenc.def 2021-06-07 v7.00m Hyperref: PDF Unicode definition (HO)
+Now handling font encoding PU ...
+... no UTF-8 mapping file for font encoding PU
+)
+Package hyperref Info: Option `colorlinks' set `true' on input line 4073.
+Package hyperref Info: Hyper figures OFF on input line 4192.
+Package hyperref Info: Link nesting OFF on input line 4197.
+Package hyperref Info: Hyper index ON on input line 4200.
+Package hyperref Info: Plain pages OFF on input line 4207.
+Package hyperref Info: Backreferencing OFF on input line 4212.
 Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
-Package hyperref Info: Bookmarks ON on input line 4800.
-\c@Hy@tempcnt=\count193
+Package hyperref Info: Bookmarks ON on input line 4445.
+\c@Hy@tempcnt=\count276
 
 (/usr/share/texlive/texmf-dist/tex/latex/url/url.sty
 \Urlmuskip=\muskip17
 Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
 )
-LaTeX Info: Redefining \url on input line 5159.
-\XeTeXLinkMargin=\dimen147
+LaTeX Info: Redefining \url on input line 4804.
+\XeTeXLinkMargin=\dimen151
 
 (/usr/share/texlive/texmf-dist/tex/generic/bitset/bitset.sty
 Package: bitset 2019/12/09 v1.3 Handle bit-vector datatype (HO)
@@ -319,24 +341,25 @@ Package: bitset 2019/12/09 v1.3 Handle bit-vector datatype (HO)
 Package: bigintcalc 2019/12/15 v1.5 Expandable calculations on big integers (HO
 )
 ))
-\Fld@menulength=\count194
-\Field@Width=\dimen148
-\Fld@charsize=\dimen149
-\Field@toks=\toks23
-Package hyperref Info: Hyper figures OFF on input line 6430.
-Package hyperref Info: Link nesting OFF on input line 6435.
-Package hyperref Info: Hyper index ON on input line 6438.
-Package hyperref Info: backreferencing OFF on input line 6445.
-Package hyperref Info: Link coloring ON on input line 6448.
-Package hyperref Info: Link coloring with OCG OFF on input line 6455.
-Package hyperref Info: PDF/A mode OFF on input line 6460.
-LaTeX Info: Redefining \ref on input line 6500.
-LaTeX Info: Redefining \pageref on input line 6504.
+\Fld@menulength=\count277
+\Field@Width=\dimen152
+\Fld@charsize=\dimen153
+\Field@toks=\toks25
+Package hyperref Info: Hyper figures OFF on input line 6076.
+Package hyperref Info: Link nesting OFF on input line 6081.
+Package hyperref Info: Hyper index ON on input line 6084.
+Package hyperref Info: backreferencing OFF on input line 6091.
+Package hyperref Info: Link coloring ON on input line 6094.
+Package hyperref Info: Link coloring with OCG OFF on input line 6101.
+Package hyperref Info: PDF/A mode OFF on input line 6106.
+LaTeX Info: Redefining \ref on input line 6146.
+LaTeX Info: Redefining \pageref on input line 6150.
 
-(/usr/share/texlive/texmf-dist/tex/generic/atbegshi/atbegshi.sty
-Package: atbegshi 2019/12/05 v1.19 At begin shipout hook (HO)
+(/usr/share/texlive/texmf-dist/tex/latex/base/atbegshi-ltx.sty
+Package: atbegshi-ltx 2021/01/10 v1.0c Emulation of the original atbegshi
+package with kernel methods
 )
-\Hy@abspage=\count195
+\Hy@abspage=\count278
 
 
 Package hyperref Message: Stopped early.
@@ -344,14 +367,28 @@ Package hyperref Message: Stopped early.
 )
 Package hyperref Info: Driver: htex4ht.
  (/usr/share/texlive/texmf-dist/tex/latex/hyperref/htex4ht.def
-File: htex4ht.def 2020/01/14 v7.00d Hyperref driver for TeX4ht
+File: htex4ht.def 2021-06-07 v7.00m Hyperref driver for TeX4ht
 Package hyperref Info: tex4ht is already loaded.
 )
+(/usr/share/texlive/texmf-dist/tex/latex/base/ifthen.sty
+Package: ifthen 2020/11/24 v1.1c Standard LaTeX ifthen package (DPC)
+)
+(/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
+Package: nameref 2021-04-02 v2.47 Cross-referencing by name of section
+
+(/usr/share/texlive/texmf-dist/tex/latex/refcount/refcount.sty
+Package: refcount 2019/12/15 v3.6 Data extraction from label references (HO)
+)
+(/usr/share/texlive/texmf-dist/tex/generic/gettitlestring/gettitlestring.sty
+Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
+)
+\c@section@level=\count279
+)
 (/usr/share/texlive/texmf-dist/tex/latex/base/fontenc.sty
-Package: fontenc 2020/02/11 v2.0o Standard LaTeX package
+Package: fontenc 2021/04/29 v2.0v Standard LaTeX package
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/tex4ht.4ht
-version 2018-12-30-09:29
+version 2021-06-20-15:33
 --------------------------------------
 --- Note --- for additional information, use the command line option `info'
 --------------------------------------
@@ -360,21 +397,22 @@ version 2018-12-30-09:29
  TeX4ht info is available in the log file 
 ::::::::::::::::::::::::::::::::::::::::::
 ) (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/tex4ht.sty
-version 2019-03-18-15:24
+version 2021-09-14-14:11
 
 (/usr/share/texlive/texmf-dist/tex/latex/graphics/color.sty
-Package: color 2019/11/23 v1.2a Standard LaTeX Color (DPC)
+Package: color 2021/12/07 v1.3c Standard LaTeX Color (DPC)
 
 (/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/color.cfg
 File: color.cfg 2016/01/02 v1.6 sample color configuration
 )
-Package color Info: Driver file: dvips.def on input line 147.
+Package color Info: Driver file: dvips.def on input line 149.
 
 (/usr/share/texlive/texmf-dist/tex/latex/graphics/dvipsnam.def
 File: dvipsnam.def 2016/06/17 v3.0m Driver-dependent file (DPC,SPQR)
 ))
+l.855 --- TeX4ht warning --- nonprimitive \everypar ---
 --- needs --- tex4ht documentation ---
-\tmp:cnt=\count196
+\tmp:cnt=\count280
 \openout15 = `documentation.tmp'.
 
 (./documentation.tmp)
@@ -388,7 +426,7 @@ File: dvipsnam.def 2016/06/17 v3.0m Driver-dependent file (DPC,SPQR)
 
 
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 --------------------------------------
 --- Note --- to remove the <?xml version=...?> processing instruction use the c
 ommand line option `no-VERSION'
@@ -399,7 +437,7 @@ DOCTYPE'
 --------------------------------------
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 )
 --------------------------------------
 --- Note --- for marking of the base font, use the command line option `fonts+'
@@ -419,7 +457,7 @@ version 2019-12-16-15:21
 --------------------------------------
 
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 --------------------------------------
 --- Note --- for alternative charset, use the command line option `charset=...'
 
@@ -469,10 +507,10 @@ on `imgdir:.../'
 --------------------------------------
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 )
-\:tokwrite=\toks24
-\:tokpage=\toks25
+\:tokwrite=\toks26
+\:tokpage=\toks27
 --------------------------------------
 --- Note --- for back links to toc, use the command line option `sections+'
 --------------------------------------
@@ -487,27 +525,32 @@ version 2019-12-16-15:21
 
 
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/latex.4ht
-version 2019-08-26-14:22
-LaTeX Info: Redefining \_ on input line 168.
+version 2022-02-01-14:27
+LaTeX Info: Redefining \_ on input line 173.
+LaTeX Info: Redefining \, on input line 792.
+LaTeX Info: Redefining \; on input line 793.
+LaTeX Info: Redefining \! on input line 794.
+LaTeX Info: Redefining \: on input line 795.
+LaTeX Info: Redefining \> on input line 796.
 --------------------------------------
 --- Note --- for links into captions, instead of float heads, use the command l
 ine option `refcaption'
 --------------------------------------
 
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 --------------------------------------
 --- Note --- For mini tocs immediately aftter the header use the command line o
 ption `minitoc<'
@@ -547,7 +590,7 @@ style="width:\HColWidth"}}
 --------------------------------------
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 --------------------------------------
 --- Note --- for pictorial eqnarray, use the command line option `pic-eqnarray'
 
@@ -571,17 +614,19 @@ he command line option `pic-m+' (not safe!!)
 version 2018-11-06-15:55
 
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 ))
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/scrartcl.4ht
-version 2018-10-20-15:45
+version 2021-10-19-14:11
 
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/article.4ht
+version 2021-05-16-09:21
+
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 --------------------------------------
 --- Note --- for automatic sectioning pagination, use the command line option `
 1', `2', `3', '4', '5', '6', or '7'
@@ -596,81 +641,85 @@ index=2)
 --------------------------------------
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 ))
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 ))
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/amsmath.4ht
 version 2019-12-29-14:17
 \tmp:muskip=\muskip18
 
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
+LaTeX Info: Redefining \[ on input line 504.
+LaTeX Info: Redefining \] on input line 504.
 ))
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/amstext.4ht
 version 2009-05-21-09:32
 
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 ))
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/amsbsy.4ht
 version 2009-05-21-09:32
 
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 ))
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/amsopn.4ht
 version 2009-05-21-09:32
 
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 ))
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/amssymb.4ht
 version 2009-05-21-09:32
 
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 ))
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/amsfonts.4ht
 version 2009-05-21-09:32
 
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 ))
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/graphicx.4ht
-version 2018-10-01-14:24
+version 2022-01-12-13:53
 
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 ))
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/graphics.4ht
+version 2021-08-12-13:49
+
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 --------------------------------------
 --- Note --- if included graphics are of degraded quality, try the command line
  options `graphics-num' or `graphics-'. The `num' should provide the density of
@@ -682,112 +731,111 @@ en bounding box is unavailable try `Gin-dim+'; neither is recommended
 --------------------------------------
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 ))
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/dvips.4ht
 version 2009-05-21-09:32
 
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 ))
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/float.4ht
 version 2009-05-21-09:32
 
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 ))
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/hyperref.4ht
-version 2019-09-14-15:17
-
-(/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
-Package: nameref 2019/09/16 v2.46 Cross-referencing by name of section
-
-(/usr/share/texlive/texmf-dist/tex/latex/refcount/refcount.sty
-Package: refcount 2019/12/15 v3.6 Data extraction from label references (HO)
-)
-(/usr/share/texlive/texmf-dist/tex/generic/gettitlestring/gettitlestring.sty
-Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
-)
-\c@section@level=\count197
-)
-(/usr/share/texlive/texmf-dist/tex/generic/tex4ht/nameref.4ht
-version 2019-12-23-13:36
-
-(/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
-)
-(/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
-))
-LaTeX Info: Redefining \autoref on input line 95.
+version 2021-05-16-13:57
+LaTeX Info: Redefining \autoref on input line 88.
 \Hy@SectionHShift=\skip67
 
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 ))
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/pd1enc.4ht
 version 2009-05-21-09:32
 
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 ))
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/url.4ht
-version 2009-05-21-09:32
+version 2022-01-02-14:32
 
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 --------------------------------------
 --- Note --- for URL encoding within href use the command line option `url-enc'
 
 --------------------------------------
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 ))
-(/usr/share/texlive/texmf-dist/tex/generic/tex4ht/color.4ht
+(/usr/share/texlive/texmf-dist/tex/generic/tex4ht/ifthen.4ht
+version 2022-01-02-14:32
+
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
+))
+(/usr/share/texlive/texmf-dist/tex/generic/tex4ht/nameref.4ht
+version 2021-02-03-14:57
+
+(/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
+version 2022-02-03-14:35
+)
+(/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
+version 2021-04-16-13:27
+))
+(/usr/share/texlive/texmf-dist/tex/generic/tex4ht/color.4ht
+version 2022-02-01-14:27
+
+(/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
+version 2022-02-03-14:35
+)
+(/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
+version 2021-04-16-13:27
 ))
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/dvipsnam.4ht
 version 2009-05-21-09:32
 
 (/usr/share/texlive/texmf-dist/tex/latex/graphics/dvipsnam.def)
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 ))
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4.4ht
-version 2020-02-14-14:21
+version 2022-02-03-14:35
 )
 (/usr/share/texlive/texmf-dist/tex/generic/tex4ht/html4-math.4ht
-version 2019-12-16-15:21
+version 2021-04-16-13:27
 ))
 (/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-dvips.def
-File: l3backend-dvips.def 2020-02-03 L3 backend support: dvips
-\l__pdf_internal_box=\box51
-\g__pdf_backend_object_int=\count198
-\l__pdf_backend_content_box=\box52
-\l__pdf_backend_model_box=\box53
-\g__pdf_backend_annotation_int=\count199
-\g__pdf_backend_link_int=\count266
-\g__pdf_backend_link_sf_int=\count267
+File: l3backend-dvips.def 2022-01-12 L3 backend support: dvips
+\l__pdf_internal_box=\box56
+\g__pdf_backend_object_int=\count281
+\l__pdf_backend_content_box=\box57
+\l__pdf_backend_model_box=\box58
+\g__pdf_backend_annotation_int=\count282
+\g__pdf_backend_link_int=\count283
+\g__pdf_backend_link_sf_int=\count284
 )
 (./documentation.aux)
 \openout1 = `documentation.aux'.
@@ -808,10 +856,11 @@ LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 6.
 LaTeX Font Info:    ... okay on input line 6.
 LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 6.
 LaTeX Font Info:    ... okay on input line 6.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 6.
+LaTeX Font Info:    ... okay on input line 6.
 Package scrbase Info: activating english \contentsname on input line 6.
 Package scrbase Info: activating english \listfigurename on input line 6.
 Package scrbase Info: activating english \listtablename on input line 6.
-\AtBeginShipoutBox=\box54
 Package hyperref Info: Link coloring ON on input line 6.
 LaTeX Info: Redefining \ref on input line 6.
 LaTeX Info: Redefining \pageref on input line 6.
@@ -826,19 +875,14 @@ Class scrartcl Info: loading recommended package `bookmark'.
 (scrartcl)           before \begin{document} on input line 6.
 
 (/usr/share/texlive/texmf-dist/tex/latex/bookmark/bookmark.sty
-Package: bookmark 2019/12/03 v1.28 PDF bookmarks (HO)
+Package: bookmark 2020-11-06 v1.29 PDF bookmarks (HO)
 
-(/usr/share/texlive/texmf-dist/tex/latex/bookmark/bkm-dvips.def
-File: bkm-dvips.def 2019/12/03 v1.28 bookmark driver for dvips (HO)
-
-(/usr/share/texlive/texmf-dist/tex/latex/atveryend/atveryend.sty
-Package: atveryend 2019-12-11 v1.11 Hooks at the very end of document (HO)
-Package atveryend Info: \enddocument detected (standard20110627).
+(/usr/share/texlive/texmf-dist/tex/generic/tex4ht/hyperref-hooks.4ht
+version 2021-12-11-13:37
 )
-Package auxhook Info: \AddLineBeginMainAux comes a little late,
-(auxhook)             because the main .aux file is already opened on input lin
-e 213.
-\BKM@id=\count268
+(/usr/share/texlive/texmf-dist/tex/latex/bookmark/bkm-dvips.def
+File: bkm-dvips.def 2020-11-06 v1.29 bookmark driver for dvips (HO)
+\BKM@id=\count285
 ))
 --- file documentation.css ---
 LaTeX Font Info:    Trying to load font information for T1+cmss on input line 1
@@ -853,75 +897,98 @@ LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 1
 (/usr/share/texlive/texmf-dist/tex/latex/base/t1cmtt.fd
 File: t1cmtt.fd 2019/12/16 v2.5j Standard LaTeX font definitions
 )
-LaTeX Font Info:    Trying to load font information for U+msa on input line 20.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 21.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 20.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 21.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-l. 20 Writing documentation.idv[1] (documentation0x.png)
-l. 26 Writing documentation.idv[2] (documentation1x.png)
+l. 21 Writing documentation.idv[1] (documentation0x.png)
+l. 27 Writing documentation.idv[2] (documentation1x.png)
  [1
 
 ]
-l. 45 Writing documentation.idv[3] (documentation2x.png)
-l. 65 Writing documentation.idv[4] (documentation3x.png)
- [2] [3] [4]
-[5] [6] [7]
-l. 189 Writing documentation.idv[5] (documentation4x.png)
- [8] [9] [10]
-l. 284 --- needs --- figs/example1.png ---
- [11] [12] [13] [14]
-l. 336 --- needs --- figs/example2.png ---
-l. 343 Writing documentation.idv[6] (documentation5x.png)
-l. 351 Writing documentation.idv[7] (documentation6x.png)
-l. 353 Writing documentation.idv[8] (documentation7x.png)
- [15] [16]
-l. 425 Writing documentation.idv[9] (documentation8x.png)
- [17] [18]
-l. 476 --- needs --- figs/plot_hopping_N2.png ---
- [19]
-l. 507 --- needs --- figs/plot_hopping_N10.png ---
-l. 517 Writing documentation.idv[10] (documentation9x.png)
- [20]
-[21] [22] [23]
-l. 617 Writing documentation.idv[11] (documentation10x.png)
- [24] [25] [26]
-l. 677 Writing documentation.idv[12] (documentation11x.png)
- [27]
-l. 704 Writing documentation.idv[13] (documentation12x.png)
- [28]
-l. 754 Writing documentation.idv[14] (documentation13x.png)
-l. 755 Writing documentation.idv[15] (documentation14x.png)
-l. 760 Writing documentation.idv[16] (documentation15x.png)
-l. 761 Writing documentation.idv[17] (documentation16x.png)
-l. 763 Writing documentation.idv[18] (documentation17x.png)
- [29] [30] [31] [32]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 842.
+l. 48 Writing documentation.idv[3] (documentation2x.png)
+l. 71 Writing documentation.idv[4] (documentation3x.png)
+ [2]
+l. 96 Writing documentation.idv[5] (documentation4x.png)
+l. 113 Writing documentation.idv[6] (documentation5x.png)
+ [3]
+l. 124 Writing documentation.idv[7] (documentation6x.png)
+l. 164 Writing documentation.idv[8] (documentation7x.png)
+l. 165 Writing documentation.idv[9] (documentation8x.png)
+l. 166 Writing documentation.idv[10] (documentation9x.png)
+l. 166 Writing documentation.idv[11] (documentation10x.png)
+ [4]
+l. 176 Writing documentation.idv[12] (documentation11x.png)
+l. 177 Writing documentation.idv[13] (documentation12x.png)
+l. 178 Writing documentation.idv[14] (documentation13x.png)
+l. 178 Writing documentation.idv[15] (documentation14x.png)
+l. 180 Writing documentation.idv[16] (documentation15x.png)
+l. 181 Writing documentation.idv[17] (documentation16x.png)
+l. 181 Writing documentation.idv[18] (documentation17x.png)
+l. 182 Writing documentation.idv[19] (documentation18x.png)
+l. 182 Writing documentation.idv[20] (documentation19x.png)
+l. 188 Writing documentation.idv[21] (documentation20x.png)
+l. 188 Writing documentation.idv[22] (documentation21x.png)
+l. 189 Writing documentation.idv[23] (documentation22x.png)
+l. 189 Writing documentation.idv[24] (documentation23x.png)
+l. 190 Writing documentation.idv[25] (documentation24x.png)
+l. 190 Writing documentation.idv[26] (documentation25x.png)
+l. 190 Writing documentation.idv[27] (documentation26x.png)
+l. 191 Writing documentation.idv[28] (documentation27x.png)
+
+[5] [6] [7] [8] [9]
+l. 309 Writing documentation.idv[29] (documentation28x.png)
+ [10] [11] [12] [13]
+l. 414 --- needs --- figs/example1.png ---
+ [14] [15] [16] [17]
+l. 466 --- needs --- figs/example2.png ---
+l. 473 Writing documentation.idv[30] (documentation29x.png)
+l. 482 Writing documentation.idv[31] (documentation30x.png)
+l. 482 Writing documentation.idv[32] (documentation31x.png)
+l. 484 Writing documentation.idv[33] (documentation32x.png)
+ [18] [19] [20]
+l. 537 --- needs --- figs/plot_pulse_from_file.png ---
+
+[21] [22]
+l. 603 Writing documentation.idv[34] (documentation33x.png)
+ [23] [24]
+l. 654 --- needs --- figs/plot_hopping_N2.png ---
+ [25]
+l. 685 --- needs --- figs/plot_hopping_N10.png ---
+l. 695 Writing documentation.idv[35] (documentation34x.png)
+ [26] [27] [28] [29]
+l. 795 Writing documentation.idv[36] (documentation35x.png)
+ [30] [31] [32]
+l. 855 Writing documentation.idv[37] (documentation36x.png)
  [33]
-Package atveryend Info: Executing hook `AfterLastShipout' on input line 842.
+l. 882 Writing documentation.idv[38] (documentation37x.png)
+ [34]
+l. 932 Writing documentation.idv[39] (documentation38x.png)
+l. 933 Writing documentation.idv[40] (documentation39x.png)
+l. 938 Writing documentation.idv[41] (documentation40x.png)
+l. 939 Writing documentation.idv[42] (documentation41x.png)
+l. 941 Writing documentation.idv[43] (documentation42x.png)
+ [35]
+[36] [37] [38]
 \BKM@file=\write5
 \openout5 = `documentation.out.ps'.
 
-
-(./documentation.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 842.
-Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 842.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 842.
- ) 
+ [39] (./documentation.aux) ) 
 Here is how much of TeX's memory you used:
- 13310 strings out of 483058
- 205332 string characters out of 5962327
- 682466 words of memory out of 5000000
- 28044 multiletter control sequences out of 15000+600000
- 546555 words of font info for 57 fonts, out of 8000000 for 9000
- 59 hyphenation exceptions out of 8191
- 43i,10n,57p,10597b,465s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 16814 strings out of 478288
+ 272138 string characters out of 5849315
+ 799161 words of memory out of 5000000
+ 34681 multiletter control sequences out of 15000+600000
+ 483817 words of font info for 62 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 108i,10n,106p,11097b,464s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on documentation.dvi (33 pages, 114964 bytes).
+Output written on documentation.dvi (39 pages, 137504 bytes).

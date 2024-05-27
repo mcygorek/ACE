@@ -4,6 +4,7 @@
 #include <Eigen/Core>
 #include <vector>
 
+namespace ACE{
 template <int D> class Operators_Multi2lvl{
 public:
   int fulldim(){
@@ -64,5 +65,5 @@ public:
 */
 };
 
-
+}//namespace
 #endif

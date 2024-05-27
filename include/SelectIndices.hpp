@@ -1,0 +1,48 @@
+#ifndef ACE_SELECT_INDICES_DEFINED_H
+#define ACE_SELECT_INDICES_DEFINED_H
+#include "Eigen_fwd.hpp"
+#include <vector>
+
+namespace ACE{
+
+//used to project "otimes" of two matrices on combination of indices
+struct SelectIndices{
+  std::vector<std::pair<int, int> > list;
+
+  inline size_t size()const{return list.size();}
+  inline void resize(size_t sz){list.resize(sz);}
+  inline void clear(){list.clear();}
+  inline void push_back(const std::pair<int, int> &p){ list.push_back(p); }
+  inline void push_back(int i1, int i2){ 
+    list.push_back(std::pair<int,int>(i1,i2)); 
+  }
+  inline std::pair<int, int> & operator[](int i){ 
+    return list[i];
+  }
+  inline const std::pair<int, int> & operator[](int i)const{ 
+    return list[i];
+  }
+  inline operator const std::vector<std::pair<int, int> >&() const{
+    return list;
+  }
+  inline void set_full(int dim1, int dim2){
+    clear();
+    for(int k1=0; k1<dim1; k1++){
+      for(int k2=0; k2<dim2; k2++){
+        push_back(k1,k2);
+      }
+    }
+  }
+
+  Eigen::MatrixXcd otimes(const Eigen::MatrixXcd & M1, 
+                          const Eigen::MatrixXcd & M2, 
+                          const SelectIndices & other) const;
+
+  Eigen::VectorXcd Vector_otimes(const Eigen::VectorXcd & M1, 
+                          const Eigen::VectorXcd & M2) const;
+ 
+};
+
+
+}//namespace
+#endif

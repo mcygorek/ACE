@@ -21,10 +21,10 @@ Store adjacency matrix and use something like PageRank to determine
 importance.
 */
 
+namespace ACE{
+
 class EnvironmentProjector_Krylov: public EnvironmentProjector{
 public:
-
-
 
   virtual Eigen::MatrixXcd get_Q(const Eigen::MatrixXcd &Mdis, 
                                  const Eigen::VectorXcd &bath_init) override{
@@ -54,6 +54,6 @@ public:
   virtual ~EnvironmentProjector_Krylov(){}
 };
 
-
+}//namespace
 
 #endif

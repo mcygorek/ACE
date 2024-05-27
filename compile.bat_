@@ -1,7 +1,0 @@
-cd bin
-
-set EIGEN_HOME=Z:\usr\include\eigen3
-
-g++ -o ACE.exe ..\src\ACE.cpp -I ..\include -I %EIGEN_HOME% -Wa,-mbig-obj -m64 -O3 
-
-cd ..

@@ -1,9 +1,10 @@
 #ifndef POLARON_ME_DEFINED_H
 #define POLARON_ME_DEFINED_H
 
+#include "Function.hpp"
+#include "Constants.hpp"
 
-#include "Function.h"
-#include "Constants.h"
+namespace ACE{
 
 class PolaronME{
 public:
@@ -16,10 +17,10 @@ public:
       double T;
       double tau;
       virtual std::complex<double> f(double x) const{
-        if(x<1e-6)return 0.;
+        if(fabs(x)<1e-6)return 0.;
         double C=1.;
         if(T>1e-8){
-          C=Constants::coth(Constants::hbar_in_meV_ps*x)/(2.*Constants::kB_in_meV_by_K*T);
+          C=coth(hbar_in_meV_ps*x/(2.*kB_in_meV_by_K*T));
         }
         return J->f(x)/(x*x)* std::complex<double>(C*cos(x*tau), -sin(x*tau));
       }
@@ -34,23 +35,26 @@ public:
     return exp(-phi(0., J, temperature, Emax, Ndiscr).real()/2.);
   } 
    
-
-  static double polaron_shift(RealFunctionPtr J, double Emax=20., int Ndiscr=1e5){
-
+  //with shift_offset=(system eigenenergy difference):
+  //   produces the _negative_ of the lamb shift. 
+  static double polaron_shift(RealFunctionPtr J, double Emin=0., double Emax=20., int Ndiscr=1e5, double shift_offset=0.){
+    
     class f_cl_: public RealFunction{
       public: 
       RealFunctionPtr J;
+      double offset;
       virtual double f(double x) const{
-        if(x<1e-6)return 0.;
-        return J->f(x)/x;
+        if(fabs(x-offset)<1e-6)return 0.;
+        return J->f(x)/(x-offset);
       }
-      f_cl_(RealFunctionPtr J_): J(J_){}
-    }f_cl(J);
+      f_cl_(RealFunctionPtr J_, double offs=0.): J(J_), offset(offs){}
+    }f_cl(J, shift_offset);
   
-    return Constants::hbar_in_meV_ps * f_cl.integrate(0, Emax/Constants::hbar_in_meV_ps, Ndiscr);
+    return hbar_in_meV_ps * f_cl.integrate(Emin/hbar_in_meV_ps, Emax/hbar_in_meV_ps, Ndiscr);
   }
 
 
 };
 
+}//namespace
 #endif

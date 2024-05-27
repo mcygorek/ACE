@@ -1,10 +1,11 @@
 #ifndef COMBINE_PROPAGATOR_SYM_DEFINED_H
 #define COMBINE_PROPAGATOR_SYM_DEFINED_H
 
-#include "Propagator.h"
+#include "Propagator.hpp"
 #include "Smart_Ptr.h"
 #include "DimensionExtender.h"
 
+namespace ACE{
 /*
 class ExtendPropagator: public Propagator{
 public:
@@ -111,4 +112,5 @@ public:
   virtual ~CombinePropagatorSym(){};
 };
 
+}//namespace
 #endif

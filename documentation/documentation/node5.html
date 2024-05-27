@@ -1,0 +1,170 @@
+<!DOCTYPE HTML>
+
+<!--Converted with LaTeX2HTML 2021.2 (Released July 1, 2021) -->
+<HTML lang="en">
+<HEAD>
+<TITLE>Including environments</TITLE>
+<META NAME="description" CONTENT="Including environments">
+<META NAME="keywords" CONTENT="documentation">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="viewport" CONTENT="width=device-width, initial-scale=1.0">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2021.2">
+
+<LINK REL="STYLESHEET" HREF="documentation.css">
+
+<LINK REL="next" HREF="node11.html">
+<LINK REL="previous" HREF="node4.html">
+<LINK REL="next" HREF="node6.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A
+ HREF="node6.html">
+<IMG WIDTH="37" HEIGHT="24" ALT="next" SRC="next.png"></A> 
+<A
+ HREF="documentation.html">
+<IMG WIDTH="26" HEIGHT="24" ALT="up" SRC="up.png"></A> 
+<A
+ HREF="node4.html">
+<IMG WIDTH="63" HEIGHT="24" ALT="previous" SRC="prev.png"></A>   
+<BR>
+<B> Next:</B> <A
+ HREF="node6.html">Fermionic environment</A>
+<B> Up:</B> <A
+ HREF="documentation.html">documentation</A>
+<B> Previous:</B> <A
+ HREF="node4.html">Free system dynamics</A>
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H1><A ID="SECTION00050000000000000000">
+Including environments</A>
+</H1>
+In the following subsections, we demonstrate how environment can be included.
+First of all, note that as we include multiple environment modes, the 
+total environment Liouville space becomes prohibitively large 
+very fast and needs to be compressed to remain tractable, 
+which is the core of the ACE algorithm.
+To enable compression, one has to specify a criterion. Most commonly, we
+use sweeps of singular value decompositions (SVDs) and only keep the subspaces
+related to singular values larger than a threshold <!-- MATH
+ $\epsilon \sigma_0$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.77ex; vertical-align: -0.45ex; " SRC="img73.svg"
+ ALT="$\epsilon \sigma_0$"></SPAN>, where
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.77ex; vertical-align: -0.45ex; " SRC="img24.svg"
+ ALT="$\sigma_0$"></SPAN> is the largest singular value. This is enabled in the code by
+specifying a value to the paramter <SPAN  CLASS="texttt">threshold</SPAN>. To provide small values,
+the C/C++ notation for powers of ten is useful, e.g., use 
+<code>-threshold 1e-7</code> in the command line to enable compression with threshold
+<!-- MATH
+ $\epsilon =10^{-7}$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.35ex; vertical-align: -0.11ex; " SRC="img74.svg"
+ ALT="$\epsilon =10^{-7}$"></SPAN>. 
+The smaller the
+threshold, the more accurate the simulation. 
+However, for very small thresholds also the calculation times as well as
+the memory demands increase.
+Alternatively, one can fix the maximal inner dimension of
+the PT MPO by defining <code>compress_maxk</code>. If both are specified, 
+<code>compress_maxk</code> acts as an upper bound for the inner dimension.
+
+<P>
+In principle, all that is required to add a single mode is the environment
+Hamiltonian <SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.36ex; vertical-align: -0.47ex; " SRC="img4.svg"
+ ALT="$H_E$"></SPAN> including the interaction with the system and the initial
+environment mode density matrix, which can be provided in the form 
+of two matrix valued expressions to the <code>add_single_mode</code> parameter.
+For example, 
+
+<P>
+
+<PRE>
+te          10
+dt           0.01
+threshold    1e-7
+
+add_single_mode    {hbar*5* (Id_2 otimes n_3) + hbar*1.*(|0&gt;&lt;1|_2 otimes bdagger_3 + |1&gt;&lt;0|_2 otimes b_3)}   {|0&gt;&lt;0|_3}
+
+
+initial          {|1&gt;&lt;1|_2}
+add_Hamiltonian  { 0*Id_2 }
+add_Output       {|1&gt;&lt;1|_2}
+
+outfile      singlemode.out
+</PRE>
+
+
+<P>
+describes the Jaynes-Cummings coupling of a two-level system with a 
+bosonic mode which is detuned with respect to the two-level system energy
+by a frequency <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.92ex; vertical-align: -0.11ex; " SRC="img75.svg"
+ ALT="$5$"></SPAN> in units of the system-boson coupling (which is set to 1).  
+This interaction conserves the number of excitations and the dynamics will 
+look like strongly detuned coherent Rabi oscillations.
+Note that because <SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.36ex; vertical-align: -0.47ex; " SRC="img4.svg"
+ ALT="$H_E$"></SPAN> contains the system-environment interaction, it
+lives on the product Hilbert space of system and environment (system part comes
+first if <code>otimes</code> is used), whereas the environment initial density
+matrix lives in the bare environment Hilbert space.
+
+<P>
+Adding more modes is as simple as adding more <code>add_single_mode</code> lines
+to the parameter file. However, for many practically relevant bath more 
+convenient sets of command line parameters are provided, some of which 
+we discuss in the following subsection.
+
+<P>
+<BR><HR>
+<!--Table of Child-Links-->
+<A ID="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL CLASS="ChildLinks">
+<LI><A ID="tex2html14"
+  HREF="node6.html">Fermionic environment</A>
+<LI><A ID="tex2html15"
+  HREF="node7.html">Bosonic environments</A>
+<LI><A ID="tex2html16"
+  HREF="node8.html">Predefined spectral densities</A>
+<LI><A ID="tex2html17"
+  HREF="node9.html">Related computational methods</A>
+<LI><A ID="tex2html18"
+  HREF="node10.html">Reading, writing, and combining process tensors</A>
+</UL>
+<!--End of Table of Child-Links-->
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A
+ HREF="node6.html">
+<IMG WIDTH="37" HEIGHT="24" ALT="next" SRC="next.png"></A> 
+<A
+ HREF="documentation.html">
+<IMG WIDTH="26" HEIGHT="24" ALT="up" SRC="up.png"></A> 
+<A
+ HREF="node4.html">
+<IMG WIDTH="63" HEIGHT="24" ALT="previous" SRC="prev.png"></A>   
+<BR>
+<B> Next:</B> <A
+ HREF="node6.html">Fermionic environment</A>
+<B> Up:</B> <A
+ HREF="documentation.html">documentation</A>
+<B> Previous:</B> <A
+ HREF="node4.html">Free system dynamics</A></DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

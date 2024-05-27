@@ -1,0 +1,78 @@
+
+ifneq ($(MKLROOT),)
+  MKL_INCL = -I$(MKLROOT)/include -DEIGEN_USE_MKL_ALL
+  MKL_LINK = -DMKL_LP64 -m64 -L$(MKLROOT)/lib/intel64 -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl 
+else 
+  $(info )
+  $(info ########################################)
+  $(info ACE will not be compiled against MKL. If you would like to use it, please specify variable MKLROOT, e.g., MKLROOT=/opt/intel/mkl/. )
+  $(info ########################################)
+  $(info )
+endif
+
+
+ifeq ($(EIGEN_HOME),)
+  EIGEN_HOME=/usr/include/eigen3/
+endif
+ifeq (,$(wildcard $(EIGEN_HOME)/Eigen/Eigen))
+    $(error Please specify variable EIGEN_HOME)
+endif
+
+#FFTW_FLAGS=-lfftw3
+
+ifeq ($(OPTIM),)
+  OPTIM = 3
+endif
+
+
+
+OPTS += -O$(OPTIM) -fno-math-errno -g -m64 --std=c++11 -Wno-ignored-attributes
+OPTS += -Winvalid-pch -fPIC
+OPTS += -Iinclude -I$(EIGEN_HOME) $(MKL_INCL)
+OPTSLINK += $(OPTS) -lm $(MKL_LINK)
+
+
+LIBSRC = $(wildcard src/*.cpp)
+LIBOBJS = $(patsubst src/%.cpp, lib/%.o, $(LIBSRC))
+
+EXECOBJS = ACE iQUAPI TEMPO ACE_stream
+BINEXEC = $(patsubst %, bin/%, $(EXECOBJS))
+
+MOREEXECOBJS = ACE_env_obs ACE_env_wavepacket ACE_integrate_t1
+BINMORE = $(patsubst %, bin/%, $(MOREEXECOBJS))
+
+
+all: PCH $(EXECOBJS) 
+$(EXECOBJS): %: src_exec/%.cpp  lib/libACE.so 
+	$(CXX) -o bin/$@ $< $(OPTSLINK) -Llib -lACE -Wl,-rpath=$(shell pwd)/lib
+
+more: $(MOREEXECOBJS) 
+$(MOREEXECOBJS): %: src_exec/%.cpp lib/libACE.so
+	$(CXX) -o bin/$@ $< $(OPTSLINK) -Llib -lACE -Wl,-rpath=$(shell pwd)/lib
+
+lib/libACE.so: $(LIBOBJS) 
+	$(CXX) -shared -fPIC -o lib/libACE.so -flto lib/*.o 
+
+$(LIBOBJS): lib/%.o: src/%.cpp include/%.hpp include/PCH.hpp.gch
+	$(CXX) -o $@ -c $< -fPIC $(OPTS)
+
+PCH: include/PCH.hpp.gch 
+include/PCH.hpp.gch: include/PCH.hpp
+	g++ -x c++-header -o include/PCH.hpp.gch -c include/PCH.hpp $(OPTS)
+
+TOOLS = PT_build PT_sweep PT_join IF_from_PT 
+TOOLS += PT_analyze PT_apply_system_propagator PT_coarse_grain PT_extend
+TOOLS += integrate_outfile generate_J DiagBB_print_K block_combine
+TOOLS += TC_overlap TC_PT TC_join TC_TinvTcombine
+
+tools: $(TOOLS)
+$(TOOLS): %: src_exec/tools/%.cpp lib/libACE.so
+	$(CXX) -o tools/$@ $< $(OPTSLINK) -Llib -lACE -Wl,-rpath=$(shell pwd)/lib
+
+
+
+.PHONY: clean
+
+clean:
+	rm -rf bin/* tools/* lib/* include/PCH.hpp.gch
+

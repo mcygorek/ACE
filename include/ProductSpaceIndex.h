@@ -1,7 +1,7 @@
 #ifndef ACE_SPACE_LAYOUT_DEFINED_H
 #define ACE_SPACE_LAYOUT_DEFINED_H
 
-#include "CheckMatrix.h"
+#include "CheckMatrix.hpp"
 #include <vector>
 
 /*  Purpose:
@@ -22,6 +22,7 @@ indices are collective indices. Here, we between Kronecker product indices
 NOTE: This implementation favours correctness over speed!
 
 */
+namespace ACE{
 
 class ProductSpace{
 private:
@@ -210,5 +211,5 @@ public:
   }
 };
 
-
+}//namespace
 #endif

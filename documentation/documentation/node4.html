@@ -1,0 +1,318 @@
+<!DOCTYPE HTML>
+
+<!--Converted with LaTeX2HTML 2021.2 (Released July 1, 2021) -->
+<HTML lang="en">
+<HEAD>
+<TITLE>Free system dynamics</TITLE>
+<META NAME="description" CONTENT="Free system dynamics">
+<META NAME="keywords" CONTENT="documentation">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="viewport" CONTENT="width=device-width, initial-scale=1.0">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2021.2">
+
+<LINK REL="STYLESHEET" HREF="documentation.css">
+
+<LINK REL="next" HREF="node5.html">
+<LINK REL="previous" HREF="node3.html">
+<LINK REL="next" HREF="node5.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A
+ HREF="node5.html">
+<IMG WIDTH="37" HEIGHT="24" ALT="next" SRC="next.png"></A> 
+<A
+ HREF="documentation.html">
+<IMG WIDTH="26" HEIGHT="24" ALT="up" SRC="up.png"></A> 
+<A
+ HREF="node3.html">
+<IMG WIDTH="63" HEIGHT="24" ALT="previous" SRC="prev.png"></A>   
+<BR>
+<B> Next:</B> <A
+ HREF="node5.html">Including environments</A>
+<B> Up:</B> <A
+ HREF="documentation.html">documentation</A>
+<B> Previous:</B> <A
+ HREF="node3.html">General usage</A>
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H1><A ID="SECTION00040000000000000000">
+Free system dynamics</A>
+</H1>
+
+<P>
+In this section, we focus on the usage of the ACE code
+on examples without explicit environment parts,
+i.e., closed few-level systems or Lindblad master equations.
+
+<P>
+We begin with some of the most important parameters:
+The starting time, the final time, and the time step width can be specified
+by the command line options <SPAN  CLASS="texttt">-ta</SPAN>, <SPAN  CLASS="texttt">-te</SPAN>, and <SPAN  CLASS="texttt">-dt</SPAN>, 
+respectively, which have the default values 0, 10, and 0.01.
+You will find the corresponding time grid in the first column of output file
+<SPAN  CLASS="texttt">ACE.out</SPAN>, whose name may be changed via the option <SPAN  CLASS="texttt">-outfile</SPAN>.
+By default, there will be no environment, the system is a two-level system
+(TLS) initially in its ground state, and the system Hamiltonian is <SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.36ex; vertical-align: -0.47ex; " SRC="img54.svg"
+ ALT="$H_S=0$"></SPAN>. 
+For TLSs, if not specified otherwise, the second and third
+columns in the output file will be the real and imaginary part of the 
+diagonal element of the system density matrix corresponding to the exited state.
+If no parameters are specified explicitly, these columns should remain 0.
+
+<P>
+As a first example, run
+<PRE>
+&gt; ACE -dt 0.001 -te 20 -add_Hamiltonian "{hbar/2*(|1&gt;&lt;0|_2+|0&gt;&lt;1|_2)}" -outfile ACE1.out
+</PRE>
+This will generate an output file <SPAN  CLASS="texttt">ACE1.out</SPAN>, which contains the dynamics
+of a constantly driven TLS from 0 to 20 ps with time steps of 0.001 ps.
+The driving is described by the Hamiltonian 
+<!-- MATH
+ $H_S=(\hbar/2)(|X\rangle\langle G|+|G\rangle\langle X|)$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.74ex; vertical-align: -0.69ex; " SRC="img55.svg"
+ ALT="$H_S=(\hbar/2)(\vert X\rangle\langle G\vert+\vert G\rangle\langle X\vert)$"></SPAN> (note: hbar is given
+in units of meVps).
+
+<P>
+Plotting the second column of <SPAN  CLASS="texttt">ACE1.out</SPAN> 
+(in gnuplot: <code>plot "ACE1.out" using 1:2 with lines</code>) reveals clear 
+Rabi oscillations of the excited state occupations:
+
+<P>
+<IMG
+ STYLE="height: 59.44ex; vertical-align: -0.11ex; " SRC="img70.svg"
+ ALT="\includegraphics[width=20cm]{figs/example1.eps}">
+
+<P>
+The same result can be obtained creating and editing the file 
+<SPAN  CLASS="texttt">driver1.param</SPAN>:
+
+<P>
+
+<PRE>
+dt                   0.001 
+te                  20 
+
+add_Hamiltonian      {hbar/2*(|1&gt;&lt;0|_2+|0&gt;&lt;1|_2)}
+
+
+outfile              ACE1.out
+</PRE>
+
+
+<P>
+and running
+<PRE>
+&gt; ACE -driver driver1.param
+</PRE>
+or simply 
+<PRE>
+&gt; ACE driver1.param
+</PRE>
+I.e., the first parameter is interpreted as a driver file.
+
+<P>
+A more complicated scenario can be described by the 
+following driver file (<code>driver2.param</code>), where an initially excited 
+TLS, optionally subject to radiative decay described by a 
+Lindblad term, is driven by a Gaussian laser pulse:
+
+<P>
+
+<PRE>
+dt                   0.01
+te                  20
+
+initial             {|1&gt;&lt;1|_2}
+
+#add_Lindblad         0.5  {|0&gt;&lt;1|_2}
+add_Pulse            Gauss  10 1 {1.*pi} 0  {hbar/2*|1&gt;&lt;0|_2}
+
+outfile              ACE2.out
+</PRE>
+
+
+<P>
+This produces the following dynamics:
+
+<P>
+<IMG
+ STYLE="height: 59.44ex; vertical-align: -0.11ex; " SRC="img71.svg"
+ ALT="\includegraphics[width=20cm]{figs/example2.eps}">
+
+<P>
+where the two curves are results of calculations where the Lindblad term is
+either turned off or on. The # symbol in a driver file indicates a comment, 
+i.e. anything after it is ignored. The parameters of <SPAN  CLASS="texttt">add_Lindblad</SPAN>
+are the rate <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.87ex; vertical-align: -0.56ex; " SRC="img56.svg"
+ ALT="$\gamma$"></SPAN> and the operator <SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.01ex; vertical-align: -0.11ex; " SRC="img57.svg"
+ ALT="$A$"></SPAN> for the Lindblad term
+
+<P>
+<P></P>
+<DIV CLASS="displaymath"><!-- MATH
+ \begin{equation}
+\gamma \mathcal{L}[A](\rho)=\gamma\bigg[ A\rho A^\dagger
+-\tfrac 12\big(A^\dagger A\rho +\rho A^\dagger A \big)\bigg].
+\end{equation}
+ -->
+<TABLE CLASS="equation" >
+<TR>
+<TD  style="text-align:center;"><SPAN CLASS="MATH"><IMG
+ STYLE="height: 5.98ex; vertical-align: -2.31ex; " SRC="img58.svg"
+ ALT="$\displaystyle \gamma \mathcal{L}[A](\rho)=\gamma\bigg[ A\rho A^\dagger
+-\tfrac 12\big(A^\dagger A\rho +\rho A^\dagger A \big)\bigg].$"></SPAN></TD>
+<TD  CLASS="eqno" style="text-align:right">
+(<SPAN CLASS="eqn-number">7</SPAN>)</TD></TR>
+</TABLE></DIV>
+<P></P>
+
+<P>
+The parameters of <code>add_Pulse Gauss</code> are the pulse center
+(here: <SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.26ex; vertical-align: -0.45ex; " SRC="img59.svg"
+ ALT="$t_c=10$"></SPAN> ps),
+the pulse duration (<!-- MATH
+ $\tau_{FWHM}=1$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.27ex; vertical-align: -0.47ex; " SRC="img60.svg"
+ ALT="$\tau_{FWHM}=1$"></SPAN> ps), the pulse area (<SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.01ex; vertical-align: -0.11ex; " SRC="img61.svg"
+ ALT="$A=1 \pi$"></SPAN>), the
+detuning (<SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.03ex; vertical-align: -0.11ex; " SRC="img62.svg"
+ ALT="$\delta=0$"></SPAN> meV), and the operator (<!-- MATH
+ $\hat{d}=|1\rangle\langle 0|$
+ -->
+<SPAN CLASS="MATH"><IMG
+ STYLE="height: 3.22ex; vertical-align: -0.69ex; " SRC="img63.svg"
+ ALT="$\hat{d}=\vert 1\rangle\langle 0\vert$"></SPAN>)
+describing the light-matter coupling, which enter the driving Hamiltonian
+<P></P>
+<DIV CLASS="displaymath"><!-- MATH
+ \begin{equation}
+H_D=\frac{\hbar}{2} \big(f(t) \hat{d} + f^*(t) \hat{d}^\dagger\big)
+\textrm{ with }
+f(t)=\frac{A}{\sqrt{2\pi}\sigma} e^{-\frac 12 \frac{(t-t_c)^2}{\sigma^2}}
+e^{-i (\delta/\hbar) t},
+\quad \sigma=\tau_{FWHM}/\sqrt{8 \ln(2)}.
+\end{equation}
+ -->
+<TABLE CLASS="equation" >
+<TR>
+<TD  style="text-align:center;"><SPAN CLASS="MATH"><IMG
+ STYLE="height: 5.90ex; vertical-align: -2.27ex; " SRC="img64.svg"
+ ALT="$\displaystyle H_D=\frac{\hbar}{2} \big(f(t) \hat{d} + f^*(t) \hat{d}^\dagger\bi...
+...}{\sigma^2}}
+e^{-i (\delta/\hbar) t},
+\quad \sigma=\tau_{FWHM}/\sqrt{8 \ln(2)}.$"></SPAN></TD>
+<TD  CLASS="eqno" style="text-align:right">
+(<SPAN CLASS="eqn-number">8</SPAN>)</TD></TR>
+</TABLE></DIV>
+<P></P>
+<BR>
+<BR>
+<BR>
+
+<P>
+Alternatively, one can use arbitrary pulses by reading them from file. 
+The first column is the time, the second and third columns are the
+real and imaginary parts of <SPAN CLASS="MATH"><IMG
+ STYLE="height: 2.74ex; vertical-align: -0.69ex; " SRC="img65.svg"
+ ALT="$f(t)$"></SPAN>. For example, the file 
+<code>step.pulse</code>, which contains
+
+<P>
+
+<PRE>
+1.999999  0 0
+2         1 0
+3.999999  1 0
+4.        0 0
+</PRE>
+
+
+<P>
+As data points are linearly interpolated and the value of the first and last
+data points are extended to <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.97ex; vertical-align: -0.30ex; " SRC="img66.svg"
+ ALT="$-\infty$"></SPAN> and <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.42ex; vertical-align: -0.11ex; " SRC="img67.svg"
+ ALT="$\infty$"></SPAN>, respectively, this 
+describes a function whose real part is a rectangular function with height 1
+from time 2 to 4 while the imaginary part is zero. 
+Running <code>ACE</code> with the following driver file 
+<code>pulse_from_file.param</code>
+
+<P>
+
+<PRE>
+te          10
+dt           0.01
+
+initial    {|0&gt;&lt;0|_2}
+
+add_Pulse File step.pulse {(3*pi)*hbar/2*|1&gt;&lt;0|_2}
+
+add_Output {|1&gt;&lt;1|_2}
+
+outfile    pulse_from_file.out
+</PRE>
+
+
+<P>
+Using the type <code>File</code> as the first argument of the parameter 
+<code>add_Pulse</code> tells the code to read the file whose name is given as the 
+second argument. The third argument is again the operator with which it enters
+the Hamiltonian. Note that the factor <code>3*pi</code> in the operator scales the
+pulse from height 1 to <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.92ex; vertical-align: -0.11ex; " SRC="img68.svg"
+ ALT="$3\pi$"></SPAN>, and because the pulse is finite for a time
+2, the overall pulse area is <SPAN CLASS="MATH"><IMG
+ STYLE="height: 1.92ex; vertical-align: -0.11ex; " SRC="img69.svg"
+ ALT="$6\pi$"></SPAN>, i.e. 3 complete Rabi flops. This is
+clearly seen in the dynamics in the figure below
+
+<P>
+<IMG
+ STYLE="height: 54.66ex; vertical-align: -0.11ex; " SRC="img72.svg"
+ ALT="\includegraphics[width=20cm]{figs/plot_pulse_from_file.eps}">
+
+<P>
+
+<DIV CLASS="navigation"><HR>
+<!--Navigation Panel-->
+<A
+ HREF="node5.html">
+<IMG WIDTH="37" HEIGHT="24" ALT="next" SRC="next.png"></A> 
+<A
+ HREF="documentation.html">
+<IMG WIDTH="26" HEIGHT="24" ALT="up" SRC="up.png"></A> 
+<A
+ HREF="node3.html">
+<IMG WIDTH="63" HEIGHT="24" ALT="previous" SRC="prev.png"></A>   
+<BR>
+<B> Next:</B> <A
+ HREF="node5.html">Including environments</A>
+<B> Up:</B> <A
+ HREF="documentation.html">documentation</A>
+<B> Previous:</B> <A
+ HREF="node3.html">General usage</A></DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

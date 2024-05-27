@@ -2,7 +2,7 @@
 #define ACE_DIMENSION_EXTENDER_DEFINED_H
 
 #include <iostream>
-#include "otimes.h"
+#include "otimes.hpp"
 
 /**
   Extend matrix acting on a lower subspace to a higher subspace. 
@@ -10,6 +10,8 @@
 
   Dimensions defined in Hilbert space; extension of Hilbert or Liouville space.
 */
+
+namespace ACE{
 
 class DimensionExtender{
 public:
@@ -191,6 +193,7 @@ public:
     Eigen::MatrixXcd A=Eigen::MatrixXcd::Zero(dout*dout, dout*dout);
 
     //strategy: loop through output dimensions; get corresponding input index
+
     int r1in, c1in;
     int r2in, c2in;
     for(int r1=0; r1<dout; r1++){
@@ -206,6 +209,7 @@ public:
         }
       }
     }
+
     return A;
   }
   DimensionExtender(){
@@ -219,5 +223,5 @@ public:
   }
 };
 
-
+}//namespace
 #endif

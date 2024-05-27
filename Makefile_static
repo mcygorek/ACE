@@ -1,0 +1,75 @@
+
+#ifneq ($(MKLROOT),)
+#  MKL_INCL = -I$(MKLROOT)/include -DEIGEN_USE_MKL_ALL
+#  MKL_LINK = -DMKL_LP64 -m64 -L$(MKLROOT)/lib/intel64 -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl 
+#else 
+#  $(info )
+#  $(info ########################################)
+#  $(info ACE will not be compiled against MKL. If you would like to use it, please specify variable MKLROOT, e.g., MKLROOT=/opt/intel/mkl/. )
+#  $(info ########################################)
+#  $(info )
+#endif
+
+
+ifeq ($(EIGEN_HOME),)
+  EIGEN_HOME=/usr/include/eigen3/
+endif
+ifeq (,$(wildcard $(EIGEN_HOME)/Eigen/Eigen))
+    $(error Please specify variable EIGEN_HOME)
+endif
+
+
+ifeq ($(OPTIM),)
+  OPTIM = 3
+endif
+
+
+OPTS += -static -Wno-ignored-attributes
+OPTS += -O$(OPTIM) -fno-math-errno -g -m64 --std=c++11 
+OPTS += -Iinclude -I$(EIGEN_HOME) $(MKL_INCL)
+OPTSLINK += $(OPTS) -lm $(MKL_LINK)
+
+
+EXECOBJS = ACE ACE_stream iQUAPI TEMPO 
+BINEXEC = $(patsubst %, bin/%, $(EXECOBJS))
+
+MOREEXECOBJS = ACE_env_obs ACE_env_wavepacket ACE_integrate_t1
+BINMORE = $(patsubst %, bin/%, $(MOREEXECOBJS))
+
+
+all: $(EXECOBJS) 
+$(EXECOBJS): %: src_exec/%.cpp  
+	cat src/*.cpp > bin/tmp_$@.cpp 
+	wc -l bin/tmp_$@.cpp
+	cat $< >> bin/tmp_$@.cpp
+	$(CXX) -o bin/$@ bin/tmp_$@.cpp $(OPTSLINK) 
+	rm bin/tmp_$@.cpp
+
+
+more: $(MOREEXECOBJS) 
+$(MOREEXECOBJS): %: src_exec/%.cpp
+	cat src/*.cpp > bin/tmp_$@.cpp 
+	wc -l bin/tmp_$@.cpp
+	cat $< >> bin/tmp_$@.cpp
+	$(CXX) -o bin/$@ bin/tmp_$@.cpp $(OPTSLINK) 
+	rm bin/tmp_$@.cpp
+
+TOOLS = PT_analyze PT_apply_system_propagator PT_coarse_grain PT_extend
+TOOLS += integrate_outfile generate_J DiagBB_print_K
+TOOLS += TC_overlap TC_PT TC_join TC_TinvTcombine
+
+tools: $(TOOLS)
+$(TOOLS): %: src_exec/tools/%.cpp
+	cat src/*.cpp > tools/tmp_$@.cpp 
+	wc -l tools/tmp_$@.cpp
+	cat $< >> tools/tmp_$@.cpp
+	$(CXX) -o tools/$@ tools/tmp_$@.cpp $(OPTSLINK) 
+	rm tools/tmp_$@.cpp
+
+
+.PHONY: clean
+
+clean:
+	rm -rf bin/* tools/* lib/* 
+#include/PCH.hpp.gch
+

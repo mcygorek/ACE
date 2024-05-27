@@ -13,7 +13,8 @@ This document describes how to use the C++ code ACE
 for the solution of open quantum systems using the 
 \emph{automated compression of environments} (ACE) method.
 The article explaining the method can be found 
-\href{https://arxiv.org/abs/2101.01653}{here}.
+\href{https://doi.org/10.1038/s41567-022-01544-9}{here}.
+%\href{https://arxiv.org/abs/2101.01653}{here}.
 
 ACE enables numerically exact simulations of the dynamics of 
 an open quantum systems described by the quantum Liouville equation
@@ -34,9 +35,11 @@ is assumed to be separable into $N_E$ independent modes $k$.
 %Throughout this document we will denote the dimension of the system Hilbert
 %space by $N$ while the dimension of the $k$-th environment mode
 %is $M^k$ (or simply $M$ if all $M^k$ are identical).
-$\mathcal{L}_{nonh.}[\rho]$ denotes non-Hamiltonian contributions
-to the dynamics such as Lindblad terms affecting the system, the environment,
-or both.
+$\mathcal{L}_{nonh.}[\rho]=\mathcal{L}_S[\rho]+\mathcal{L}_E[\rho]
+=\mathcal{L}_S[\rho]+\sum_k \mathcal{L}_E^k [\rho]$ 
+denotes non-Hamiltonian contributions
+to the dynamics such as Lindblad terms affecting the system 
+and the environment.
 
 The goal is to obtain the reduced system density matrix discretized on
 a time grid $t_l = t_a + l \Delta t$ up to a given final time 
@@ -52,7 +55,9 @@ This can be done using the path integral expression
 {\rho}_{\alpha_0},
 \end{equation}
 where ${\rho}_{\alpha_l}={\rho}_{\nu_l \mu_l}$ is the reduced 
-system density matrix at time step $l$, $\mathcal{M}$ describes the
+system density matrix at time step $l$, 
+$\mathcal{M}=\exp( -(i/\hbar)[H_S, \,.\, ] \Delta t
++\mathcal{L}_S[\,.\,]\Delta t)$ describes the
 free time evolution of the system without the environment, 
 and $\mathcal{I}$ is the 
 \emph{process tensor} (PT) accounting for the 
@@ -60,6 +65,7 @@ effects of the environment.
 To keep the notation compact, we combine two Hilbert space indices
 on the system density matrix $\nu_l$ and $\mu_l$ into a single 
 Liouville space index $\alpha_l=(\nu_l, \mu_l)$.
+
 The PT can always expressed in the form of a matrix product operator (MPO)
 %
 \begin{equation}
@@ -73,23 +79,123 @@ The PT can always expressed in the form of a matrix product operator (MPO)
 \end{equation}
 In the explicit derivation of the matrices $\mathcal{Q}$, the inner indices
 $d_l$ correspond to a complete basis of the Liouville space 
-of the full environment, which can be extremely large. However, the inner 
-dimensions of MPOs can be systemaically reduced using established compression 
-techniques.
-Here, we use a compression method based on singular value decomposition (SVD),
-where singular values below a predefined threshold $\epsilon$ are disregarded.
-The time discretization $\Delta t$ and the compression threshold $\epsilon$
-are the main convergence parameters of ACE.
+of the full environment, whose dimension $\chi_l$ is typically 
+extremely large. 
+However, for MPOs, compression techniques are available, which systematically
+reduce their inner bonds, keeping only ``relevant'' parts of the 
+environment influence while discarding ``irrelevant'' parts.
+A standard compression technique is to employ singular value decomposition 
+(SVD), where the magnitude of the singular values determines the ``relevance''
+of an environment degree of freedom. I.e., environment degrees of freedom
+corresponding to singular values $\sigma_i$ 
+below a predefined threshold $\sigma_i<\epsilon\sigma_0$ are disregarded, where
+$\sigma_0$ is the largest singular value.
 
-The working principle of ACE is to construct the PT in compressed MPO form
-by calculating the PTs for the individual environment modes $k$ 
-and then combining them one by one. 
-After each combination step, the PT MPO is compressed using
-SVDs to reduce the inner dimensions to a manageable size at all times.
-Once the compressed PT is calculated,
-the reduced system density matrix for a given 
-system Hamiltonian and system initial state can be obtained by contracting
-a simple tensor network.
+The overall procedure can be understood as compressing the full environment
+propagator to its relevant subspace via a lossy transformation
+\begin{equation}
+\mathcal{Q}^{(\alpha_l,\tilde{\alpha}_l)}_{d_l,d_{l-1}}=
+\sum_{d'_l,d''_{l-1}}\mathcal{T}_{d_l,d'_l} 
+\Big(e^{ -(i/\hbar)[H_E, \,.\, ] \Delta t
++\mathcal{L}_E[\,.\,]\Delta t }\Big)_{d'_l,d''_l}
+\mathcal{T}^{-1}_{d''_{l-1},d_{l-1}},
+\end{equation} 
+where the lossy transformation $\mathcal{T}$ and its pseudo-inverse 
+$\mathcal{T}^{-1}$ are identified implicitly and automatically by the 
+compression method. Hence the name: 
+\emph{Automated Compression of Environments}.
+
+The main technical achievement is that the non-local environment influence
+is mapped onto a local one on an extended space, i.e., the system Liouville 
+subspace extended by the inner dimension of the PT-MPO. Concretely, the 
+reduced system density matrix is obtained by a sequence of matrix 
+multiplications
+\begin{equation}
+\rho_{\alpha_l} = q_{d_l} 
+\big( \mathcal{Q}^{(\alpha_l, \tilde{\alpha}_l)}_{d_l,d_{l-1}} 
+\mathcal{M}^{\tilde{\alpha}_l,\alpha_{l-1}}\big) 
+\dots 
+\big( \mathcal{Q}^{(\alpha_{2}, \tilde{\alpha}_{2})}_{d_{2},d_{1}} 
+\mathcal{M}^{\tilde{\alpha}_{2},\alpha_{1}}\big) 
+\big( \mathcal{Q}^{(\alpha_{1}, \tilde{\alpha}_{1})}_{d_{1},1} 
+\mathcal{M}^{\tilde{\alpha}_{1},\alpha_{0}}\big) \rho_{\alpha_0},
+\label{eq:propagation}
+\end{equation}
+where a summation over pairs of $d_l$, $\alpha_{l}$, and $\tilde{\alpha}_l$ 
+are implied, and the closure $q_{d_l}$ traces out the environment, so that
+the reduced system density matrix can also be obtained at intermediate 
+time steps $t_l<t_n$.
+
+This description provides the conceptional basis for the ACE code. 
+Some further points are worth highlighting:
+\begin{itemize}
+\item The code can be divided into three parts: Calculation of the PT-MPO,
+calculation of the system propagator $\mathcal{M}$, and 
+the propagation via Eq.\eqref{eq:propagation}.
+
+\item PT-MPOs can be precalculated, stored in files, and reused. 
+This facilitates the efficient sampling of different system Hamiltonians, e.g.,
+corresponding to different system parameters of driving protocols.
+
+\item It is straightforward to use time-dependent system Hamiltonians, 
+which can be read from input files.
+
+\item There are a number of convergence parameters that have to be set, such as
+the initial \verb#ta# and final \verb#te# time of the simulation, the time step
+\verb#dt#, as well as MPO compression parameters like the threshold \verb#epsilon# and discretization parameter \verb#..._N_modes#. These have to be chosen
+carefully to ensure both, physical results and finite computation times.
+
+\item There are several ways to calculate PT-MPOs:
+The \href{https://doi.org/10.1038/s41567-022-01544-9}{ACE algorithm}
+is available for general environments composed of non-interacting environment
+modes. One can specify either the environment Hamiltonians for 
+each mode seperately or use predefined generators for certain classes of
+environments.
+The algorithm by
+\href{https://doi.org/10.1103/PhysRevLett.123.240602}{J{\o}rgensen and Pollock}
+as well as 
+\href{https://doi.org/10.48550/arXiv.2304.05291}{divide-and-conquer and periodic PT-MPOs} 
+are available for generalized spin-boson environments. Where they are available,
+they tend to perform much better than the brute-force solution using ACE.
+
+\item Multiple PT-MPOs can be used simultaneously, which provides a way
+to numerically exactly treat multi-environment problem. 
+This is achieved by multiplying, in a single propagation step, with matrices
+$\big( \mathcal{P}^{(\alpha_l,\alpha'_l)}_{e_l,e_{l-1}}
+\mathcal{Q}^{(\alpha'_l, \tilde{\alpha}_l)}_{d_l,d_{l-1}} 
+\mathcal{M}^{\tilde{\alpha}_l,\alpha_{l-1}}\big)$.
+Note, however, that for the matrix multiplication the inner dimensions of
+the different PTs are multiplied, which leads to exponential scaling with 
+respect to the number of environments (and subsystems). There is work in
+progress to reduce these demands but, for now, this makes it impractical
+to propagate systems with more than 2 environments.
+
+\item The Trotter (time discretization) error can be reduced by employing 
+symmetric Trotter decompositions. For a multi-environment problem, the order 
+of matrix multiplications is alternated, i.e., 
+$\big( \mathcal{P}^{(\alpha_l,\alpha'_l)}_{e_l,e_{l-1}}
+\mathcal{Q}^{(\alpha'_l, \tilde{\alpha}_l)}_{d_l,d_{l-1}} 
+\mathcal{M}^{\tilde{\alpha}_l,\alpha_{l-1}}\big)$ 
+for even time steps and
+$\big(\mathcal{M}^{\tilde{\alpha}_l,\alpha'_{l}}
+\mathcal{Q}^{(\alpha'_l, \tilde{\alpha}_l)}_{d_l,d_{l-1}}
+\mathcal{P}^{(\tilde{\alpha}_l,\alpha_{l-1})}_{e_l,e_{l-1}}\big)$
+for odd time steps (we start counting from 0). Then, the time discretization 
+error at even time steps is $\mathcal{O}(\Delta t^2)$ while there is an error
+$\mathcal{O}(\Delta t)$ at odd time steps. 
+If there is only one environment, one can use a symmetric
+system-environment splitting 
+$\big(\sqrt{\mathcal{M}}^{\tilde{\alpha}_l,\alpha'_{l}}
+\mathcal{Q}^{(\alpha'_l, \tilde{\alpha}_l)}_{d_l,d_{l-1}}
+\sqrt{\mathcal{M}}^{(\tilde{\alpha}_l,\alpha_{l-1})}\big)$,
+where $\sqrt{\mathcal{M}}$ is the system propagator over half a time step
+(to this end, set parameter \verb#use_symmetric_Trotter# to \verb#true#).
+
+\item There is work in progress to extract environment observables 
+via inner bonds of PT-MPOs. To this end, the closures $q_l$ are replaced by
+observable closures $o_l$, which have to be known ahead of the PT-MPO 
+calculation.
+\end{itemize}
 
 \section{Code, Compilation, Dependencies, and Design Choices}
 The code is written in C++ to combine low-level optimization 
@@ -98,11 +204,13 @@ It has been most thoroughly tested on the Linux
 operating system but it also compiles and runs on Mac and Windows.
 
 We have tried to keep the dependencies on other codes minimal.
-However, the \href{http://eigen.tuxfamily.org}{Eigen} library is very handy
+The \href{http://eigen.tuxfamily.org}{Eigen} library is very handy
 and provides useful and efficient routines, e.g., for matrix exponentials,
 so we make use of it at multiple places in the code. This dependency is 
 harmless, as Eigen is ``header only'', i.e. it does not require installation
-beyond downloading the header files.
+beyond downloading the header files. However, there have been issues with 
+matrix exponentiations in Eigen versions below 3.4, so it is strongly 
+recommended to download the lates stable release.
 
 The numerically most demanding part of ACE is the calculation of SVDs, 
 for which LAPACK routines are available (optional), e.g., within the
@@ -144,7 +252,13 @@ add the follwing line to your \texttt{$\sim$/.bashrc} file
 PATH=/.../ACE/bin/:$PATH 
 \end{verbatim}
 where $\dots$ is to be replaced by the correct absolute path to the ACE 
-directory. Log out and log in again to activate the changes. 
+directory. More programs, e.g., to post-process output data or manipulate
+PT-MPOs stored in files, can be compiled by running ``\verb#make tools#'' 
+from the ACE
+directory, which creates binaries in \verb#/.../ACE/tools/#, which should then
+also be added to the path: \verb#PATH=/.../ACE/bin/:/.../ACE/tools/:$PATH#.
+
+Log out and log in again to activate the changes. 
 Then, go to a temporary directory and run
 \begin{verbatim}
 > ACE
@@ -166,6 +280,9 @@ Compilation on Windows has been tested using the GCC compiler in
 \href{http://mingw-w64.org/doku.php}{MinGW}. We provide a compile script 
 with \texttt{compile.bat} in the ACE directory. Please take a look and 
 modify the path to the Eigen library according to your system specifics.
+Alternatively, install 
+\href{https://learn.microsoft.com/en-us/windows/wsl/install}{Windows Subsystem
+for Linux (WSL)}.
 
 \section{General usage}
 ACE is designed to be fully controllable by command line parameters, so
@@ -174,13 +291,16 @@ no prior knowledge in C++ required.
 Alternatively, the command line parameters can be composed into a driver file,
 which can then be passed to the code via the \texttt{-driver} command line 
 option or simply as the first command line argument.
+Practitioners of scripting languages like Python may want to generate driver
+files using script, then run the programm, and then post-process the resulting
+output file.
 %
 
 Initial states, Hamiltonians, Lindblad terms, and observables for the system 
 as well as for individual environment modes can be specified directly and
 quite generally, 
 but additional sets of parameters are implemented that allow a more convenient
-control of certain typical types of environments.
+control of certain common classes of environments.
 
 Generally, times, energies, and temperatures are expected to be provided
 in units of ps, meV, and K, but it's easy to work with dimensionless 
@@ -193,40 +313,50 @@ complex matrices. The ACE code has a rudimentary parser that interprets
 ``matrix valued expressions'' which are identified by curly braces.
 The bra-ket notation (or rather ket-bra expressions) is supported. 
 Note that to generate the corresponding matrices, the Hilbert space dimension 
-has to specified. Concretely, \verb+{|i><j|_d}+ is interpreted as the 
+has to be specified. Concretely, \verb+{|i><j|_d}+ is interpreted as the 
 operator that describes a transition from state $j$ to state $i$ in a 
 $d$-dimensional space, where we use the convention that $i,j=0,1,\dots, d-1$.
 
 For example, the Pauli matrix $\sigma_y$ can be expressed as
-\verb#{ -i*|1><0|_2 + i*|0><1|_2}# or 
-\verb#{i*( -|1><0|_2 + |0><1|_2 )}#.
+\verb#{i*( -1*|1><0|_2 + |0><1|_2 )}#.
 Some operators are also known by name, such as the Pauli matrices 
 \verb+sigma_x+, \verb+sigma_y+, \verb+sigma_z+, or the identity matrix 
-\verb+Id_d+, where \texttt{d} has the be replaced by the respective dimension 
+\verb+Id_d+, where \verb#d# has the be replaced by the respective dimension 
 of the Hilbert space. Also supported are bosonic creation, annihilation, and
 number operators \verb+bdagger_d+, \verb+b_d+, and \verb+n_d+, and direct 
 products of matrices can be defined using \verb+otimes+ as in 
 \verb#{ hbar*1*(|0><1|_2 otimes bdagger_4 + |1><0|_2 otimes b_4)}#,
 which describes the Jaynes-Cummings interaction with coupling strength 1 
 between a TLS and a bosonic mode containing up to (4-1)=3 photons.
-Furthermore, some constants like \texttt{hbar} 
-(in units of meV ps) or \texttt{pi} can be used as well as the square root
-function \texttt{sqrt(...)}.
-
+Furthermore, some constants like \verb#hbar# 
+(in units of meV ps) or \verb#pi# can be used as well as the square root
+function \verb#sqrt(...)#.
 
 Note that when specified directly on the command line, 
 quotes are required around the curly braces to avoid interpretation 
 of the curly braces by the \texttt{bash} shell. No quotes are used in 
 parameter files.
 
+To test if an operator-valued expression is well formed, you can use 
+the tool \verb#readexpression#, e.g., compare the outputs of 
+\begin{verbatim}
+readexpression "{i*( -1*|1><0|_2 + |0><1|_2 )}"
+\end{verbatim}
+with that of
+\begin{verbatim}
+readexpression "{sigma_y}"
+\end{verbatim}
+
+
 Initial system states are given in terms of the initial system density matrix,
-which is of matrix valued expression form specified by the parameter
-\texttt{initial}.
+which is specified by the parameter
+\verb#initial#, which expects a matrix-valued expression in curly braces as
+described above.
 To extract relevant information, the values of a set of observables for 
 each time step are written into an output file (file name specified by
-parameter \texttt{outfile}, default value: ``ACE.out'').
-These observables are desribed by operators on the system Hilbert space, e.g., 
-$\langle \hat{A}\rangle = \textrm{Tr}_S( \hat{A} \rho_S)$, 
+parameter \verb#outfile#, default value: ``ACE.out'').
+These observables are described by operators on the system Hilbert space, 
+e.g., $\langle \hat{A}\rangle = \textrm{Tr}_S( \hat{A} \rho_S)$, 
 where $\rho_S$ is the reduced system density matrix. 
 The operators $\hat{A}$ have to be provided as matrix valued expressions
 to the parameter \verb+add_Output+. This parameter can occur 
@@ -325,7 +455,7 @@ te                  20
 initial             {|1><1|_2}
 
 #add_Lindblad         0.5  {|0><1|_2}
-add_Pulse            Gauss  10 1 {1.*pi} 0  {|1><0|_2}
+add_Pulse            Gauss  10 1 {1.*pi} 0  {hbar/2*|1><0|_2}
 
 outfile              ACE2.out
 \end{verbatim}
@@ -348,15 +478,63 @@ are the rate $\gamma$ and the operator $A$ for the Lindblad term
 The parameters of \verb+add_Pulse Gauss+ are the pulse center
 (here: $t_c=10$ ps),
 the pulse duration ($\tau_{FWHM}=1$ ps), the pulse area ($A=1 \pi$), the
-detuning ($\delta=0$ meV), and the operator ($\hat{d}=|1\rangle\langle 0|$)
+detuning ($\delta=0$ meV), and the operator 
+($\hat{d}=\frac{\hbar}{2}|1\rangle\langle 0|$)
 describing the light-matter coupling, which enter the driving Hamiltonian
 \begin{equation}
-H_D=\frac{\hbar}{2} \big(f(t) \hat{d} + f^*(t) \hat{d}^\dagger\big) 
+H_D=\big(f(t) \hat{d} + f^*(t) \hat{d}^\dagger\big) 
 \textrm{ with }
-f(t)=\frac{A \pi}{\sqrt{2\pi}\sigma} e^{-\frac 12 \frac{(t-t_c)^2}{\sigma^2}}
+f(t)=\frac{A}{\sqrt{2\pi}\sigma} e^{-\frac 12 \frac{(t-t_c)^2}{\sigma^2}}
 e^{-i (\delta/\hbar) t},
 \quad \sigma=\tau_{FWHM}/\sqrt{8 \ln(2)}.
 \end{equation}
+\vspace{1cm}
+
+Alternatively, one can use arbitrary pulses by reading them from file. 
+The first column is the time, the second and third columns are the
+real and imaginary parts of $f(t)$. For example, the file 
+\verb#step.pulse#, which contains
+
+\noindent\makebox[5cm]{\rule{7cm}{0.4pt}}
+\begin{verbatim}
+1.999999  0 0
+2         1 0
+3.999999  1 0
+4.        0 0
+\end{verbatim}
+\noindent\makebox[5cm]{\rule{7cm}{0.4pt}}
+
+As data points are linearly interpolated and the value of the first and last
+data points are extended to $-\infty$ and $\infty$, respectively, this 
+describes a function whose real part is a rectangular function with height 1
+from time 2 to 4 while the imaginary part is zero. 
+Running \verb#ACE# with the following driver file 
+\verb#pulse_from_file.param#
+
+\noindent\makebox[5cm]{\rule{7cm}{0.4pt}}
+\begin{verbatim}
+te          10
+dt           0.01
+
+initial    {|0><0|_2}
+
+add_Pulse File step.pulse {(3*pi)*hbar/2*|1><0|_2}
+
+add_Output {|1><1|_2}
+
+outfile    pulse_from_file.out
+\end{verbatim}
+\noindent\makebox[5cm]{\rule{7cm}{0.4pt}}
+
+Using the type \verb#File# as the first argument of the parameter 
+\verb#add_Pulse# tells the code to read the file whose name is given as the 
+second argument. The third argument is again the operator with which it enters
+the Hamiltonian. Note that the factor \verb#3*pi# in the operator scales the
+pulse from height 1 to $3\pi$, and because the pulse is finite for a time
+2, the overall pulse area is $6\pi$, i.e. 3 complete Rabi flops. This is
+clearly seen in the dynamics in the figure below
+
+\includegraphics[width=20cm]{figs/plot_pulse_from_file.eps}
 
 
 \section{Including environments}

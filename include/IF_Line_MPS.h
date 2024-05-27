@@ -2,8 +2,10 @@
 #define IF_LINE_MPS_DEFINED_H
 
 #include <Eigen/Core>
-#include "DiagBB.h"
-#include "MPS.h"
+#include "DiagBB.hpp"
+#include "MPS.hpp"
+
+namespace ACE{
 
 class IF_Line_MPS: public MPS{
 public:
@@ -76,5 +78,5 @@ public:
   
 };
 
-
+}//namespace
 #endif

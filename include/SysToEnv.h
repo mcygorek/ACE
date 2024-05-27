@@ -1,7 +1,8 @@
 #ifndef SYS_TO_ENV_DEFINED_H
 #define SYS_TO_ENV_DEFINED_H
-#include "InfluenceFunctional_OD.h"
+#include "InfluenceFunctional_OD.hpp"
 
+namespace ACE{
 
 class SysToEnv{
 public:
@@ -68,7 +69,7 @@ void calculate(Parameters &param){
   RankCompressor_Ptr compressor=RankCompressor_Selector(param);
 param.get_as_bool("IF_print_timesteps",false);
 
-  IF_TimeGrid tgrid(param);
+  TimeGrid tgrid(param);
   IF->tgrid=tgrid;
   if(IF->tgrid.n_tot!=IF_E[0]->tgrid.n_tot){
     std::cerr<<"IF->tgrid.n_tot!=IF_E[0]->tgrid.n_tot!"<<std::endl;
@@ -292,5 +293,5 @@ SysToEnv(Parameters &params){
 
 };
 
-
+}//namespace
 #endif

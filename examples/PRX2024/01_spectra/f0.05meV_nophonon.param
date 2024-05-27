@@ -1,0 +1,17 @@
+dt                    0.01
+ta                    {-41943.04/2}
+te                    {41943.04/2}
+
+set_precision         12
+use_symmetric_Trotter true
+
+initial               { |0><0|_2 }   
+apply_Operator_left           0    { sigma_minus }  true
+add_Lindblad        {0.002}        {|0><1|_2}
+add_Hamiltonian                   {1/2* 0.05 *sigma_x}
+
+add_Output            { sigma_plus }
+
+outfile               f0.05meV_nophonon.out
+
+

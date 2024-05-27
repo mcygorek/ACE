@@ -1,0 +1,28 @@
+dt                    0.01
+ta                    {-20971.52/2}
+te                    {20971.52/2}
+t_mem                 20.48
+
+use_symmetric_Trotter true
+
+threshold                  1e-12
+backward_threshold_ratio   0.2
+set_precision             12
+
+use_Gaussian_repeat          true
+
+Boson_subtract_polaron_shift       true
+Boson_E_max                        7
+Boson_J_type                       QDPhonon
+temperature                        4
+
+initial                            { |0><0|_2 }   
+apply_Operator_left           0    { sigma_minus }  true
+add_Lindblad            {0.002}    {|0><1|_2}
+add_Hamiltonian                    {1/2* 0.5 *sigma_x}
+
+add_Output            { sigma_plus }
+
+outfile               f0.5meV_DnC_repeat_b0.2.out
+
+

@@ -1,13 +1,13 @@
 #ifndef CAVITYFY_DEFINED_H
 #define CAVITYFY_DEFINED_H
 
-#include "otimes.h"
-#include "Operators_Boson.h"
+#include "otimes.hpp"
+#include "Operators_Boson.hpp"
 
+namespace ACE{
 /** Purpose: add a cavity to the system. Expand the IFs and the initia_rho
              correspondingly
 */
-
 
 void cavityfy(FreePropagator &fprop, 
               std::vector<Smart_Ptr<InfluenceFunctional_OD> > &IFV, 
@@ -50,7 +50,7 @@ void cavityfy(FreePropagator &fprop,
         std::cerr<<"system_cavity_coupling only implemented for 2LSs!"<<std::endl; 
         exit(1);
       }
-      fprop.const_H+=Constants::hbar_in_meV_ps*g*
+      fprop.const_H+=Constants::*g*
  (otimes(Operators2x2::sigma_plus(), Operators_Boson::a(n_dim))
  +otimes(Operators2x2::sigma_minus(), Operators_Boson::adagger(n_dim)));
     }
@@ -123,5 +123,5 @@ std::cout<<"cavity test dict after: ";IFV[ifi]->dict.print_beta(); std::cout<<st
 
 
 
-
+}//namespace
 #endif

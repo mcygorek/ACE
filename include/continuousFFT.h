@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <iostream>
 
+namespace ACE{
 //Note: Convention: forward: multiplication with e^{-i omega t}
 void DFT(const std::vector<std::complex<double> > &vin, 
                std::vector<std::complex<double> > &vout,
@@ -174,3 +175,5 @@ void continuousFFT(const std::vector<std::pair<double, std::vector<std::complex<
   }
   continuousFFT(v, vout, ta, dt, N, wa, dw_, forward);
 }
+
+}//namespace

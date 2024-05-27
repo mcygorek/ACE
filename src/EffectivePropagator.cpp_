@@ -1,0 +1,55 @@
+#include "EffectivePropagator.hpp"
+
+namespace ACE{
+
+Eigen::MatrixXcd EffectivePropagator::calculate(int at_n,  
+           Propagator &prop, ProcessTensorForwardList &PT,
+           const Eigen::MatrixXcd & initial_rho, const TimeGrid &tgrid){
+
+  int N=initial_rho.rows();
+  int NL=N*N;
+  if(N<2){
+    std::cerr<<"EffectivePropagator::calculate: N<2!"<<std::endl;
+    throw DummyException();
+  }
+  if(tgrid.n_tot<1){
+    std::cerr<<"EffectivePropagator::calculate: tgrid.n_tot<1!"<<std::endl;
+    throw DummyException();
+  }
+  if(tgrid.n_tot<=at_n){
+    std::cerr<<"EffectivePropagator::calculate: tgrid.n_tot<=at_n!"<<std::endl;
+    throw DummyException();
+  }
+
+  for(int i=0; i<PT.size(); i++){
+    if( (!PT.list[i]) || PT.list[i]->get_n_tot()<tgrid.n_tot){
+      std::cerr<<"EffectivePropagator::calculate: PT["<<i<<"]->get_n_tot()="<<PT.list[i]->get_n_tot()<<"<tgrid.n_tot="<<tgrid.n_tot<<"!"<<std::endl;
+      throw DummyException();
+    }
+  }
+
+  Eigen::MatrixXcd state(NL, 1);
+  state.col(0)=H_Matrix_to_L_Vector(initial_rho);
+
+  //prepare "state" before n=at_n
+  PT.reset();
+  for(int n=0; n<at_n-1; n++){
+    propagate_state(state, n, tgrid, prop, PT);
+    PT.load_next();
+  }
+
+  //reconstruct effective propagator by applying a full basis of input system states:
+
+  for(int a=0; a<NL; a++){
+    TODO: HOW TO CHOOSE SYSTEM STATE? 
+    propagate_state(state, n, tgrid, prop, PT);
+  }
+
+
+  return L_Vector_to_H_Matrix(state.col(0));
+}
+
+
+
+
+}//namespace

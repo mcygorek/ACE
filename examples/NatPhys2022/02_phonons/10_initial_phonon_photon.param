@@ -1,0 +1,18 @@
+ta                    0
+dt                    1e-1
+te                   20
+Nintermediate        20
+
+threshold             5e-8
+dict_zero             1e-12
+print_timestep        true
+
+
+initial {|1><1|_2}
+
+
+add_PT      03_calculate_phonon_PT.pt
+add_PT      04_calculate_photon_PT.pt
+
+outfile     10_initial_phonon_photon.out
+

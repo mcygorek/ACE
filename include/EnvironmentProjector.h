@@ -1,9 +1,10 @@
 #ifndef ACE_ENVIRONMENT_PROJECTOR_H
 #define ACE_ENVIRONMENT_PROJECTOR_H
 
-#include "InfluenceFunctional_OD.h"
+#include "InfluenceFunctional_OD.hpp"
 #include <iomanip>
 
+namespace ACE{
 
 MPS_Matrix Disentangled_MatrixXcd_to_MPS_Matrix(
                             const Eigen::MatrixXcd & Mdis, int N){
@@ -26,7 +27,7 @@ MPS_Matrix Disentangled_MatrixXcd_to_MPS_Matrix(
 }
 
 InfluenceFunctional_OD IF_from_Disentangled_MatrixXcd(
-        const IF_TimeGrid &tgrid, const Eigen::MatrixXcd & Mdis, 
+        const TimeGrid &tgrid, const Eigen::MatrixXcd & Mdis, 
         const Eigen::VectorXcd & bath_init_vector, 
         const Eigen::VectorXcd & bath_end_vector){
 
@@ -61,7 +62,7 @@ InfluenceFunctional_OD IF_from_Disentangled_MatrixXcd(
 }
 
 InfluenceFunctional_OD IF_from_Disentangled_MatrixXcd(
-        const IF_TimeGrid &tgrid, const Eigen::MatrixXcd & Mdis, 
+        const TimeGrid &tgrid, const Eigen::MatrixXcd & Mdis, 
         const Eigen::VectorXcd & bath_init_vector){
   
   int M=sqrt(bath_init_vector.rows());
@@ -84,7 +85,7 @@ public:
 
 
   //Generates an InfluenceFunctional_OD from the defined implementation of Q
-  InfluenceFunctional_OD get_IF_from_MPG(ModePropagatorGenerator &mpg, IF_TimeGrid tgrid){
+  InfluenceFunctional_OD get_IF_from_MPG(ModePropagatorGenerator &mpg, TimeGrid tgrid){
 
     int N = mpg.get_N();
     int NL = N*N; 
@@ -138,6 +139,6 @@ public:
   virtual ~EnvironmentProjector(){}
 };
 
-
+}//namespace
 #endif
 
