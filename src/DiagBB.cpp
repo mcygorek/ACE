@@ -20,7 +20,7 @@ namespace ACE{
 
   int DiagBB::sys_dim()const{ return groups.sys_dim(); }
 
-  double DiagBB::get_beta()const {
+  double DiagBB::get_beta()const {    //this would be in meV^{-1}
     if(temperature<1e-10)return 1e12;
     return 1./(kB_in_meV_by_K*temperature);
   }
@@ -217,7 +217,7 @@ std::cout<<"DiagBB::read_K_int called with '"<<fname<<"', "<<n_max<<", "<<dt<<st
                 RealFunctionPtr J_, double temperature_, 
                 bool noSubPS_,
                 double omega_min_, double omega_max_, 
-                double E_shift_init_  ) {
+                double E_shift_init_, bool high_T  ) {
     J=J_;
     temperature=temperature_;
     groups=grp;
@@ -229,6 +229,7 @@ std::cout<<"DiagBB::read_K_int called with '"<<fname<<"', "<<n_max<<", "<<dt<<st
     damping=0;
     damping_Gaussian=0;
     E_shift_init=E_shift_init_;
+    high_T_limit=high_T;
 
 //    {std::vector<std::complex<double> > tmp;
 //    K_precalc.swap(tmp);}
@@ -236,6 +237,7 @@ std::cout<<"DiagBB::read_K_int called with '"<<fname<<"', "<<n_max<<", "<<dt<<st
 
     std::cout<<"DiagBB NGRPS: "<<grp.Ngrps<<std::endl;
     std::cout<<"Couplings Matrix: "<<std::endl<<couplings_<<std::endl;
+    if(high_T_limit){std::cout<<"high_T_limit=true"<<std::endl;}
 //    J->print("TEST.dat",omega_min_, omega_max_, 10000);
     
     couplings.resize(grp.Ngrps);
@@ -326,6 +328,8 @@ std::cout<<"DiagBB::read_K_int called with '"<<fname<<"', "<<n_max<<", "<<dt<<st
     damping=param.get_as_double(add_prefix(prefix,"damping"),0.);
     damping_Gaussian=param.get_as_double(add_prefix(prefix,"damping_Gaussian"),0.);
 
+    high_T_limit = param.get_as_bool(add_prefix(prefix,"high_T_limit"), false);
+
     //precalculate K using FFT
    if(K_precalc.size()<1){
     if(param.get_as_bool("Gaussian_precalc_FFT", true)){
@@ -413,6 +417,7 @@ std::complex<double>(DiagBB::get_coth(beta,E_shift,w)*cos(w*tau) , -sin(w*tau) )
     std::cout<<" Ndiscr="<<Ndiscr<<" -> "<<N_new;
     std::cout<<" orig_omega_range="<<omega_range;
     std::cout<<" my_omega_range="<<my_omega_range;
+    if(high_T_limit){std::cout<<" high_T_limit=true";}
     std::cout<<std::endl;
   
     double domega=my_omega_range/N_new;
@@ -421,10 +426,13 @@ std::complex<double>(DiagBB::get_coth(beta,E_shift,w)*cos(w*tau) , -sin(w*tau) )
 
     for(size_t i=0; i<N_new; i++){
       double w=omega_min+i*domega;
-      if(w<=omega_max){
-        in_array[i]=(w*w<1e-20) ? 0. : J->f(w)/(w*w)*DiagBB::get_coth(get_beta(),E_shift_init,w);
-      }else{
-        in_array[i]=0.;
+      in_array[i]=0; 
+      if(w<=omega_max && w*w > 1e-20){
+        if(high_T_limit){
+          in_array[i]=J->f(w)/(w*w)* 2./(get_beta()*(hbar_in_meV_ps*w+E_shift_init));
+        }else{
+          in_array[i]=J->f(w)/(w*w)*DiagBB::get_coth(get_beta(),E_shift_init,w);
+        }
       }
     }
     std::complex<double> *out1_array=new std::complex<double>[N_new];
@@ -461,7 +469,9 @@ std::complex<double>(DiagBB::get_coth(beta,E_shift,w)*cos(w*tau) , -sin(w*tau) )
 
     for(int n=1; n<n_max && n<N_new-1; n++){
       K_precalc[n].real(domega*(2.*out1_array[n]-out1_array[n-1]-out1_array[n+1]).real());
-      K_precalc[n].imag(-domega*(2.*out2_array[n]-out2_array[n-1]-out2_array[n+1]).imag());
+      if(!high_T_limit){
+        K_precalc[n].imag(-domega*(2.*out2_array[n]-out2_array[n-1]-out2_array[n+1]).imag());
+      }
     }
     K_precalc[0]=calculate_K_explicit(0, dt);
 

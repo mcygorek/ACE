@@ -136,16 +136,24 @@ public:
 
   void add_from_stringvec(const std::string &key, const std::vector<std::string> &toks);
 
+  void add_from_line(const std::string &line);
+
   void add_from_file(const std::string &fname);
   
   void setup(int args, char** argv, bool read_first_as_driver=true);
   
+  std::vector<std::string> get_lines()const;
+
   virtual std::ostream & print(std::ostream & ofs=std::cout)const;
   
   void print(const std::string &fname)const;
   
   void add_from_prefix(const std::string prefix, Parameters &other);
-  
+ 
+  inline void clear(){
+    map.clear();
+    requested.clear();
+  } 
   Parameters(const std::string &fname){
     register_requested=false;
     add_from_file(fname);

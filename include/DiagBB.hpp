@@ -21,6 +21,7 @@ public:
   size_t Ndiscr;
   bool noSubPS;
   bool separate_freq;
+  bool high_T_limit;
   HilbertSpaceRotation hs_rot;
   std::vector<double> couplings;
   Coupling_Groups groups;
@@ -60,7 +61,7 @@ public:
                 RealFunctionPtr J_, double temperature_=0., 
                 bool noSubPS_=false,
                 double omega_min_ = 0., double omega_max_ = 50., 
-                double E_shift_init_ =0. );
+                double E_shift_init_ =0., bool high_T=false );
   
   static void complain_if_not_Hermitian(const Eigen::MatrixXcd & sysop);
   
@@ -73,9 +74,9 @@ public:
                 RealFunctionPtr J_, double temperature_=0., 
                 bool noSubPS_=false,
                 double omega_min_ = 0., double omega_max_ = 50., 
-                double E_shift_init_ =0. ) : J(J_){
+                double E_shift_init_ =0., bool high_T=false ) : J(J_){
 
-    setup(grp, couplings_, J_, temperature_, noSubPS_, omega_min_, omega_max_, E_shift_init_);
+    setup(grp, couplings_, J_, temperature_, noSubPS_, omega_min_, omega_max_, E_shift_init_, high_T);
   }
   inline DiagBB(Parameters &param, const std::string &prefix){
     setup(param, prefix);

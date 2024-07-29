@@ -248,18 +248,23 @@ namespace ACE{
 
     add_to(key, svec);
   }
+  void Parameters::add_from_line(const std::string &line){
+      std::vector<std::string> toks;
+      tokenize(line, toks);
+      if(toks.size()<1)return;
+      std::string key=toks[0];
+      toks.erase(toks.begin());
+      add_from_stringvec(key, toks);
+  }
   void Parameters::add_from_file(const std::string &fname){
     std::ifstream ifs(fname.c_str());
     if(!ifs.good()){
       std::cerr<<"Cannot open driver file '"<<fname<<"'!"<<std::endl;
       throw DummyException();
     }
-    std::vector<std::string> toks;
-    while(getRelevantLineTokens(ifs,toks)){
-      if(toks.size()<1)continue;
-      std::string key=toks[0];
-      toks.erase(toks.begin());
-      add_from_stringvec(key, toks);
+    std::string line;
+    while(getRelevantLine(ifs,line)){
+      add_from_line(line);
     }
   }
 
@@ -298,6 +303,22 @@ namespace ACE{
         }
       }
     } 
+  }
+  std::vector<std::string> Parameters::get_lines()const{
+    std::vector<std::string> list;
+    for(cIterator it=map.begin(); it!=map.end(); ++it){
+      if(it->first=="driver")continue;
+      if(it->first=="print_param")continue;
+      for(size_t row=0; row<it->second.size(); row++){
+        std::stringstream ss;
+        ss<<it->first;
+        for(size_t col=0; col<it->second[row].size(); col++){
+          ss<<" "<<it->second[row][col];
+        } 
+        list.push_back(ss.str());
+      }
+    }
+    return list;
   }
   std::ostream & Parameters::print(std::ostream & ofs)const{
     for(cIterator it=map.begin(); it!=map.end(); ++it){

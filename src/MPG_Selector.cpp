@@ -36,7 +36,10 @@ namespace ACE{
     if(param.get_as_size_t("Lasing_N_modes",0)>0){
       mpgs.push_back(std::make_shared<ModePropagatorGenerator_Lasing>(param));
     }
-    if(param.is_specified("add_single_mode")){
+    if(param.is_specified("add_single_mode")||param.is_specified("add_single_mode_from_file")){
+      mpgs.push_back(std::make_shared<ModePropagatorGenerator_SingleModes>(param));
+    }
+/*    if(param.is_specified("add_single_mode")){
       std::vector<std::vector<std::string> > lines=param.get("add_single_mode");
       for(size_t r=0; r<lines.size(); r++){
         mpgs.push_back(std::make_shared<ModePropagatorGenerator_SingleMode>(lines[r]));
@@ -48,12 +51,14 @@ namespace ACE{
         mpgs.push_back(std::make_shared<ModePropagatorGenerator_SingleModeFromFile>(lines[r]));
       }
     }
-    if(param.is_specified("interweave_modes")){
+*/
+/*    if(param.is_specified("interweave_modes")){
       std::vector<std::vector<std::string> > lines=param.get("interweave_modes");
       for(size_t r=0; r<lines.size(); r++){
         mpgs.push_back(std::make_shared<ModePropagatorGenerator_Interweave>(lines[r], param));
       }
     }
+*/
   }
   
 

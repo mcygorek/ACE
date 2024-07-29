@@ -2105,15 +2105,20 @@ void ProcessTensorBuffer::set_from_modes_tree(
   int N_modes=mpg.get_N_modes();
   if(N_modes<1)return;
 
+//std::cout<<"TEST: N_modes before: "<<N_modes<<std::endl;
   int N_hierarchy=round(log((double)N_modes)/log(2.));
-  if(N_modes!=pow(2, N_hierarchy-1)){
-    if(N_modes<pow(2, N_hierarchy-1)){
-      mpg.zero_pad(pow(2, N_hierarchy-1));
-    }else{
+  if(N_modes!=pow(2, N_hierarchy)){
+    if(N_modes<pow(2, N_hierarchy)){
+      std::cout<<"zero-pad from "<<N_modes<<" to "<<pow(2, N_hierarchy)<<std::endl;
       mpg.zero_pad(pow(2, N_hierarchy));
+    }else{
+      std::cout<<"zero-pad from "<<N_modes<<" to "<<pow(2, N_hierarchy+1)<<std::endl;
+      mpg.zero_pad(pow(2, N_hierarchy+1));
+      N_hierarchy++;
     }
     N_modes=mpg.get_N_modes();
   }
+//std::cout<<"TEST: N_modes after: "<<N_modes<<" N_hierarchy: "<<N_hierarchy<<" 2^N_hierarchy: "<<pow(2,N_hierarchy)<<std::endl;
 /*
   int N_hierarchy=1;
   {int N_shift=N_modes;
@@ -2127,9 +2132,9 @@ void ProcessTensorBuffer::set_from_modes_tree(
     throw DummyException();
   } 
 */
-  if(verbosity>0)std::cout<<"N_modes="<<N_modes<<"=2^"<<N_hierarchy-1<<std::endl;
+  if(verbosity>0)std::cout<<"N_modes="<<N_modes<<"=2^"<<N_hierarchy<<std::endl;
 
-  add_modes_tree_get(N_hierarchy-1, N_hierarchy, 0, mpg, tgrid, trunc, 
+  add_modes_tree_get(N_hierarchy, N_hierarchy+1, 0, mpg, tgrid, trunc, 
                           dict_zero, verbosity);
  
 }

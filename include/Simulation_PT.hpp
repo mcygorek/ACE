@@ -6,6 +6,7 @@
 #include "FreePropagator.hpp"
 #include "ProcessTensorForwardList.hpp"
 #include "OutputPrinter.hpp"
+#include "InitialState.hpp"
 
 namespace ACE{
 
@@ -40,6 +41,13 @@ public:
   Eigen::MatrixXcd run(Propagator &prop, ProcessTensorForwardList &PT,
            const Eigen::MatrixXcd & initial_rho, const TimeGrid &tgrid,
            OutputPrinter &printer);
+
+  inline void run(
+           FreePropagator &prop, ProcessTensorForwardList &PT,
+           const InitialState & initial, const TimeGrid &tgrid,
+           OutputPrinter &printer){
+    run(prop, PT, initial.rho, tgrid, printer);
+  }
 
   void setup(Parameters &param);
 
