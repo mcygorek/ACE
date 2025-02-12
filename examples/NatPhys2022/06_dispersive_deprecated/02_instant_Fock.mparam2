@@ -1,0 +1,4 @@
+
+add_Hamiltonian  { hbar * 1* ((sigma_z) otimes n_3)  + hbar*12*(Id_2 otimes n_3)}  
+apply_Operator 20  {( Id_2 otimes bdagger_3)}
+

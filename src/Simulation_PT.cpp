@@ -2,6 +2,8 @@
 #include "LiouvilleTools.hpp"
 #include "DummyException.hpp"
 #include "TransferTensor.hpp"
+#include "LindbladMasterEquation.hpp"
+#include "ReaderBasics.hpp"
 
 namespace ACE{
 
@@ -13,15 +15,17 @@ void Simulation_PT::propagate_system(
     std::cerr<<"Simulation_PT::propagate_system: prop.M.rows()!=prop.M.cols() || prop.M.rows()!=state.rows()!"<<std::endl;
     exit(1);
   }
-  Eigen::MatrixXcd state2=Eigen::MatrixXcd::Zero(state.rows(),state.cols());
-  for(int d1=0; d1<state.cols(); d1++){
-    for(int j=0; j<state.rows(); j++){
-      for(int k=0; k<state.rows(); k++){
-        state2(j,d1)+=prop.M(j,k)*state(k,d1);
-      }
-    }
-  }
-  state.swap(state2);
+
+//  Eigen::MatrixXcd state2=Eigen::MatrixXcd::Zero(state.rows(),state.cols());
+//  for(int d1=0; d1<state.cols(); d1++){
+//    for(int j=0; j<state.rows(); j++){
+//      for(int k=0; k<state.rows(); k++){
+//        state2(j,d1)+=prop.M(j,k)*state(k,d1);
+//      }
+//    }
+//  }
+//  state.swap(state2);
+  state=prop.M*state;
 }
 
 void Simulation_PT::propagate_state(Eigen::MatrixXcd &state, int n, const TimeGrid &tgrid, Propagator &prop, ProcessTensorForwardList &PT)const{
@@ -140,6 +144,73 @@ Eigen::MatrixXcd Simulation_PT::run(
     tgridTT.n_tot=TT_n_mem;
     std::cout<<"TT: calculating propagators for "<<TT_n_mem<<" steps..."<<std::endl;
     std::vector<Eigen::MatrixXcd> E=TT.calculate_E(prop, PT, *this, tgridTT, 1);
+    
+    int NL=initial_rho.rows()*initial_rho.cols();
+
+    if(ME_print_rates!="" || ME_print_L!=""){
+      std::ofstream ofs_rates;
+      if(ME_print_rates!=""){
+        ofs_rates.open(ME_print_rates.c_str());
+      }
+      std::vector<std::ofstream> ofs_L(NL-1);
+      if(ME_print_L!=""){
+        for(int k=0; k<NL-1; k++){
+          std::string str=ME_print_L+"_"+double_to_string(k);
+          ofs_L[k].open(str.c_str());
+        }
+      }
+
+      Eigen::MatrixXcd log_dE_last;
+      for(size_t l=0; l<E.size(); l++){
+        Eigen::MatrixXcd dE=E[l];
+        Eigen::MatrixXcd log_dE=dE.log();
+        Eigen::MatrixXcd Liou=log_dE/tgrid.get_dt(l);
+        if(l>0){
+          Eigen::JacobiSVD<Eigen::MatrixXcd> svd(E[l-1], Eigen::ComputeFullU | Eigen::ComputeFullV);
+//std::cout<<"singular values: "<<svd.singularValues().transpose()<<std::endl;
+          Eigen::VectorXcd inv_sigma(NL);
+          for(int i=0; i<NL; i++)inv_sigma(i)=1./svd.singularValues()(i);
+          dE=E[l]*svd.matrixV()*(inv_sigma.asDiagonal())*svd.matrixU().adjoint();
+          Eigen::MatrixXcd log_dE=dE.log();
+std::cout<<"(log_dE.exp()*E[l-1]-E[l]).norm(): "<<(log_dE.exp()*E[l-1]-E[l]).norm()<<std::endl;
+          Liou=(log_dE+log_dE_last)/(2.*tgrid.get_dt(l));
+        }
+        log_dE_last=log_dE;
+
+        LindbladMasterEquation LME;
+        LME.set_from_Liouvillian(Liou, 0, 0);
+std::cout<<"t="<<tgrid.get_t(l)<<": |Liou-reconstructed|="<<(Liou-LME.construct_Liouvillian()).norm()<<std::endl;
+
+        if(ME_print_rates!=""){
+          ofs_rates<<tgrid.get_t(l);
+          for(size_t k=0; k<LME.L.size(); k++){
+            ofs_rates<<" "<<LME.L[k].first;
+          }
+          ofs_rates<<std::endl;
+        }
+
+        if(ME_print_L!=""){
+          for(int k=0; k<LME.L.size(); k++){
+            ofs_L[k]<<tgrid.get_t(l);
+            for(int r=0; r<LME.L[k].second.rows(); r++){
+              for(int c=0; c<LME.L[k].second.cols(); c++){
+                std::complex<double> value=LME.L[k].second(r,c);
+                ofs_L[k]<<" "<<value.real()<<" "<<value.imag();
+              }
+            }
+            ofs_L[k]<<std::endl;
+          }
+/*
+          std::cout<<"Traces: t="<<tgrid.get_t(l)<<std::endl;
+          for(int k=0; k<LME.L.size(); k++){
+            std::cout<<" "<<LME.L[k].second.trace();
+          }
+          std::cout<<std::endl;
+*/
+        }      
+      }
+    }
+
     TT.set_T_from_E(E);
     if(TT_print_norms!=""){TT.print_norms(TT_print_norms, tgrid.dt);}
     if(use_LT){
@@ -198,6 +269,8 @@ if(use_TT){std::cout<<"use_TT=true"<<std::endl;}//else{std::cout<<"use_TT=false"
   TT_n_from=TransferTensor::get_TT_n_from(param);
   TT_n_mem=TransferTensor::get_TT_n_mem(param, use_TT);
   TT_print_norms=param.get_as_string("TT_print_norms");
+  ME_print_rates=param.get_as_string("ME_print_rates");
+  ME_print_L=param.get_as_string("ME_print_L");
 }
 
 

@@ -1,0 +1,36 @@
+#ifndef ACE_SIMULATION_PT_DEFINED_H
+#define ACE_SIMULATION_PT_DEFINED_H
+
+#include "Parameters.hpp"
+#include "TimeGrid.hpp"
+#include "FreePropagator.hpp"
+#include "ProcessTensorForwardList.hpp"
+#include "OutputPrinter.hpp"
+
+namespace ACE{
+
+class Simulation_PT{
+public:
+  bool print_timesteps;
+  bool print_final_maxdim;
+  bool propagate_alternate;
+  bool use_symmetric_Trotter;
+
+  static void propagate_system(Eigen::MatrixXcd & state, Propagator &prop, double t, double dt);
+
+  Eigen::MatrixXcd run(Propagator &prop, ProcessTensorForwardList &PT,
+           const Eigen::MatrixXcd & initial_rho, const TimeGrid &tgrid,
+           OutputPrinter &printer);
+
+  void setup(Parameters &param);
+
+  Simulation_PT(Parameters &param){
+    setup(param);
+  }
+  Simulation_PT(){ 
+    Parameters param;
+    setup(param);
+  }
+};
+}//namespace
+#endif

@@ -30,7 +30,7 @@ public:
 
   void add_single_mode_from_file(const std::vector<std::string> & str);
 
-  virtual std::vector<Eigen::MatrixXcd> get_env_ops(int k) const;
+  virtual EnvironmentOperators get_env_ops(int k) const;
   virtual Eigen::MatrixXcd get_bath_init(int k)const;
   virtual ModePropagatorPtr getModePropagator(int k)const;
 

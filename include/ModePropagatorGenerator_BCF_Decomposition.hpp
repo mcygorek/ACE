@@ -23,7 +23,7 @@ public:
     else return sysop.rows();
   }
   
-  virtual std::vector<Eigen::MatrixXcd> get_env_ops(int k)const;
+  virtual EnvironmentOperators get_env_ops(int k)const;
   
   virtual void setup(Parameters &param);
 

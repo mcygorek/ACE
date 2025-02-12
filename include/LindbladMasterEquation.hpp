@@ -10,13 +10,14 @@
 namespace ACE{
 
 struct LindbladMasterEquation{
-  Eigen::MatrixXcd H;
-  std::vector<std::pair<double,Eigen::MatrixXcd> > L;
+  Eigen::MatrixXcd H;                           // Hamiltonian
+  std::vector<std::pair<double,Eigen::MatrixXcd> > L; // (rate, operator)
 
   int get_dim()const;
 
   Eigen::MatrixXcd construct_Liouvillian()const;
   
+  void set_from_Liouvillian_Hall(const Eigen::MatrixXcd &Liou, double threshold, int verbosity);
   void set_from_Liouvillian(const Eigen::MatrixXcd &Liou, double threshold, int verbosity);
 
   void print(std::ostream &os=std::cout, double epsilon=0)const;

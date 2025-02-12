@@ -33,7 +33,7 @@ public:
   double keep;  //scaling factor: keep <= 0: keep largest singular value.
 
   bool use_QR; //Orthogonalization using QR instead of compressing sweep
-
+  double Tikhonov; //Tikhonov regularization factor for inverse matrix
   /*
   To obtain a concrete threshold/maxk, we consider N lines, with M sweeps each
   
@@ -68,11 +68,12 @@ public:
   TruncatedSVD_T(Parameters &param){
     setup(param);
   }
-  TruncatedSVD_T(double threshold_=0, int maxk_=0, int keep_=0, bool use_QR_=false){
+  TruncatedSVD_T(double threshold_=0, int maxk_=0, int keep_=0, bool use_QR_=false, double Tikhonov_=0.){
     threshold=threshold_;
     maxk=maxk_;
     keep=keep_;
     use_QR=use_QR_;
+    Tikhonov=Tikhonov_;
   }
 };
 

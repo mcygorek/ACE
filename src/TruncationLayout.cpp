@@ -15,6 +15,7 @@ template <typename T> void TruncationLayout_T<T>::print_info(std::ostream &ofs)c
   ofs<<" select_threshold_ratios="<<select_threshold_ratio;
   ofs<<" threshold_range_factor="<<threshold_range_factor;
   ofs<<" QR_after_combine=";if(use_QR)ofs<<"true";else ofs<<"false";
+  if(base_Tikhonov>0.)ofs<<" Tikhonov="<<base_Tikhonov;
   ofs<<" intermediate_sweep_n="<<intermediate_sweep_n;
   ofs<<" final_sweep_n=";
   if(final_sweep_half){ ofs<<final_sweep_n+0.5; }else{ ofs<<final_sweep_n; }
@@ -27,6 +28,7 @@ template <typename T> void TruncationLayout_T<T>::setup(Parameters &param){
   base_threshold = param.get_as_double("threshold",0.);
   base_maxk = param.get_as_int("compress_maxk",0);
   keep = param.get_as_double("compress_keep",-1);
+  base_Tikhonov = param.get_as_double("compress_Tikhonov",0.);
 
   use_QR = param.get_as_bool("QR_after_combine_twice",false);
   forward_threshold_ratio = param.get_as_double("forward_threshold_ratio",1.);

@@ -38,6 +38,9 @@ public:
 
   void setup(Parameters &param, bool set_default_output=true);
 
+  inline Output_Ops(const std::vector<Eigen::MatrixXcd> & list){
+    ops=list;
+  }
   inline Output_Ops(Parameters &param, bool set_default_output=true){
     setup(param, set_default_output);
   }

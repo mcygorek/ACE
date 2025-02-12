@@ -6,6 +6,7 @@
 #include "Equilibrium.hpp"
 #include "ReducedLiouvilleBasis.hpp"
 #include "MPS_Matrix.hpp"
+#include "EnvironmentOperators.hpp"
 #include <memory>
 
 namespace ACE{
@@ -13,31 +14,13 @@ namespace ACE{
 class ModePropagator: public FreePropagator{
 public:
   int N_system;
-//  int N_mode;
-//  int factorization;
+  int fermion_sign_space;
 
   std::vector<std::vector<Eigen::MatrixXcd> > A;
   Eigen::MatrixXcd bath_init; 
-  std::vector<Eigen::MatrixXcd> env_ops;
+  EnvironmentOperators env_ops;
   std::shared_ptr<ReducedLiouvilleBasis> rBasis;
 
-
-  struct low_pass_struct{
-    bool use;
-    double cutoff;
-    double factor;
-   
-    double f(double w)const;
-    low_pass_struct():use(false), cutoff(1.){}
-  }low_pass;
-
-
-  struct continuum_subdiv_struct{
-    int N;  //number of energy space subdivision
-    Eigen::MatrixXcd dH; // dE of full interval times Operator Hdiag
-    
-    continuum_subdiv_struct() : N(0){}
-  }continuum_subdiv;
 
 
   inline int get_N_system()const{return N_system;}
@@ -58,19 +41,18 @@ public:
 
   inline ModePropagator(int Ns=2, 
                  const Eigen::MatrixXcd &binit=Eigen::MatrixXcd::Identity(2,2) )
-    : N_system(Ns), bath_init(binit){
+    : N_system(Ns), bath_init(binit), fermion_sign_space(-1){
     rBasis=std::make_shared<ReducedLiouvilleBasis>();
   }
 
   ModePropagator(const FreePropagator &fprop,
       const Eigen::MatrixXcd &binit=Eigen::MatrixXcd::Identity(2,2),
-      std::vector<Eigen::MatrixXcd> env_ops_=std::vector<Eigen::MatrixXcd>() );
+      EnvironmentOperators env_ops_=EnvironmentOperators() );
   
   ModePropagator(int Ns, 
                  const Eigen::MatrixXcd &binit,
                  const Eigen::MatrixXcd &H, 
-    std::vector<Eigen::MatrixXcd> env_mat=std::vector<Eigen::MatrixXcd>(), 
-    const continuum_subdiv_struct cont_sub=continuum_subdiv_struct() );
+                 EnvironmentOperators env_mat=EnvironmentOperators());
   
   virtual ~ModePropagator(){}
 };

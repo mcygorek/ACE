@@ -34,6 +34,7 @@ int ExpressionOperand::needed_operands()const{
       case Otimes: return 2; 
       case Sqrt: return 1; 
       case Exp: return 1; 
+      case Ln: return 1; 
       case Sin: return 1; 
       case Cos: return 1; 
       case Tan: return 1; 
@@ -52,6 +53,7 @@ std::string ExpressionOperand::get_name()const{
       case Otimes: return "Otimes";
       case Sqrt: return "Sqrt";
       case Exp: return "Exp";
+      case Ln: return "Ln";
       case Sin: return "Sin";
       case Cos: return "Cos";
       case Tan: return "Tan";
@@ -121,6 +123,10 @@ Eigen::MatrixXcd ExpressionOperand::eval(){
       return value;
     }else if(type==Exp){
       set_scalar(std::exp(operands[0].get_scalar()));
+      type=Value;
+      return value;
+    }else if(type==Ln){
+      set_scalar(std::log(operands[0].get_scalar()));
       type=Value;
       return value;
     }else if(type==Sin){
@@ -444,6 +450,10 @@ if(force_print){op.print_tree(); std::cout<<std::endl;}
       }else if(stmp.length()>=3 && stmp.substr(0,3)=="exp"){
         op.add_last_operand(ExpressionOperand(ExpressionOperand::Exp));
         ss.seekg(spos+3,std::ios_base::beg);
+        continue;
+      }else if(stmp.length()>=2 && stmp.substr(0,2)=="ln"){
+        op.add_last_operand(ExpressionOperand(ExpressionOperand::Ln));
+        ss.seekg(spos+2,std::ios_base::beg);
         continue;
       }else if(stmp.length()>=3 && stmp.substr(0,3)=="sin"){
         op.add_last_operand(ExpressionOperand(ExpressionOperand::Sin));

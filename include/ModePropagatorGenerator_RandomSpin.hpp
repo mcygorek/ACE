@@ -25,7 +25,7 @@ public:
   static bool compare_dir_x(const Eigen::Vector3d &v1, const Eigen::Vector3d &v2);
   static bool compare_dir_z(const Eigen::Vector3d &v1, const Eigen::Vector3d &v2);
 
-  virtual std::vector<Eigen::MatrixXcd> get_env_ops(int k)const;
+  virtual EnvironmentOperators get_env_ops(int k)const;
 
   void setup(int Nmod, double J_max, double J_min=0, size_t seed=1);
 

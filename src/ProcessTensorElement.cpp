@@ -244,23 +244,6 @@ void ProcessTensorElement::sweep_forward(const TruncatedSVD &trunc, PassOn &pass
   }
   clearNF();
 
-/*
-  TruncatedSVD_Return ret=trunc.compress(M.get_Matrix_d1i_d2());
-  double keep=ret.sigma(0);
-  if(trunc.keep>0)keep=trunc.keep;
-//std::cout<<"DEBUG: forward: keep="<<keep<<std::endl;
-
-  M.set_from_Matrix_d1i_d2(ret.U*keep, M.dim_i);
-  forwardNF=ret.sigma;
-
-  pass_on.P=(ret.sigma/keep).asDiagonal()*ret.Vdagger;
-
-  Eigen::VectorXd sigma_inv(ret.sigma.size());
-  for(int i=0; i<sigma_inv.size(); i++){
-    sigma_inv(i)=keep/ret.sigma(i);
-  }
-  pass_on.Pinv=ret.Vdagger.adjoint()*sigma_inv.asDiagonal();
-*/
   Eigen::MatrixXcd A=M.get_Matrix_d1i_d2();
   pass_on=trunc.compress_forward(A, forwardNF);
   double keep=forwardNF(0);
@@ -293,23 +276,6 @@ void ProcessTensorElement::sweep_backward(const TruncatedSVD &trunc, PassOn &pas
     return;
   }
   clearNF();
-
-/*
-  TruncatedSVD_Return ret=trunc.compress(M.get_Matrix_d1_id2());
-  double keep=ret.sigma(0);
-  if(trunc.keep>0)keep=trunc.keep;
-  
-  M.set_from_Matrix_d1_id2(ret.Vdagger*keep, M.dim_i);
-  backwardNF=ret.sigma;
-
-  pass_on.P=ret.U*(ret.sigma/keep).asDiagonal();
-
-  Eigen::VectorXd sigma_inv(ret.sigma.size());
-  for(int i=0; i<sigma_inv.size(); i++){
-    sigma_inv(i)=keep/ret.sigma(i);
-  }
-  pass_on.Pinv=sigma_inv.asDiagonal()*ret.U.adjoint();
-*/
 
   Eigen::MatrixXcd A=M.get_Matrix_d1_id2();
   pass_on=trunc.compress_backward(A, backwardNF);
@@ -595,7 +561,7 @@ void ProcessTensorElement::set_from_ModePropagator(ModePropagator &mprop, double
   reduce_to_dict(newdict);
 
   closure=H_Matrix_to_L_Vector(Eigen::MatrixXcd::Identity(N_mode,N_mode));
-  env_ops.set_from_matrices(mprop.env_ops, N_mode);
+  env_ops=mprop.env_ops;
 }
 
 

@@ -90,6 +90,7 @@ public:
   
   void add_Hamiltonian(const Eigen::MatrixXcd & H);
 
+  void add_Pulse(const std::pair<std::vector<double>,std::vector<std::complex<double> > > & shape, const Eigen::MatrixXcd &A);
   void add_Pulse(ComplexFunctionPtr &f, const Eigen::MatrixXcd &A);
   void add_forward_Pulse(ComplexFunctionPtr &f, const Eigen::MatrixXcd &A);
   void add_backward_Pulse(ComplexFunctionPtr &f, const Eigen::MatrixXcd &A);

@@ -34,17 +34,26 @@ OPTS += -Winvalid-pch -fPIC -pthread
 OPTS += -Iinclude -I$(EIGEN_HOME) $(MKL_INCL)
 OPTSLINK += $(OPTS) -lm $(MKL_LINK)
 
-
 LIBSRC = $(wildcard src/*.cpp)
 LIBOBJS = $(patsubst src/%.cpp, lib/%.o, $(LIBSRC))
 
-EXECOBJS = ACE QUAPI TEMPO #ACE_env_obs 
+EXECOBJS = ACE QUAPI TEMPO #ACE_Network #ACE_env_obs 
 BINEXEC = $(patsubst %, bin/%, $(EXECOBJS))
+
+PYBINDSUF = $(shell python3-config --extension-suffix)
+PYBINDINC = $(shell python3 -m pybind11 --includes)
+#$(info $(PYBINDSUF) $(PYBINDINC) )
 
 all: code tools
 code: PCH $(EXECOBJS) 
 $(EXECOBJS): %: src_exec/%.cpp  lib/libACE.so 
 	$(CXX) -o bin/$@ $< $(OPTSLINK) -Llib -lACE -Wl,-rpath,$(shell pwd)/lib
+
+pybind: pybind/ACE$(PYBINDSUF)
+
+pybind/ACE$(PYBINDSUF): pybind/pybind.cpp lib/libACE.so
+	$(CXX) -O3 -shared -std=c++11 -fPIC  -Iinclude -I$(EIGEN_HOME) $(MKL_INCL) $(PYBINDINC) pybind/pybind.cpp -o pybind/ACE$(PYBINDSUF) $(OPTSLINK) -Llib -lACE -Wl,-rpath,$(shell pwd)/lib
+#	$(CXX) -O3 -Wall -shared -std=c++11 -fPIC $(PYBINDINC) pybind/pybind.cpp -o pybind/ACE$(PYBINDSUF) $(OPTSLINK) -Llib -lACE -Wl,-rpath,$(shell pwd)/lib -Iinclude -I$(EIGEN_HOME) $(MKL_INCL)
 
 lib: lib/libACE.so
 lib/libACE.so: $(LIBOBJS) 
@@ -63,6 +72,7 @@ TOOLS = integrate_outfile differentiate_outfile FT_outfile smoothen_outfile
 TOOLS += PTB_sweep_forward PTB_sweep_backward PTB_apply_system_propagator
 TOOLS += PTB_analyze PTB_join PTR_to_PTB PTB_strip_env_ops PTB_extend
 TOOLS += PTB_transfer_env_ops PTB_expand_in_place PTB_coarse_grain 
+TOOLS += PTB_outer_contract
 TOOLS += PTR_sweep_backward PTR_analyze
 TOOLS += PME_renorm BCF_from_J
 TOOLS += readexpression print_densmat timedep_eigenstates
@@ -75,7 +85,8 @@ EXPERIMENTAL += TC_overlap TC_PT TC_join TC_TinvTcombine
 EXPERIMENTAL += test_FFT estimate_memory test_split
 EXPERIMENTAL += test_buffer test_GaussNewton fit_K_single_mode 
 EXPERIMENTAL += test_MeierTannor test_DrudeLorentz
-EXPERIMENTAL += extract_effective_propagator
+EXPERIMENTAL += extract_effective_propagator DynamicalMap PT_traceout
+EXPERIMENTAL += test_HermitianLiouvilleBasis test_Largest_EV test_Largest_EV2
 
 tools: $(TOOLS)
 $(TOOLS): %: src_exec/tools/%.cpp lib/libACE.so
@@ -89,5 +100,5 @@ $(EXPERIMENTAL): %: src_exec/experimental/%.cpp lib/libACE.so
 .PHONY: clean
 
 clean:
-	rm -rf bin/* tools/* lib/* include/PCH.hpp.gch
+	rm -rf bin/* tools/* lib/* include/PCH.hpp.gch pybind/*.so
 

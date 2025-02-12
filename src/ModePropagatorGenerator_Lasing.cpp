@@ -6,12 +6,13 @@
 
 namespace ACE{
 
-std::vector<Eigen::MatrixXcd> ModePropagatorGenerator_Lasing::get_env_ops(int k)const{
-  std::vector<Eigen::MatrixXcd> mats(3);
-  mats[0]=0.5*sigma_x();
-  mats[1]=0.5*sigma_y();
-  mats[2]=0.5*sigma_z();
-  return mats;
+EnvironmentOperators ModePropagatorGenerator_Lasing::get_env_ops(int k)const{
+  std::vector<Eigen::MatrixXcd> mats(4);
+  mats[0]=Eigen::MatrixXcd::Identity(2,2);
+  mats[1]=0.5*sigma_x();
+  mats[2]=0.5*sigma_y();
+  mats[3]=0.5*sigma_z();
+  return EnvironmentOperators(mats);
 }
 
 void ModePropagatorGenerator_Lasing::setup(Parameters &param){

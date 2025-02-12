@@ -13,7 +13,7 @@ namespace ACE{
 class ExpressionOperand{
 public:
   enum TYPE { None, Copy, Value, Add, Subtract, Multiply, Divide, Otimes,
-              Sqrt, Exp, Sin, Cos, Tan} type;
+              Sqrt, Exp, Ln, Sin, Cos, Tan} type;
  
   Eigen::MatrixXcd value;
   std::vector<ExpressionOperand> operands;

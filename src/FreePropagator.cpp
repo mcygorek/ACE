@@ -12,6 +12,7 @@
 #include "MultitimeOp.hpp"
 #include "TimeGrid.hpp"
 #include "Reader.hpp"
+#include "ComplexFunction_Interpolate.hpp"
 #include "DummyException.hpp"
 
 namespace ACE{
@@ -226,6 +227,19 @@ std::cout<<"DEBUG: skipping calculation (precalculated)"<<t<<std::endl;
     set_dim(H);
     const_H+=H;
     precalculated=false;
+  }
+
+  void FreePropagator::add_Pulse(const std::pair<std::vector<double>,std::vector<std::complex<double> > > & shape, const Eigen::MatrixXcd &A){
+
+    ComplexFunctionPtr ptr=std::make_shared<ComplexFunction_Interpolate>();
+    ComplexFunction_Interpolate* p = static_cast<ComplexFunction_Interpolate*>(ptr.get());
+    int length=shape.first.size();
+    p->val.resize(length);
+    for(int i=0; i<length; i++){
+      p->val[i].first=shape.first[i];
+      p->val[i].second= (i<shape.second.size() ? shape.second[i] : 0.);
+    }
+    add_Pulse(ptr, A);
   }
 
   void FreePropagator::add_Pulse(ComplexFunctionPtr &f, const Eigen::MatrixXcd &A){

@@ -22,9 +22,10 @@ namespace ACE{
     return next(k);
   }
 
-  std::vector<Eigen::MatrixXcd> ModePropagatorGenerator::get_env_ops(int k)const{
-    std::vector<Eigen::MatrixXcd> mats;
-    return mats;
+  EnvironmentOperators ModePropagatorGenerator::get_env_ops(int k)const{
+    int N_mode=get_mode_dim(k);
+    std::vector<Eigen::MatrixXcd> mats(1,Eigen::MatrixXcd::Identity(N_mode,N_mode));
+    return EnvironmentOperators(mats);
   } 
 
   int ModePropagatorGenerator::get_mode_dim(int k)const{

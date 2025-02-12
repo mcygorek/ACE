@@ -124,7 +124,11 @@ template <typename T> PassOn_T<T> TruncatedSVD_T<T>::compress_forward(
     }
     pass_on.Pinv=ret.Vdagger.adjoint();
     for(int i=0; i<dim; i++){
-      pass_on.Pinv.col(i)*=1./weights(i);
+      double w_inv=1./weights(i);
+      if(Tikhonov>0.){
+        w_inv=weights(i)/(weights(i)*weights(i)+Tikhonov*weights(0)*Tikhonov*weights(0));
+      }
+      pass_on.Pinv.col(i)*=w_inv;
     }
     return pass_on;  
   }  
@@ -153,7 +157,11 @@ template <typename T> PassOn_T<T> TruncatedSVD_T<T>::compress_backward(
     }
     pass_on.Pinv=ret.U.adjoint();
     for(int i=0; i<dim; i++){
-      pass_on.Pinv.row(i)*=1./weights(i);
+      double w_inv=1./weights(i);
+      if(Tikhonov>0.){
+        w_inv=weights(i)/(weights(i)*weights(i)+Tikhonov*weights(0)*Tikhonov*weights(0));
+      }
+      pass_on.Pinv.row(i)*=w_inv;
     }
   }  
   return pass_on;  
@@ -170,13 +178,17 @@ template <typename T> void TruncatedSVD_T<T>::print_info(std::ostream &ofs)const
   }else{
     ofs<<"threshold="<<threshold<<" maxk="<<maxk; //<<" keep="<<keep;
   }
+  if(Tikhonov>0.){
+    ofs<<" Tikhonov="<<Tikhonov;
+  }
 }
 
 template <typename T> void TruncatedSVD_T<T>::setup(Parameters &param){
   threshold = param.get_as_double("threshold",0.);
-  maxk = param.get_as_int("compress_maxk",0);
-  keep = param.get_as_double("compress_keep",0);
+  maxk = param.get_as_int("compress_maxk",0.);
+  keep = param.get_as_double("compress_keep",0.);
   use_QR = false; //param.get_as_bool("use_QR");
+  Tikhonov = param.get_as_double("compress_Tikhonov",0.);
 }
 
 template class TruncatedSVD_Return_T<std::complex<double> >;

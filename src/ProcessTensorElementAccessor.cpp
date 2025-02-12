@@ -82,17 +82,65 @@ void ProcessTensorElementAccessor::propagate(
  
   Eigen::MatrixXcd state2 = Eigen::MatrixXcd::Zero(state.rows(), dim1_front * M.dim_d2 * dim1_back);
 
-  for(int i=0; i<NL; i++){
-    for(int j=0; j<NL; j++){
-      int i_ind=thisdict.beta[i*NL+j]; if(i_ind<0)continue;
-      for(int df=0; df<dim1_front; df++){
-        for(int d1=0; d1<M.dim_d1; d1++){
-          for(int d2=0; d2<M.dim_d2; d2++){
-            for(int db=0; db<dim1_back; db++){
-              state2(i, (df*M.dim_d2+d2)*dim1_back+db) += 
+//  typedef Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> MatriXcdRM;
+
+  if(dim1_front==1 && dim1_back==1){
+    for(int i=0; i<NL; i++){
+      for(int j=0; j<NL; j++){
+        int i_ind=thisdict.beta[i*NL+j]; if(i_ind<0)continue;
+//        for(int d1=0; d1<M.dim_d1; d1++){
+//          for(int d2=0; d2<M.dim_d2; d2++){
+////              state2(i, d2) += M(i_ind, d1, d2) * state(j, d1);
+//              state2(i, d2) +=  state(j, d1) * M(i_ind, d1, d2);
+//          }
+//        }
+          state2.row(i).noalias() += state.row(j) * 
+Eigen::Map<Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>, 0, Eigen::OuterStride<> >(M.mem+i_ind*M.dim_d2,M.dim_d1,M.dim_d2,Eigen::OuterStride<>(M.dim_i*M.dim_d2));
+      }
+    }
+    state.swap(state2);
+    return;
+  }
+
+/*
+  if(dim1_front==1){
+    for(int db=0; db<dim1_back; db++){
+      Eigen::Map<Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>, 0 , Eigen::OuterStride<> > mp(&state(0,db), NL, M.dim_d1, Eigen::OuterStride<>(dim1_back*NL));
+      Eigen::Map<Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>, 0 , Eigen::OuterStride<> > mp2(&state2(0,db), NL, M.dim_d2, Eigen::OuterStride<>(dim1_back*NL));
+      for(int i=0; i<NL; i++){
+        for(int j=0; j<NL; j++){
+          int i_ind=thisdict.beta[i*NL+j]; if(i_ind<0)continue;
+//          for(int d1=0; d1<M.dim_d1; d1++){
+//            for(int d2=0; d2<M.dim_d2; d2++){
+////                state2(i, d2*dim1_back+db) +=  state(j, d1*dim1_back+db) * M(i_ind, d1, d2);
+//                mp2(i, d2) +=  mp(j, d1) * M(i_ind, d1, d2);
+//            }
+//          }
+          mp2.row(i).noalias() += mp.row(j) * \
+Eigen::Map<Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>, 0, Eigen::OuterStride<> >(M.mem+i_ind*M.dim_d2,M.dim_d1,M.dim_d2,Eigen::OuterStride<>(M.dim_i*M.dim_d2));
+        }
+      }
+    }
+    state.swap(state2);
+    return;
+  }
+*/
+
+  for(int df=0; df<dim1_front; df++){
+    for(int db=0; db<dim1_back; db++){
+      Eigen::Map<Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>, 0 , Eigen::OuterStride<> > mp(&state(0,df*M.dim_d1*dim1_back+db), NL, M.dim_d1, Eigen::OuterStride<>(dim1_back*NL));
+      Eigen::Map<Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>, 0 , Eigen::OuterStride<> > mp2(&state2(0,df*M.dim_d2*dim1_back+db), NL, M.dim_d2, Eigen::OuterStride<>(dim1_back*NL));
+      for(int i=0; i<NL; i++){
+        for(int j=0; j<NL; j++){
+          int i_ind=thisdict.beta[i*NL+j]; if(i_ind<0)continue;
+//          for(int d1=0; d1<M.dim_d1; d1++){
+//            for(int d2=0; d2<M.dim_d2; d2++){
+//              state2(i, (df*M.dim_d2+d2)*dim1_back+db) +=  \
                 M(i_ind, d1, d2) * state(j, (df*M.dim_d1+d1)*dim1_back+db);
-            }
-          }
+//            }
+//          }
+          mp2.row(i).noalias() += mp.row(j) * \
+Eigen::Map<Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>, 0, Eigen::OuterStride<> >(M.mem+i_ind*M.dim_d2,M.dim_d1,M.dim_d2,Eigen::OuterStride<>(M.dim_i*M.dim_d2));
         }
       }
     }

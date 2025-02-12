@@ -19,6 +19,16 @@ void OutputPrinter::clear(){
   start_extract=0;
   do_extract=false;
 }
+void OutputPrinter::set_stream(const std::string &outfile, int precision){
+  if(ofs){
+    if(ofs->is_open())ofs->close();
+    ofs.reset(nullptr);
+  }
+  if(outfile!="" && outfile!="/dev/null"){
+    ofs.reset(new std::ofstream(outfile.c_str()));
+    if(precision>0)*ofs<<std::setprecision(precision);
+  }
+}
 void OutputPrinter::setup(Parameters & param, int setdim){
 
   //setup output_Op and check dimensions of input
@@ -43,15 +53,7 @@ void OutputPrinter::setup(Parameters & param, int setdim){
   //only if that checked out, open file:
   std::string outfile = param.get_as_string("outfile", "ACE.out");
 
-  if(ofs){
-    if(ofs->is_open())ofs->close();
-    ofs.reset(nullptr);
-  }
-  if(outfile!="" && outfile!="/dev/null"){
-    ofs.reset(new std::ofstream(outfile.c_str()));
-    int set_precision=param.get_as_int("set_precision",-1);
-    if(set_precision>0)*ofs<<std::setprecision(set_precision);
-  }
+  set_stream(outfile, param.get_as_int("set_precision",-1));
 
   //filename to put occupations of instantaneous eigenstates:
   std::string print_eigenstate_occupations = param.get_as_string("print_eigenstate_occupations", "");

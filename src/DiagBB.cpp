@@ -332,11 +332,12 @@ std::cout<<"DiagBB::read_K_int called with '"<<fname<<"', "<<n_max<<", "<<dt<<st
 
     //precalculate K using FFT
    if(K_precalc.size()<1){
-    if(param.get_as_bool("Gaussian_precalc_FFT", true)){
+    if(param.get_as_bool("Gaussian_precalc_FFT", 
+       param.get_as_bool(add_prefix(prefix,"Gaussian_precalc_FFT"),true))){
       TimeGrid tgrid(param);
       int n_mem=tgrid.n_mem; if(n_mem<=0)n_mem=tgrid.n_tot;
 //std::cout<<"TEST: tgrid.n_mem="<<tgrid.n_mem<<" tgrid.n_tot="<<tgrid.n_tot<<" DiagBB: n_mem="<<n_mem<<std::endl; 
-      if(!param.is_specified("override_Ndiscr")){
+      if(!param.is_specified(add_prefix(prefix,"override_Ndiscr"))){
         Ndiscr=tgrid.n_mem*4;
         if(Ndiscr<1e6)Ndiscr=1e6;
       }
@@ -406,21 +407,49 @@ std::complex<double>(DiagBB::get_coth(beta,E_shift,w)*cos(w*tau) , -sin(w*tau) )
       std::cerr<<"DiagBB::precalc_FFT: n_max="<<n_max<<"<1!"<<std::endl;
       throw DummyException();
     }
+    /* TODO: question: how to properly discretize the FFT?
+     - "Better" resolution can go in different directions:
+       (i) decrease domega or (ii) decrease dt
+     - Note: Compared to Chapter 13.9 in Numerical Recipes, time and frequency 
+       switch meaning. From now on use our notation.
+     - For a given domega, we get results at special times
+       t_n = 2*pi*n/(N*domega) = n * del_t  
+            with  del_t = 2*pi/(N*domega) => domega = 2*pi/(N*del_t)
+     - Because we need results at times i*dt, we must have dt = m*del_t or
+       del_t = dt/m with integer m
+       => Does m>1 help or shall we try to reduce domega as much as possible?
+     - We definitely need N*domega > omega_range = omega_max-omega_min
+     - From domega = 2*pi/(N*del_t) = m*2*pi/(N*dt)  =>  N*domega > 2*pi/dt
+     => N*domega >= max(omega_range, 2*pi/dt) = 2*pi/dt*max(m_min, 1),
+                                              m_min = omega_range*dt/(2*pi)
+     => m >= max(m_min,1)
+     - We also know t_max = n_max*dt, which implies we need N/m >= n_max 
+     => N >= m*n_max
+    */
+
 
     double omega_range=omega_max-omega_min;
+    int m=1;
+    {double m_min=omega_range*dt/(2.*M_PI);
+     if(m_min>1.){m=std::ceil(m_min);} }
 
     double my_omega_range=(2.*M_PI)/dt;
+
     int N_new=pow(2, ceil(log((double)Ndiscr)/log(2.)) );
+    if(N_new<=m*n_max){ 
+      N_new=pow(2, ceil(log((double)m*n_max)/log(2.)) );
+    }
+    double domega=m*(2.*M_PI)/dt/N_new;
 
     std::cout<<"DiagBB::precalc_FFT: n_max="<<n_max;
     std::cout<<" dt="<<dt;
     std::cout<<" Ndiscr="<<Ndiscr<<" -> "<<N_new;
     std::cout<<" orig_omega_range="<<omega_range;
-    std::cout<<" my_omega_range="<<my_omega_range;
+    std::cout<<" (2.*M_PI)/dt="<<(2.*M_PI)/dt;
+    std::cout<<" m="<<m;
     if(high_T_limit){std::cout<<" high_T_limit=true";}
     std::cout<<std::endl;
   
-    double domega=my_omega_range/N_new;
 
     std::complex<double> *in_array=new std::complex<double>[N_new];
 
@@ -438,6 +467,13 @@ std::complex<double>(DiagBB::get_coth(beta,E_shift,w)*cos(w*tau) , -sin(w*tau) )
     std::complex<double> *out1_array=new std::complex<double>[N_new];
     discreteFT(in_array, out1_array, N_new, 1, +1);
     for(size_t i=0; i<N_new; i++){
+#ifdef DIAGBB_FFT_CORRECTION
+      double theta=2.*M_PI*i/N_new;
+      out1_array[i]*=FFT_trapezoidal_correction_W(theta); 
+      out1_array[i]+=FFT_trapezoidal_correction_a0(theta)*in_array[0];
+      out1_array[i]+=exp(std::complex<double>(0,((+1)*i*N_new*domega*dt))) 
+           *std::conj(FFT_trapezoidal_correction_a0(theta))*in_array[N_new-1];
+#endif
       out1_array[i]*=exp(std::complex<double>(0,(+1)*i*omega_min*dt));
     }
 
@@ -468,9 +504,9 @@ std::complex<double>(DiagBB::get_coth(beta,E_shift,w)*cos(w*tau) , -sin(w*tau) )
     K_precalc=std::vector<std::complex<double> >(n_max,0.);
 
     for(int n=1; n<n_max && n<N_new-1; n++){
-      K_precalc[n].real(domega*(2.*out1_array[n]-out1_array[n-1]-out1_array[n+1]).real());
+      K_precalc[n].real(domega*(2.*out1_array[n*m]-out1_array[(n-1)*m]-out1_array[(n+1)*m]).real());
       if(!high_T_limit){
-        K_precalc[n].imag(-domega*(2.*out2_array[n]-out2_array[n-1]-out2_array[n+1]).imag());
+        K_precalc[n].imag(-domega*(2.*out2_array[n*m]-out2_array[(n-1)*m]-out2_array[(n+1)*m]).imag());
       }
     }
     K_precalc[0]=calculate_K_explicit(0, dt);

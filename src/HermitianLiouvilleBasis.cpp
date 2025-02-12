@@ -5,30 +5,18 @@ namespace ACE{
 
   Eigen::VectorXcd HermitianLiouvilleBasis::operator() (int i) const{
 
-#ifndef HERMITIAN_BASIS_USE_TRACE
-    if(i<N){ 
-      Eigen::VectorXcd res=Eigen::VectorXcd::Zero(N*N);
-      res(i*N+i)=1.;
-      return res;
-#else
-    if(i==0){
+    if(i==0){  //proportional to trace
       Eigen::VectorXcd res=Eigen::VectorXcd::Zero(N*N);
       for(size_t j=0; j<N; j++){
         res(j*N+j)=1./sqrt((double) N);
       }
       return res;
-    }else if(i<N){ 
+    }else if(i<N){ //traceless diagonal (using DCT-II);
       Eigen::VectorXcd res=Eigen::VectorXcd::Zero(N*N);
-      res(i*N+i)=1.;
-      for(int loop=0; loop<2; loop++){
-        for(size_t j=0; j<i; j++){
-          Eigen::VectorXcd other=operator()(j);
-          res-=(other.dot(res))*other;
-        }
-        res.normalize();
+      for(int n=0; n<N; n++){
+        res(n*N+n)=sqrt(2./N)*cos(M_PI/N*(n+0.5)*i);
       }
       return res;
-#endif
     }else if(i<N+((N-1)*N)/2){ 
       int j;
       int l=i-N;

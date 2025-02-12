@@ -4,7 +4,7 @@
 #include "ReadExpression.hpp"
 #include "Reader.hpp"
 #include "Constants.hpp"
-#include "ComplexFunction_Interpolate.h"
+#include "ComplexFunction_Interpolate.hpp"
 #include "DummyException.hpp"
 #include <iostream>
 

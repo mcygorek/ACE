@@ -1,5 +1,5 @@
 
 Nintermediate 10
-add_Hamiltonian  { hbar * 1* ((sigma_z) otimes n_5)  + hbar*12*(Id_2 otimes n_5)}  
-add_Pulse  Gauss 20 0.01 {2.} {hbar*12}  { Id_2 otimes bdagger_5}
+add_Hamiltonian  {hbar*1*(sigma_z otimes n_5) + hbar*12*(Id_2 otimes n_5)}  
+add_Pulse  Gauss 20 0.2 {2.} {hbar*12} {hbar/2*(Id_2 otimes bdagger_5)}
 

@@ -11,15 +11,16 @@ namespace ACE{
     return get_E(k)/hbar_in_meV_ps; 
   }
 
-  std::vector<Eigen::MatrixXcd> ModePropagatorGenerator_Fermion::get_env_ops(int k) const{
+  EnvironmentOperators ModePropagatorGenerator_Fermion::get_env_ops(int k) const{
     Operators op(2); 
     std::vector<Eigen::MatrixXcd> mats;
+    mats.push_back(Eigen::MatrixXcd::Identity(2,2));
+    mats.push_back(Eigen::MatrixXcd::Identity(2,2)); mats[1](1,1)=-1.;
     if(!no_env_ops){
       mats.push_back(op.ketbra(1,1));
-      mats.push_back(op.ketbra(1,0));
       mats.push_back(2.*E_g.get_g(k)* op.ketbra(1,0) );
     }
-    return mats;
+    return EnvironmentOperators(mats, env_sign); 
   }
 
   void ModePropagatorGenerator_Fermion::setup(Parameters &param){
@@ -31,6 +32,14 @@ namespace ACE{
     EFermi=param.get_as_double(add_name("EFermi"), EFermi);
 
     temperature=readTemperature(param, name());
+    fermion_sign_space=param.get_as_int(add_name("sign_space"),-1);
+    int env_sign_default=fermion_sign_space>-1?2:0;
+    if(param.get_as_bool("use_combine_tree")&&env_sign_default>0){
+      env_sign_default=1;
+    }
+    //when extracting current: 0: ignore parity operator; 1: parity derived from Jordan-Wigner; 2: like 1 but with reverse mode order (needed for symmetric combination in sequential ACE)
+    env_sign=param.get_as_int(add_name("env_sign"), env_sign_default);
+    
 
     //to introduce line broading in the hope of reducing inner dimensions
     //double value corresponds to thermalization rate
@@ -44,16 +53,6 @@ namespace ACE{
 
     no_env_ops=param.get_as_bool(add_name("no_env_ops"),false);
 
-    double low_pass_cutoff=param.get_as_double(add_name("low_pass_cutoff"),0);
-    if(low_pass_cutoff>1e-16){
-      low_pass.use=true;
-      low_pass.cutoff=low_pass_cutoff;
-      low_pass.factor=param.get_as_double(add_name("low_pass_cutoff"),1.,0,1);
-    }
-
-    continuum_subdiv_N=param.get_as_double(add_name("continuum_subdiv"),0);
-    
-
     gparam.add_from_prefix(add_name("Propagator"),param);
 
     std::string print_E_g=param.get_as_string(add_name("print_E_g"));
@@ -63,7 +62,6 @@ namespace ACE{
         ofs<<E_g.get_E(i)<<" "<<E_g.get_g(i)<<std::endl;
       }
     } 
-//std::cout<<"FERMION: setup ended"<<std::endl;
   }
 
   ModePropagatorPtr ModePropagatorGenerator_Fermion::getModePropagator(int k)const{
@@ -89,6 +87,7 @@ namespace ACE{
     ptr->FreePropagator::setup(kparam);
     ptr->env_ops=get_env_ops(k);
     ptr->add_Hamiltonian(HB);
+    ptr->fermion_sign_space=fermion_sign_space;
   
 
     //damping: 
@@ -113,24 +112,8 @@ namespace ACE{
       }
     }
 
-    ptr->low_pass=low_pass;
 
-    if(continuum_subdiv_N>0){  
-      ptr->continuum_subdiv.N=continuum_subdiv_N;
-      ptr->continuum_subdiv.dH=get_dE(k)*HB_diag;
-    }
-
-/* Test: reduced basis:
-    ptr->rBasis->use_reduce=true;
-    ptr->rBasis->U=Eigen::MatrixXcd::Zero(4,4);
-    ptr->rBasis->U(0,0)=1;
-    ptr->rBasis->U(1,2)=1;
-    ptr->rBasis->U(2,1)=0.99;
-    ptr->rBasis->U(3,3)=1;
-*/
     return ptr;
-
-//    return ModePropagatorPtr(new ModePropagator(sysdim,get_bath_init(k),HB,get_env_ops()));
   }
 
   double ModePropagatorGenerator_Fermion::get_n_eq(int k)const{

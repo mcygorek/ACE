@@ -33,6 +33,20 @@ struct SelectIndices{
       }
     }
   }
+  inline int min_dim_first()const{
+    int dim=0; 
+    for(int i=0; i<(int)list.size(); i++){
+      if(list[i].first>=dim)dim=list[i].first+1;
+    }
+    return dim;
+  }
+  inline int min_dim_second()const{
+    int dim=0; 
+    for(int i=0; i<(int)list.size(); i++){
+      if(list[i].second>=dim)dim=list[i].second+1;
+    }
+    return dim;
+  }
 
   Eigen::MatrixXcd otimes(const Eigen::MatrixXcd & M1, 
                           const Eigen::MatrixXcd & M2, 

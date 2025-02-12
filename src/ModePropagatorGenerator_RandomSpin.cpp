@@ -24,12 +24,13 @@ namespace ACE{
     return v1(2)<v2(2);
   }
 
-  std::vector<Eigen::MatrixXcd> ModePropagatorGenerator_RandomSpin::get_env_ops(int k) const{
-    std::vector<Eigen::MatrixXcd> mats(3);
-    mats[0]=0.5*sigma_x();
-    mats[1]=0.5*sigma_y();
-    mats[2]=0.5*sigma_z();
-    return mats;
+  EnvironmentOperators ModePropagatorGenerator_RandomSpin::get_env_ops(int k) const{
+    std::vector<Eigen::MatrixXcd> mats(4);
+    mats[0]=Eigen::MatrixXcd::Identity(2,2);
+    mats[1]=0.5*sigma_x();
+    mats[2]=0.5*sigma_y();
+    mats[3]=0.5*sigma_z();
+    return EnvironmentOperators(mats);
   }
 
   void ModePropagatorGenerator_RandomSpin::setup(int Nmod, double J_max, double J_min, size_t seed){

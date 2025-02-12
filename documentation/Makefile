@@ -14,4 +14,4 @@ all: documentation.tex
 .PHONY: clean
 
 clean:
-	rm documentation.{html,aux,idv,css,lg,log,tmp,4tc,4ct} 2>/dev/null || true
+	rm documentation.{html,aux,idv,css,lg,log,tmp,4tc,4ct} documentation*x.png 2>/dev/null || true

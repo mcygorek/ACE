@@ -23,6 +23,8 @@ public:
   int TT_n_mem;
   bool use_LT;
   std::string TT_print_norms;
+  std::string ME_print_rates;
+  std::string ME_print_L;
   
 
   static void propagate_system(Eigen::MatrixXcd & state, Propagator &prop, double t, double dt);
@@ -42,11 +44,11 @@ public:
            const Eigen::MatrixXcd & initial_rho, const TimeGrid &tgrid,
            OutputPrinter &printer);
 
-  inline void run(
+  inline void run_(  //used for pybind11
            FreePropagator &prop, ProcessTensorForwardList &PT,
            const InitialState & initial, const TimeGrid &tgrid,
            OutputPrinter &printer){
-    run(prop, PT, initial.rho, tgrid, printer);
+    run(prop, PT, initial.rho, tgrid, printer); 
   }
 
   void setup(Parameters &param);

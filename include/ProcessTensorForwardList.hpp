@@ -38,7 +38,7 @@ public:
 
   static std::shared_ptr<ProcessTensorForward> PTptr_from_file(const std::string &str, bool read_only);
   void add_PT(Parameters &param);
-  void setup(Parameters &param, int setdim=-1);
+  void setup(Parameters &param, int setdim=-1, bool print_timings=true);
   void read(const std::string &fname);
   
   void propagate(Eigen::MatrixXcd & state, bool reverse_order); 

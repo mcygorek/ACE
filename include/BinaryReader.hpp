@@ -4,13 +4,24 @@
 
 #include "Reader.hpp"
 #include <fstream>
+#include "DummyException.hpp"
 
 namespace ACE{
 
 template <typename T> void binary_write(std::ostream &ofs, const T &t){
   ofs.write((char*)&t, sizeof(T));
 }
-
+template <typename T> T binary_read(std::istream &ifs, const std::string &context=""){
+  T t;
+  ifs.read((char*)&t, sizeof(T));
+  if(!ifs.good()){
+    std::cerr<<"binary_read failed!";
+    if(context!=""){std::cerr<<"context: \""<<context<<"\"";}
+    std::cerr<<std::endl;
+    throw DummyException();
+  }
+  return t;
+}
 typedef void (*binary_write_int_type)(std::ostream &ofs, const int &i);
 
 

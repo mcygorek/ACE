@@ -95,12 +95,12 @@ void ModePropagatorGenerator_SingleModes::add_single_mode_from_file(const std::v
   add_single_mode_from_file(str[0],ops);
 }
 
-std::vector<Eigen::MatrixXcd> ModePropagatorGenerator_SingleModes::get_env_ops(int k) const{
+EnvironmentOperators ModePropagatorGenerator_SingleModes::get_env_ops(int k) const{
   if(k>=modes.size()){
     std::cerr<<"ModePropagatorGenerator_SingleModes: get_env_ops(k) out of bounds!"<<std::endl;
     throw DummyException();
   }
-  return modes[k]->env_ops;
+  return EnvironmentOperators(modes[k]->env_ops);
 }
 
 Eigen::MatrixXcd ModePropagatorGenerator_SingleModes::get_bath_init(int k)const{

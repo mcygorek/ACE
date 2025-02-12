@@ -59,6 +59,7 @@ public:
   double base_threshold;
   int base_maxk;
   double keep;  //scaling factor: keep <= 0: keep largest singular value.
+  double base_Tikhonov;
   
   double forward_threshold_ratio;
   double backward_threshold_ratio;
@@ -105,25 +106,29 @@ if(debug){std::cout<<exp(-log(threshold_range_factor)*lin_fac)<<std::endl;}
   }
   
   inline TruncatedSVD_T<T> get_base()const{
-    return TruncatedSVD_T<T>(base_threshold, base_maxk, keep);
+    return TruncatedSVD_T<T>(base_threshold, base_maxk, keep, false, base_Tikhonov);
   }
   inline TruncatedSVD_T<T> get_QR()const{
     return TruncatedSVD_T<T>(0, 0, keep, true);
+  }
+  inline TruncatedSVD_T<T> get_base_line(double current_line, int max_lines)const{
+    double thr=base_threshold*get_line_factor(current_line,max_lines);
+    return TruncatedSVD_T<T>(thr, base_maxk, keep, false, base_Tikhonov);
   }
   inline TruncatedSVD_T<T> get_forward(double current_line, int max_lines, bool select=false )const{
     double thr=base_threshold*forward_threshold_ratio;
     thr*=get_line_factor(current_line,max_lines);
     if(select){ thr*=select_threshold_ratio; }
-    return TruncatedSVD_T<T>(thr, base_maxk, keep);
+    return TruncatedSVD_T<T>(thr, base_maxk, keep, false, base_Tikhonov);
   }
   inline TruncatedSVD_T<T> get_backward(double current_line, int max_lines, bool select=false )const{
     double thr=base_threshold*backward_threshold_ratio;
     thr*=get_line_factor(current_line,max_lines);
     if(select){ thr*=select_threshold_ratio; }
-    return TruncatedSVD_T<T>(thr, base_maxk, keep);
+    return TruncatedSVD_T<T>(thr, base_maxk, keep, false, base_Tikhonov);
   }
   inline TruncatedSVD_T<T> get_final_sweep()const{
-    return TruncatedSVD_T<T>(final_sweep_threshold, final_sweep_maxk, keep);
+    return TruncatedSVD_T<T>(final_sweep_threshold, final_sweep_maxk, keep, false, base_Tikhonov);
   }
   inline int get_intermediate_sweep_n()const{
     return intermediate_sweep_n;

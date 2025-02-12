@@ -7,6 +7,7 @@
 #include "Potential1D.hpp"
 #include "Parameters.hpp"
 #include "Operators.hpp"
+#include "EnvironmentOperators.hpp"
 #include "MPG_Discretization.hpp"
 
 namespace ACE{
@@ -40,7 +41,7 @@ public:
 
   inline virtual bool was_set_up()const{return get_N_modes()>0; }
 
-  virtual std::vector<Eigen::MatrixXcd> get_env_ops(int k) const;
+  virtual EnvironmentOperators get_env_ops(int k) const;
    
   virtual Eigen::MatrixXcd get_bath_init(int k)const=0;
 

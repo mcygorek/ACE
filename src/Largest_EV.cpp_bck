@@ -1,0 +1,135 @@
+#include "Largest_EV.hpp"
+#include <Eigen/Dense>
+#include <iostream>
+
+namespace ACE{
+
+std::complex<double> Largest_EV_Arnoldi(Eigen::VectorXcd &vec, int m, 
+      double epsilon,
+      std::function<Eigen::VectorXcd(const Eigen::VectorXcd &v)> Afunc, 
+      int verbosity, bool reortho){
+
+  if(verbosity>1)std::cout<<"m="<<m<<" epsilon="<<epsilon<<std::endl;
+  Eigen::MatrixXcd H=Eigen::MatrixXcd::Zero(m, m);
+  Eigen::MatrixXcd Q=Eigen::MatrixXcd::Zero(vec.size(),m);
+  Q.col(0)=vec; Q.col(0).normalize();
+  for(int k=1; k<m; k++){
+//    Q.col(k-1).normalize();
+    Q.col(k)=Afunc(Q.col(k-1));
+    for(int j=0; j<k; j++){
+      H(j,k-1)=Q.col(j).dot(Q.col(k));
+      Q.col(k)-=H(j,k-1)*Q.col(j);
+    }
+    if(reortho){
+      for(int j=0; j<k; j++){
+        std::complex<double> overlap=Q.col(j).dot(Q.col(k));
+        Q.col(k)-=overlap*Q.col(j);
+        H(j,k-1)+=overlap;
+      }
+    }
+
+    H(k,k-1)=Q.col(k).norm(); 
+    Q.col(k)/=H(k,k-1);
+ 
+    if(H(k,k-1).real()<epsilon){
+      if(verbosity>0){
+        std::cout<<"Largest_EV_Arnoldi converged to "<<H(k,k-1).real()<<"<"<<epsilon<<" at iteration "<<k<<"/"<<m<<std::endl;
+      }
+      m=k;
+      Eigen::MatrixXcd tmp = H.block(0,0,m,m); H.swap(tmp);
+      break;
+    }
+    if(verbosity>1){
+      std::cout<<"Arnoldi k="<<k<<" H(k,k-1)="<<H(k,k-1)<<std::endl;
+    }
+
+  }
+
+  Eigen::ComplexEigenSolver<Eigen::MatrixXcd> solveH(H);
+  int imax=0; for(int i=1; i<m; i++){if(std::abs(solveH.eigenvalues()(i))>std::abs(solveH.eigenvalues()(imax))){imax=i;}}
+
+  vec=Eigen::VectorXcd::Zero(vec.size());
+  for(int i=0; i<m; i++){
+    vec+=solveH.eigenvectors()(i, imax)*Q.col(i);
+  }
+//  return vec.dot(Afunc(vec));  //Ritz value
+  return solveH.eigenvalues()(imax);
+}
+
+//Uses advanced stopping criterion:
+std::complex<double> Largest_EV_Arnoldi2(Eigen::VectorXcd &vec, int m, 
+      double epsilon,
+      std::function<Eigen::VectorXcd(const Eigen::VectorXcd &v)> Afunc, 
+      int verbosity){
+
+  Eigen::MatrixXcd H=Eigen::MatrixXcd::Zero(m, m);
+  Eigen::MatrixXcd Q=Eigen::MatrixXcd::Zero(vec.size(),m);
+  Q.col(0)=vec; Q.col(0).normalize();
+
+  int test_stop=8;
+  for(int k=1; k<m; k++){
+    Q.col(k)=Afunc(Q.col(k-1));
+    for(int j=0; j<k; j++){
+      H(j,k-1)=Q.col(j).dot(Q.col(k));
+      Q.col(k)-=H(j,k-1)*Q.col(j);
+    }
+//    H(k,k-1)=Q.col(k).norm();
+
+    //re-orthogonalize
+    for(int j=0; j<k; j++){
+      std::complex<double> overlap=Q.col(j).dot(Q.col(k));
+      Q.col(k)-=overlap*Q.col(j);
+      H(j,k-1)+=overlap;
+    }
+    H(k,k-1)=Q.col(k).norm(); 
+   
+ 
+    if(H(k,k-1).real()<epsilon){
+      if(verbosity>0){
+        std::cout<<"Largest_EV_Arnoldi converged to "<<H(k,k-1).real()<<"<"<<epsilon<<" at iteration "<<k<<"/"<<m<<" due to small H(k,k-1)"<<std::endl;
+      }
+      m=k;
+      Eigen::MatrixXcd tmp = H.block(0,0,m,m); H.swap(tmp);
+      break;
+    }
+    if(verbosity>1){
+      std::cout<<"Arnoldi k="<<k<<" H(k,k-1)="<<H(k,k-1)<<std::endl;
+    }
+    Q.col(k)/=H(k,k-1);
+
+   
+    //test if eigenvector good enough:
+/*
+    if(k==test_stop){
+      Eigen::MatrixXcd tmp=H.block(0,0,k,k);
+      Eigen::ComplexEigenSolver<Eigen::MatrixXcd> solveH(tmp);
+      int imax=0; for(int i=1; i<k; i++){if(std::abs(solveH.eigenvalues()(i))>std::abs(solveH.eigenvalues()(imax))){imax=i;}}
+
+      vec=Eigen::VectorXcd::Zero(vec.size());
+      for(int i=0; i<k; i++){
+        vec+=solveH.eigenvectors()(i, imax)*Q.col(i);
+      }
+      Eigen::VectorXcd v2=Afunc(vec);
+      std::complex<double> theta=solveH.eigenvalues()(imax);
+      if((v2-theta*vec).norm()<epsilon){
+        if(verbosity>0){
+          std::cout<<"Largest_EV_Arnoldi converged to |v2-theta*v|="<<(v2-theta*vec).norm()<<"<"<<epsilon<<" at iteration "<<k<<"/"<<m<<std::endl;
+        }
+        return theta;
+      }else{
+        test_stop*=2;
+      }
+    }
+*/
+  }
+
+  Eigen::ComplexEigenSolver<Eigen::MatrixXcd> solveH(H);
+  int imax=0; for(int i=1; i<m; i++){if(std::abs(solveH.eigenvalues()(i))>std::abs(solveH.eigenvalues()(imax))){imax=i;}}
+
+  vec=Eigen::VectorXcd::Zero(vec.size());
+  for(int i=0; i<m; i++){
+    vec+=solveH.eigenvectors()(i, imax)*Q.col(i);
+  }
+  return solveH.eigenvalues()(imax);
+}
+}//namespace

@@ -41,6 +41,8 @@ struct TimeGrid{
   
   inline double get_t_tot()const{ return get_t(n_tot); }
 
+  std::vector<double> get_all()const;
+
   int get_closest_n(double t)const;
   
   std::vector<int> get_interval_set(double interval_width);

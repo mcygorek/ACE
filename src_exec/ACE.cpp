@@ -4,7 +4,7 @@
 #include "TransferTensor.hpp"
 #include "DummyException.hpp"
 #include "ParametersScan.hpp"
-
+#include "Timings.hpp"
 
 using namespace ACE;
 
@@ -42,7 +42,10 @@ int main(int args, char** argv){
         std::cout<<"Not propagating ('dont_propagate' was set)"<<std::endl;
       }else{
         std::cout<<"Propagating..."<<std::endl;
+        time_point time1=now();
         sim.run(tgrid, PT);
+        time_point time2=now();
+        std::cout<<"runtime for propagation: "<<time_diff(time2-time1)<<"ms"<<std::endl;
       }
   }else{ //nr_scans>1:
 

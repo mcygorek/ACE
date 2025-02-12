@@ -23,6 +23,13 @@ namespace ACE{
     if(n<ndt0)return dt0;
     else return dt;  
   }
+  std::vector<double> TimeGrid::get_all()const{
+    std::vector<double> times(n_tot+1);
+    for(int n=0; n<=n_tot; n++){
+      times[n]=get_t(n);
+    }
+    return times;
+  }
 
   int TimeGrid::get_closest_n(double t)const{
     double te=get_t_tot();

@@ -1,0 +1,766 @@
+#include "ACE.hpp"
+#include "PT_infinite.hpp"
+#include "ProcessTensorBuffer.hpp"
+#include "ProcessTensorRepeat.hpp"
+
+namespace ACE{
+
+
+Eigen::MatrixXcd PT_iTEBD_calc_R(const Eigen::VectorXcd & LambdaB, const Eigen::MatrixXcd &GLG2){
+  int dim_d=LambdaB.size();
+  int dim_i=GLG2.rows()/dim_d;
+  Eigen::MatrixXcd R=Eigen::MatrixXcd::Zero(dim_d*dim_d, dim_d*dim_d);
+  for(int i=0; i<dim_i; i++){
+    for(int j=0; j<dim_i; j++){
+      for(int d1=0; d1<dim_d; d1++){
+        for(int d2=0; d2<dim_d; d2++){
+          for(int d3=0; d3<dim_d; d3++){
+            for(int d4=0; d4<dim_d; d4++){
+              R(d1*dim_d+d2, d3*dim_d+d4)+=
+GLG2(i*dim_d+d1, j*dim_d+d3)*LambdaB(d3)*std::conj(GLG2(i*dim_d+d2,j*dim_d+d4)*LambdaB(d4));
+            }
+          }
+        }
+      }
+    }
+  }
+  return R;
+}
+Eigen::MatrixXcd PT_iTEBD_calc_L(const Eigen::VectorXcd & LambdaB, const Eigen::MatrixXcd &GLG2){
+  int dim_d=LambdaB.size();
+  int dim_i=GLG2.rows()/dim_d;
+  Eigen::MatrixXcd L=Eigen::MatrixXcd::Zero(dim_d*dim_d, dim_d*dim_d);
+  for(int i=0; i<dim_i; i++){
+    for(int j=0; j<dim_i; j++){
+      for(int d1=0; d1<dim_d; d1++){
+        for(int d2=0; d2<dim_d; d2++){
+          for(int d3=0; d3<dim_d; d3++){
+            for(int d4=0; d4<dim_d; d4++){
+              L(d1*dim_d+d2, d3*dim_d+d4)+=
+LambdaB(d1)*GLG2(i*dim_d+d1, j*dim_d+d3)*std::conj(LambdaB(d2)*GLG2(i*dim_d+d2,j*dim_d+d4));
+            }
+          }
+        }
+      }
+    }
+  }
+  return L;
+}
+Eigen::MatrixXcd PT_iTEBD_R_times(const Eigen::VectorXcd & LambdaB, const Eigen::MatrixXcd &GLG2, const Eigen::MatrixXcd &VR){
+  int dim_d=LambdaB.size();
+  int dim_i=GLG2.rows()/dim_d;
+  Eigen::MatrixXcd VR2=Eigen::MatrixXcd::Zero(dim_d, dim_d);
+  Eigen::MatrixXcd VR_=LambdaB.asDiagonal()*VR*LambdaB.conjugate().asDiagonal();
+  for(int i=0; i<dim_i; i++){
+   for(int j=0; j<dim_i; j++){
+      VR2.noalias()+= 
+          Eigen::Map<const Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor>, 0, Eigen::OuterStride<> > (&GLG2(i*dim_d,j*dim_d), dim_d, dim_d, Eigen::OuterStride<>(dim_i*dim_d)) * VR_ * \
+          Eigen::Map<const Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>, 0, Eigen::OuterStride<> > (&GLG2(i*dim_d,j*dim_d), dim_d, dim_d, Eigen::OuterStride<>(dim_i*dim_d)).conjugate();
+
+/*
+          Eigen::MatrixXcd tmp=Eigen::MatrixXcd::Zero(dim_d, dim_d);
+          for(int d1=0; d1<dim_d; d1++){
+            for(int d2=0; d2<dim_d; d2++){
+              for(int d=0; d<dim_d; d++){
+                tmp(d1,d2)+=GLG2(i*dim_d+d1, j*dim_d+d)*VR_(d,d2);
+              }
+            }
+          }
+          for(int d1=0; d1<dim_d; d1++){
+            for(int d2=0; d2<dim_d; d2++){
+              for(int d=0; d<dim_d; d++){
+                VR2(d1,d2)+=std::conj(GLG2(i*dim_d+d2,j*dim_d+d))*tmp(d1,d);
+              }
+            }
+          }
+*/
+    }
+  }
+  return VR2;
+}
+
+Eigen::MatrixXcd PT_iTEBD_L_times(const Eigen::VectorXcd & LambdaB, const Eigen::MatrixXcd &GLG2, const Eigen::MatrixXcd &VL){
+  int dim_d=LambdaB.size();
+  int dim_i=GLG2.rows()/dim_d;
+
+  Eigen::MatrixXcd VL2=Eigen::MatrixXcd::Zero(dim_d, dim_d);
+  Eigen::MatrixXcd VL_=LambdaB.asDiagonal()*VL*LambdaB.conjugate().asDiagonal();
+  for(int i=0; i<dim_i; i++){
+    for(int j=0; j<dim_i; j++){
+      VL2.noalias()+= 
+          Eigen::Map<const Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>, 0, Eigen::OuterStride<> > (&GLG2(i*dim_d,j*dim_d), dim_d, dim_d, Eigen::OuterStride<>(dim_i*dim_d)) * VL_ * \
+          Eigen::Map<const Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor>, 0, Eigen::OuterStride<> > (&GLG2(i*dim_d,j*dim_d), dim_d, dim_d, Eigen::OuterStride<>(dim_i*dim_d)).conjugate();
+
+/*            Eigen::MatrixXcd tmp=Eigen::MatrixXcd::Zero(dim_d, dim_d);
+            for(int d1=0; d1<dim_d; d1++){
+            for(int d2=0; d2<dim_d; d2++){
+              for(int d=0; d<dim_d; d++){
+                tmp(d1,d2)+=GLG2(i*dim_d+d, j*dim_d+d1)*VL_(d,d2);
+              }
+            }
+          }
+          for(int d1=0; d1<dim_d; d1++){
+            for(int d2=0; d2<dim_d; d2++){
+              for(int d=0; d<dim_d; d++){
+                VL2(d1,d2)+=std::conj(GLG2(i*dim_d+d,j*dim_d+d2))*tmp(d1,d);
+              }
+            }
+          }
+*/
+    }
+  }
+  return VL2;
+}
+ 
+Eigen::VectorXcd Largest_EV_Arnoldi(const Eigen::VectorXcd &initial, int m, 
+      double epsilon,
+      std::function<Eigen::VectorXcd(const Eigen::VectorXcd &v)> Afunc, 
+      int verbosity){
+
+  Eigen::MatrixXcd H=Eigen::MatrixXcd::Zero(m, m);
+  Eigen::MatrixXcd Q=Eigen::MatrixXcd::Zero(initial.size(),m);
+  Q.col(0)=initial/initial.norm();
+  for(int k=1; k<m; k++){
+    Q.col(k)=Afunc(Q.col(k-1));
+    for(int j=0; j<k; j++){
+      H(j,k-1)=Q.col(j).dot(Q.col(k));
+      Q.col(k).noalias()-=H(j,k-1)*Q.col(j);
+    }
+    H(k,k-1)=Q.col(k).norm();
+    if(H(k,k-1).real()<epsilon){
+      if(verbosity>0){
+        std::cout<<"Largest_EV_Arnoldi converged to "<<H(k,k-1).real()<<"<"<<epsilon<<" at iteration "<<k<<"/"<<m<<std::endl;
+      }
+      m=k;
+      Eigen::MatrixXcd tmp = H.block(0,0,m,m); H.swap(tmp);
+      break;
+    }
+    Q.col(k)/=H(k,k-1);
+  }
+
+  Eigen::ComplexEigenSolver<Eigen::MatrixXcd> solveH(H);
+  int imax=0; for(int i=1; i<m; i++){if(std::abs(solveH.eigenvalues()(i))>std::abs(solveH.eigenvalues()(imax))){imax=i;}}
+
+  Eigen::VectorXcd res=Eigen::VectorXcd::Zero(initial.size());
+  for(int i=0; i<m; i++){
+    res.noalias()+=solveH.eigenvectors()(i, imax)*Q.col(i);
+  }
+  return res;
+}
+
+PT_iTEBD_X_Result PT_iTEBD_X(const Eigen::VectorXcd & LambdaB, const Eigen::MatrixXcd &GLG2, int iter, double epsilon){
+
+  int dim_d=LambdaB.size();
+  int dim_i=GLG2.rows()/dim_d;
+
+   //Largest eigenvalue -> matrix VR:
+//  Eigen::MatrixXcd VR=Eigen::MatrixXcd::Ones(dim_d, dim_d);
+//  Eigen::MatrixXcd VR=Eigen::MatrixXcd::Zero(dim_d, dim_d); VR(0,0)=1;
+//  Eigen::MatrixXcd VR=LambdaB.asDiagonal();
+  Eigen::MatrixXcd VR=Eigen::MatrixXcd::Identity(dim_d, dim_d)/sqrt((double)dim_d);
+
+  std::complex<double> max_eval=0;
+  if(iter<1){ //Brute-force solution of eigenvalue problem
+    Eigen::MatrixXcd R=PT_iTEBD_calc_R(LambdaB, GLG2);
+    Eigen::ComplexEigenSolver<Eigen::MatrixXcd> solveR(R);
+    int imax=0;
+    for(int i=1; i<dim_d*dim_d; i++){
+      if(std::abs(solveR.eigenvalues()(i))>std::abs(solveR.eigenvalues()(imax))){
+        imax=i;
+      }
+    }
+    for(int d1=0; d1<dim_d; d1++){ 
+      for(int d2=0; d2<dim_d; d2++){
+        VR(d1,d2)=solveR.eigenvectors()(d1*dim_d+d2,imax);
+      }
+    } 
+    max_eval=solveR.eigenvalues()(imax);
+  }else{
+//#ifdef ACE_POWER_ITERATE
+#ifndef ACE_USE_ARNOLDI
+    for(int it=1; it<=iter; it++){
+      Eigen::MatrixXcd VR2=PT_iTEBD_R_times(LambdaB, GLG2, VR);
+
+      double nrm=VR2.norm();
+      VR2/=nrm;
+      double diff=(VR-VR2).norm();
+      if(it%100==0){
+        std::cout<<"R: iter="<<it<<" diff="<<diff<<std::endl;
+      }
+      VR.swap(VR2);
+      max_eval=nrm;
+      if(it>1 && diff<epsilon){
+        std::cout<<"R: converged to "<<diff<<"<"<<epsilon<<" at iteration "<<it<<"/"<<iter<<std::endl;
+        break;
+      }
+    }
+#else //simple Arnoldi:
+
+    Eigen::VectorXcd vr=Eigen::Map<Eigen::VectorXcd>(&VR(0,0), dim_d*dim_d);
+    vr=Largest_EV_Arnoldi(vr, iter, epsilon, 
+       [&LambdaB,&GLG2](const Eigen::VectorXcd &v){
+         int dim_d=LambdaB.size();
+         Eigen::MatrixXcd V=Eigen::Map<const Eigen::MatrixXcd>(&v(0), dim_d,dim_d);
+         V=PT_iTEBD_R_times(LambdaB, GLG2, V);
+         Eigen::VectorXcd res=Eigen::Map<Eigen::VectorXcd>(&V(0,0), dim_d*dim_d);
+         return res;
+       }, 1);
+    VR=Eigen::Map<Eigen::MatrixXcd>(&vr(0), dim_d, dim_d);
+ /*
+    int n=dim_d*dim_d;
+    int m=iter;
+    Eigen::MatrixXcd H=Eigen::MatrixXcd::Zero(m, m);
+    std::vector<Eigen::MatrixXcd> Q(m,Eigen::MatrixXcd(dim_d,dim_d));
+    Q[0]=VR/VR.norm();
+    for(int k=1; k<m; k++){
+      Q[k]=PT_iTEBD_R_times(LambdaB, GLG2, Q[k-1]);
+      for(int j=0; j<k; j++){
+        H(j,k-1)=(Q[j].adjoint()*Q[k]).trace();
+        Q[k]-=H(j,k-1)*Q[j];
+      }
+      H(k,k-1)=Q[k].norm();
+      if(H(k,k-1).real()<epsilon){
+        std::cout<<"R: converged to "<<H(k,k-1).real()<<"<"<<epsilon<<" at iteration "<<k<<"/"<<iter<<std::endl;
+        m=k;
+        Eigen::MatrixXcd tmp = H.block(0,0,m,m); H.swap(tmp);
+        break;
+      }
+      Q[k]/=H(k,k-1);
+    }
+
+    Eigen::ComplexEigenSolver<Eigen::MatrixXcd> solveH(H);
+    int imax=0; for(int i=1; i<m; i++){if(std::abs(solveH.eigenvalues()(i))>std::abs(solveH.eigenvalues()(imax))){imax=i;}}
+
+    VR=Eigen::MatrixXcd::Zero(dim_d, dim_d);
+    for(int i=0; i<m; i++){
+      VR.noalias()+=solveH.eigenvectors()(i, imax)*Q[i];
+    }
+    */
+#endif 
+  }
+/*
+  std::cout<<"|VR-VR.adjoint()|="<<(VR-VR.adjoint()).norm()<<std::endl;
+std::cout<<"R:"<<std::endl<<R<<std::endl;
+std::cout<<"VR:"<<std::endl<<VR<<std::endl;
+std::cout<<"R eigenvalues"<<solveR.eigenvalues().transpose()<<std::endl;
+std::cout<<"max eval="<<max_eval<<" at imax="<<imax<<std::endl;
+*/
+  //Decompose VR:
+  Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> solve(VR);
+  Eigen::VectorXcd sqrt_D(dim_d);
+  for(int d=0; d<dim_d; d++){  
+    std::complex<double> eval=solve.eigenvalues()(d);
+    if(std::abs(eval)<1e-15){
+      std::cerr<<"PT_iTEBD_X: not invertible: "<<solve.eigenvalues().transpose()<<std::endl;
+      throw DummyException();
+    }
+    sqrt_D(d)=sqrt(eval);
+  }
+  return {solve.eigenvectors(), sqrt_D, max_eval};
+}
+
+PT_iTEBD_X_Result PT_iTEBD_Y(const Eigen::VectorXcd & LambdaB, const Eigen::MatrixXcd &GLG2, int iter, double epsilon){
+
+  int dim_d=LambdaB.size();
+  int dim_i=GLG2.rows()/dim_d;
+
+   //Largest eigenvalue -> matrix VR:
+//  Eigen::MatrixXcd VL=Eigen::MatrixXcd::Ones(dim_d, dim_d);
+//  Eigen::MatrixXcd VL=Eigen::MatrixXcd::Zero(dim_d, dim_d); VL(0,0)=1;
+//  Eigen::MatrixXcd VL=Eigen::MatrixXcd::Identity(dim_d, dim_d);
+//  Eigen::MatrixXcd VL=LambdaB.asDiagonal();
+  Eigen::MatrixXcd VL=Eigen::MatrixXcd::Identity(dim_d, dim_d)/sqrt((double)dim_d);
+
+  std::complex<double> max_eval=0;
+  if(iter<1){ //Brute-force solution of eigenvalue problem
+    Eigen::MatrixXcd L=PT_iTEBD_calc_L(LambdaB, GLG2);
+    Eigen::ComplexEigenSolver<Eigen::MatrixXcd> solveL(L.transpose());
+    int imax=0;
+    for(int i=1; i<dim_d*dim_d; i++){
+      if(std::abs(solveL.eigenvalues()(i))>std::abs(solveL.eigenvalues()(imax))){
+        imax=i;
+      }
+    }
+    for(int d1=0; d1<dim_d; d1++){ 
+      for(int d2=0; d2<dim_d; d2++){
+        VL(d1,d2)=solveL.eigenvectors()(d1*dim_d+d2,imax);
+      }
+    } 
+    max_eval=solveL.eigenvalues()(imax);
+  }else{
+//#ifdef ACE_POWER_ITERATE
+#ifndef ACE_USE_ARNOLDI
+    for(int it=1; it<=iter; it++){
+      Eigen::MatrixXcd VL2=PT_iTEBD_L_times(LambdaB, GLG2, VL);
+
+      double nrm=VL2.norm();
+      VL2/=nrm;
+      double diff=(VL-VL2).norm();
+      if(it%100==0){
+        std::cout<<"L: iter="<<it<<" diff="<<diff<<std::endl;
+      }
+      VL.swap(VL2);
+      max_eval=nrm;
+      if(it>1 && diff<epsilon){
+        std::cout<<"L: converged to "<<diff<<"<"<<epsilon<<" at iteration "<<it<<"/"<<iter<<std::endl;
+        break;
+      }
+    }
+#else //simple Arnoldi:
+    Eigen::VectorXcd vl=Eigen::Map<Eigen::VectorXcd>(&VL(0,0), dim_d*dim_d);
+    vl=Largest_EV_Arnoldi(vl, iter, epsilon, 
+       [&LambdaB,&GLG2](const Eigen::VectorXcd &v){
+         int dim_d=LambdaB.size();
+         Eigen::MatrixXcd V=Eigen::Map<const Eigen::MatrixXcd>(&v(0), dim_d,dim_d);
+         V=PT_iTEBD_L_times(LambdaB, GLG2, V);
+         Eigen::VectorXcd res=Eigen::Map<Eigen::VectorXcd>(&V(0,0), dim_d*dim_d);
+         return res;
+       }, 1);
+    VL=Eigen::Map<Eigen::MatrixXcd>(&vl(0), dim_d, dim_d);
+/*
+    int n=dim_d*dim_d;
+    int m=iter;
+    Eigen::MatrixXcd H=Eigen::MatrixXcd::Zero(m, m);
+    std::vector<Eigen::MatrixXcd> Q(m,Eigen::MatrixXcd(dim_d,dim_d));
+    Q[0]=VL/VL.norm();
+    for(int k=1; k<m; k++){
+      Q[k]=PT_iTEBD_L_times(LambdaB, GLG2, Q[k-1]);
+      for(int j=0; j<k; j++){
+        H(j,k-1)=(Q[j].adjoint()*Q[k]).trace();
+        Q[k]-=H(j,k-1)*Q[j];
+      }
+      H(k,k-1)=Q[k].norm();
+      if(H(k,k-1).real()<epsilon){
+        std::cout<<"L: converged to "<<H(k,k-1).real()<<"<"<<epsilon<<" at iteration "<<k<<"/"<<iter<<std::endl;
+        m=k;
+        Eigen::MatrixXcd tmp = H.block(0,0,m,m); H.swap(tmp);
+        break;
+      }
+      Q[k]/=H(k,k-1);
+    }
+
+    Eigen::ComplexEigenSolver<Eigen::MatrixXcd> solveH(H);
+    int imax=0; for(int i=1; i<m; i++){if(std::abs(solveH.eigenvalues()(i))>std::abs(solveH.eigenvalues()(imax))){imax=i;}}
+
+    VL=Eigen::MatrixXcd::Zero(dim_d, dim_d);
+    for(int i=0; i<m; i++){
+      VL.noalias()+=solveH.eigenvectors()(i, imax)*Q[i];
+    }
+*/
+#endif 
+  }
+
+
+  //Decompose VL:
+  Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> solve(VL);
+  Eigen::VectorXcd sqrt_D(dim_d);
+  for(int d=0; d<dim_d; d++){  
+    std::complex<double> eval=solve.eigenvalues()(d);
+    if(std::abs(eval)<1e-15){
+      std::cerr<<"PT_iTEBD_Y: not invertible: "<<solve.eigenvalues().transpose()<<std::endl;
+      throw DummyException();
+    }
+    sqrt_D(d)=sqrt(eval);
+  }
+  return {solve.eigenvectors(), sqrt_D, max_eval};
+}
+
+void PT_iTEBD_step(Eigen::VectorXcd & LambdaA, Eigen::VectorXcd &LambdaB,
+                   MPS_Matrix & GammaA, MPS_Matrix & GammaB, 
+                   Eigen::MatrixXcd expS, const TruncatedSVD &trunc,
+                   int iter, double iter_eps){
+  //see appendix of Orus & Vidal, PRB 78, 155117 (2008)
+  //Check dimensions
+  if(LambdaA.size()!=GammaA.dim_d2){
+    std::cerr<<"LambdaA.size()!=GammaA.dim_d2  ("<<LambdaA.size()<<" vs. "<<GammaA.dim_d2<<")!"<<std::endl;
+    throw DummyException();
+  }
+  if(LambdaB.size()!=GammaB.dim_d2){
+    std::cerr<<"LambdaB.size()!=GammaB.dim_d2  ("<<LambdaB.size()<<" vs. "<<GammaB.dim_d2<<")!"<<std::endl;
+    throw DummyException();
+  }
+  if(LambdaA.size()!=GammaB.dim_d1){
+    std::cerr<<"LambdaA.size()!=GammaB.dim_d1  ("<<LambdaA.size()<<" vs. "<<GammaB.dim_d1<<")!"<<std::endl;
+    throw DummyException();
+  }
+  if(LambdaB.size()!=GammaA.dim_d1){
+    std::cerr<<"LambdaB.size()!=GammaA.dim_d1  ("<<LambdaB.size()<<" vs. "<<GammaA.dim_d1<<")!"<<std::endl;
+    throw DummyException();
+  }
+  int dim_i=expS.rows();
+  if(expS.cols()!=dim_i){
+    std::cerr<<"expS.cols()!=dim_i  ("<<expS.cols()<<" vs. "<<dim_i<<")!"<<std::endl;
+    throw DummyException();
+  }
+  if(GammaA.dim_i!=dim_i){
+    std::cerr<<"GammaA.dim_i!=dim_i  ("<<GammaA.dim_i<<" vs. "<<dim_i<<")!"<<std::endl;
+    throw DummyException();
+  }
+  if(GammaB.dim_i!=dim_i){
+    std::cerr<<"GammaB.dim_i!=dim_i  ("<<GammaB.dim_i<<" vs. "<<dim_i<<")!"<<std::endl;
+    throw DummyException();
+  }
+
+  //Construct fragments:
+  //Start with progagated Gamma_A LambdaA GammaB
+  Eigen::MatrixXcd GLG2=Eigen::MatrixXcd::Zero(dim_i*GammaA.dim_d1, dim_i*GammaB.dim_d2);
+  for(int i1=0; i1<dim_i; i1++){
+    for(int i2=0; i2<dim_i; i2++){
+      Eigen::Map<Eigen::MatrixXcd, 0, Eigen::OuterStride<> > (&GLG2(i2*GammaA.dim_d1,i1*GammaB.dim_d2), GammaA.dim_d1, GammaB.dim_d2, Eigen::OuterStride<>(dim_i*GammaA.dim_d1)) = expS(i1, i2) * \
+GammaA.get_Matrix_d1_d2(i1) * LambdaA.asDiagonal() * GammaB.get_Matrix_d1_d2(i2);
+/*
+      for(int d1=0; d1<GammaA.dim_d1; d1++){
+        for(int d2=0; d2<GammaB.dim_d2; d2++){
+          for(int d3=0; d3<GammaA.dim_d2; d3++){
+            GLG2(i2*GammaA.dim_d1+d1, i1*GammaB.dim_d2+d2) += \
+         expS(i1, i2) * GammaA(i1, d1, d3) * LambdaA(d3) * GammaB(i2,d3,d2);
+          }
+        }
+      } 
+*/
+    }
+  }
+
+  //Normalize: 
+  Eigen::MatrixXcd X, Xinv;
+  { 
+    PT_iTEBD_X_Result Xs=PT_iTEBD_X(LambdaB, GLG2, iter, iter_eps);
+    X=std::get<0>(Xs)*std::get<1>(Xs).asDiagonal();
+    Xinv=std::get<1>(Xs).cwiseInverse().asDiagonal()*std::get<0>(Xs).adjoint();
+
+/*
+std::cout<<"(X*Xinv-I).norm()="<<(X*Xinv-Eigen::MatrixXcd::Identity(LambdaB.size(), LambdaB.size())).norm()<<std::endl;
+Eigen::MatrixXcd VR=X*X.adjoint();
+Eigen::MatrixXcd R=PT_iTEBD_calc_R(LambdaB, GLG2);
+Eigen::VectorXcd v(VR.rows()*VR.cols());
+for(int d1=0; d1<VR.rows(); d1++){for(int d2=0; d2<VR.rows(); d2++){v(d1*VR.cols()+d2)=VR(d1,d2);}}
+std::cout<<"|eta*v-R*v|="<<(std::get<2>(Xs)*v - R*v).norm()<<std::endl;
+*/
+  }
+
+  Eigen::MatrixXcd YT, YTinv;
+  {
+    PT_iTEBD_X_Result Ys=PT_iTEBD_Y(LambdaB, GLG2, iter, iter_eps);
+    YT=(std::get<0>(Ys)*std::get<1>(Ys).asDiagonal()).transpose();
+    YTinv=(std::get<1>(Ys).cwiseInverse().asDiagonal()*std::get<0>(Ys).adjoint()).transpose();
+
+/*
+std::cout<<"(YTinv*YT-I).norm()="<<(YTinv*YT-Eigen::MatrixXcd::Identity(LambdaB.size(), LambdaB.size())).norm()<<std::endl;
+Eigen::MatrixXcd VL=YT.transpose()*YT.conjugate();
+std::cout<<"test0"<<std::endl;
+Eigen::MatrixXcd L=PT_iTEBD_calc_L(LambdaB, GLG2);
+std::cout<<"test1"<<std::endl;
+Eigen::VectorXcd v(VL.rows()*VL.cols());
+std::cout<<"test1.5"<<std::endl;
+std::cout<<std::get<2>(Ys)<<std::endl;
+std::cout<<"test2"<<std::endl;
+for(int d1=0; d1<VL.rows(); d1++){for(int d2=0; d2<VL.rows(); d2++){v(d1*VL.cols()+d2)=VL(d1,d2);}}
+std::cout<<"|v*eta-v*L|="<<(v.transpose()*std::get<2>(Ys) - v.transpose()*L).norm()<<std::endl;
+*/
+  }
+ 
+  TruncatedSVD_Return ret=trunc.compress(YT*LambdaB.asDiagonal()*X);
+/* 
+std::cout<<"YT*X singular values: "<<ret.sigma.transpose()<<std::endl;
+std::cout<<"(YTinv*YT*X*Xinv-I).norm()="<<(YTinv*YT*X*Xinv-Eigen::MatrixXcd::Identity(LambdaB.size(), LambdaB.size())).norm()<<std::endl;
+std::cout<<"(YTinv*ret.U*ret.sigma.asDiagonal()*ret.Vdagger*Xinv-I).norm()="<<(YTinv*ret.U*ret.sigma.asDiagonal()*ret.Vdagger*Xinv-Eigen::MatrixXcd::Identity(LambdaB.size(), LambdaB.size())).norm()<<std::endl;
+*/
+
+  int new_d=ret.sigma.size();
+  LambdaB=ret.sigma;
+
+  //Build Sigma matrix
+  Eigen::MatrixXcd lVXi=ret.sigma.asDiagonal()*ret.Vdagger*Xinv;
+  Eigen::MatrixXcd YTiUl=YTinv*ret.U*ret.sigma.asDiagonal();
+
+  Eigen::MatrixXcd Sigma_tmp=Eigen::MatrixXcd::Zero(dim_i*new_d, dim_i*GammaB.dim_d2);
+  for(int i1=0; i1<dim_i; i1++){
+    for(int i2=0; i2<dim_i; i2++){
+      for(int d1=0; d1<new_d; d1++){
+        for(int d=0; d<GammaA.dim_d1; d++){
+          for(int d2=0; d2<GammaB.dim_d2; d2++){
+           Sigma_tmp(i1*new_d+d1, i2*GammaB.dim_d2+d2) += \
+             lVXi(d1, d)*GLG2(i1*GammaA.dim_d1+d, i2*GammaB.dim_d2+d2);
+          }
+        }
+      } 
+    }
+  }
+  Eigen::MatrixXcd Sigma=Eigen::MatrixXcd::Zero(dim_i*new_d, dim_i*new_d);
+  for(int i1=0; i1<dim_i; i1++){
+    for(int i2=0; i2<dim_i; i2++){
+      for(int d1=0; d1<new_d; d1++){
+        for(int d=0; d<GammaB.dim_d2; d++){
+          for(int d2=0; d2<new_d; d2++){
+           Sigma(i1*new_d+d1, i2*new_d+d2) += \
+             Sigma_tmp(i1*new_d+d1, i2*GammaB.dim_d2+d)*YTiUl(d, d2);
+          }
+        }
+      } 
+    }
+  }
+
+  //Split Sigma matrix   
+  TruncatedSVD_Return ret2=trunc.compress(Sigma);
+  int new_d2=ret2.sigma.size();
+  LambdaA=ret2.sigma;
+
+  GammaA.resize(dim_i, new_d, new_d2);
+  for(int i=0; i<dim_i; i++){
+    for(int d1=0; d1<new_d; d1++){
+      for(int d2=0; d2<new_d2; d2++){
+        GammaA(i,d1,d2)=ret2.U(i*new_d+d1, d2)/LambdaB(d1);
+      }
+    }
+  }
+  GammaB.resize(dim_i, new_d2, new_d);
+  for(int i=0; i<dim_i; i++){
+    for(int d1=0; d1<new_d2; d1++){
+      for(int d2=0; d2<new_d; d2++){
+        GammaB(i,d1,d2)=ret2.Vdagger(d1, i*new_d+d2)/LambdaB(d2);
+      }
+    }
+  }
+
+}
+
+
+void PT_TEBD_step(Eigen::VectorXcd & LambdaA, const Eigen::VectorXcd &LambdaB,
+                   MPS_Matrix & GammaA, MPS_Matrix & GammaB, 
+                   const Eigen::MatrixXcd expS, const TruncatedSVD &trunc){
+  //see appendix of Orus & Vidal, PRB 78, 155117 (2008)
+  //Check dimensions
+  if(LambdaA.size()!=GammaA.dim_d2){
+    std::cerr<<"LambdaA.size()!=GammaA.dim_d2  ("<<LambdaA.size()<<" vs. "<<GammaA.dim_d2<<")!"<<std::endl;
+    throw DummyException();
+  }
+  if(LambdaB.size()!=GammaB.dim_d2){
+    std::cerr<<"LambdaB.size()!=GammaB.dim_d2  ("<<LambdaB.size()<<" vs. "<<GammaB.dim_d2<<")!"<<std::endl;
+    throw DummyException();
+  }
+  if(LambdaA.size()!=GammaB.dim_d1){
+    std::cerr<<"LambdaA.size()!=GammaB.dim_d1  ("<<LambdaA.size()<<" vs. "<<GammaB.dim_d1<<")!"<<std::endl;
+    throw DummyException();
+  }
+  if(LambdaB.size()!=GammaA.dim_d1){
+    std::cerr<<"LambdaB.size()!=GammaA.dim_d1  ("<<LambdaB.size()<<" vs. "<<GammaA.dim_d1<<")!"<<std::endl;
+    throw DummyException();
+  }
+  int dim_i=expS.rows();
+  if(expS.cols()!=dim_i){
+    std::cerr<<"expS.cols()!=dim_i  ("<<expS.cols()<<" vs. "<<dim_i<<")!"<<std::endl;
+    throw DummyException();
+  }
+  if(GammaA.dim_i!=dim_i){
+    std::cerr<<"GammaA.dim_i!=dim_i  ("<<GammaA.dim_i<<" vs. "<<dim_i<<")!"<<std::endl;
+    throw DummyException();
+  }
+  if(GammaB.dim_i!=dim_i){
+    std::cerr<<"GammaB.dim_i!=dim_i  ("<<GammaB.dim_i<<" vs. "<<dim_i<<")!"<<std::endl;
+    throw DummyException();
+  }
+
+
+
+  //Construct fragments:
+  //Start with progagated Gamma_A LambdaA GammaB
+  Eigen::MatrixXcd fragment=Eigen::MatrixXcd::Zero(dim_i*GammaA.dim_d1, dim_i*GammaB.dim_d2);
+  for(int i1=0; i1<dim_i; i1++){
+    for(int i2=0; i2<dim_i; i2++){
+      for(int d1=0; d1<GammaA.dim_d1; d1++){
+        for(int d2=0; d2<GammaB.dim_d2; d2++){
+          for(int d3=0; d3<GammaA.dim_d2; d3++){
+fragment(i2*GammaA.dim_d1+d1, i1*GammaB.dim_d2+d2) += expS(i1, i2) *  \
+LambdaB(d1) * GammaA(i1, d1, d3) * LambdaA(d3) * GammaB(i2,d3,d2) * LambdaB(d2);
+          }
+        }
+      } 
+    }
+  }
+
+  TruncatedSVD_Return ret=trunc.compress(fragment);
+  int new_d=ret.sigma.size();
+  LambdaA=ret.sigma;
+
+  Eigen::VectorXcd LambdaB_inv=LambdaB.cwiseInverse();
+
+  GammaA.resize(dim_i, GammaA.dim_d1, new_d);
+  for(int i=0; i<dim_i; i++){
+    for(int d1=0; d1<GammaA.dim_d1; d1++){
+      for(int d2=0; d2<new_d; d2++){
+        GammaA(i, d1, d2)=LambdaB_inv(d1)*ret.U(i*GammaA.dim_d1+d1, d2);
+      }
+    }
+  }
+  GammaB.resize(dim_i, new_d, GammaB.dim_d2); 
+  for(int i=0; i<dim_i; i++){
+    for(int d1=0; d1<new_d; d1++){
+      for(int d2=0; d2<GammaB.dim_d2; d2++){
+        GammaB(i, d1, d2)=ret.Vdagger(d1,i*GammaB.dim_d2+d2)*LambdaB_inv(d2);
+      }
+    }
+  }
+}
+
+
+std::shared_ptr<ProcessTensorForward> PT_infinite(Parameters &param, DiagBB &diagBB){
+  
+  double dict_zero=param.get_as_double("dict_zero",0);
+  TruncationLayout trunc_layout(param);
+
+
+  if(!diagBB.is_set_up()){
+    std::cerr<<"DiagBB not set up!"<<std::endl;
+    throw DummyException();
+  }
+  int N=diagBB.get_dim();  
+  int NL=N*N;
+
+  TimeGrid tgrid(param);
+  int n_mem=tgrid.n_mem;
+  if(tgrid.n_mem<2){
+    std::cerr<<"tgrid.n_mem<2!"<<std::endl;
+    throw DummyException();
+  }
+ 
+  int iter=param.get_as_int("power_iter", -1); //-1: don't normalize; 0: brute-force normalize
+  bool use_TEBD=param.get_as_bool("use_TEBD",(iter<0));
+  double iter_eps=param.get_as_double("power_iter_eps", 1e-16);
+
+  Eigen::VectorXcd LambdaA(1); LambdaA(0)=1;
+  Eigen::VectorXcd LambdaB(1); LambdaB(0)=1;
+  MPS_Matrix GammaA(NL+1, 1,1); GammaA.fill(1.);
+  MPS_Matrix GammaB(NL+1, 1,1); GammaB.fill(1.);
+
+  for(int n=n_mem-1; n>0; n--){ 
+    TruncatedSVD trunc=trunc_layout.get_base_line(n_mem-1-n, n_mem-1);
+    std::cout<<"n="<<n<<"/"<<n_mem<<" thr="<<trunc.threshold<<" dim_A="<<LambdaA.size()<<" dim_B="<<LambdaB.size()<<std::endl;
+    Eigen::MatrixXcd expS=Eigen::MatrixXcd::Ones(NL+1,NL+1);
+    expS.block(0,0,NL,NL)=diagBB.calculate_expS(n,tgrid.dt);
+    if(n%2==0){
+      if(use_TEBD){
+        PT_TEBD_step(LambdaA, LambdaB, GammaA, GammaB, expS, trunc);
+      }else{
+        PT_iTEBD_step(LambdaA, LambdaB, GammaA, GammaB, expS, trunc, iter, iter_eps);
+      }
+    }else{
+      if(use_TEBD){
+        PT_TEBD_step(LambdaB, LambdaA, GammaB, GammaA, expS, trunc);
+      }else{
+        PT_iTEBD_step(LambdaB, LambdaA, GammaB, GammaA, expS, trunc, iter, iter_eps);
+      }
+    }
+  }
+
+  //First time step;
+  std::cout<<"n="<<0<<"/"<<n_mem<<" dim_A="<<LambdaA.size()<<" dim_B="<<LambdaB.size()<<std::endl;
+  MPS_Matrix f(NL+1, GammaA.dim_d1, GammaB.dim_d2); 
+  f.set_zero();
+  Eigen::MatrixXcd expS=Eigen::MatrixXcd::Ones(NL+1,NL+1);
+  expS.block(0,0,NL,NL)=diagBB.calculate_expS(0,tgrid.dt);
+  for(int i=0; i<NL+1; i++){
+    f.get_Matrix_d1_d2(i) = expS(i,i) * \
+                           GammaA.get_Matrix_d1_d2(i)*LambdaA.asDiagonal()*\
+                           GammaB.get_Matrix_d1_d2(i)*LambdaB.asDiagonal();
+  }
+/*
+  std::cout<<"GammaA.dim_d1="<<GammaA.dim_d1;
+  std::cout<<" GammaA.dim_d2="<<GammaA.dim_d2;
+  std::cout<<" GammaB.dim_d1="<<GammaB.dim_d1;
+  std::cout<<" GammaB.dim_d2="<<GammaB.dim_d2<<std::endl;
+*/
+
+  Eigen::MatrixXcd frag0 = f.get_Matrix_d1_d2(NL);
+
+  Eigen::VectorXcd vr, vl;
+  { Eigen::ComplexEigenSolver<Eigen::MatrixXcd> solver(frag0);
+//    std::cout<<"Right eigenvalues: "<<solver.eigenvalues().transpose()<<std::endl;
+    int dim_d=LambdaB.size();
+    std::vector<std::pair<int, std::complex<double> > > srt(dim_d);
+    for(int d=0; d<dim_d; d++){
+      srt[d].first=d; srt[d].second=solver.eigenvalues()(d);
+    }
+    std::sort(srt.begin(), srt.end(), [] (const std::pair<int, std::complex<double> > & a, const std::pair<int, std::complex<double> > &b){ return std::abs(a.second)>std::abs(b.second);});
+    std::cout<<"Largest eigenvalue: "<<srt[0].second<<" (nr="<<srt[0].first<<")"<<std::endl;
+    vr=solver.eigenvectors().col(srt[0].first);
+  }
+
+  { Eigen::ComplexEigenSolver<Eigen::MatrixXcd> solver(frag0.transpose());
+//    std::cout<<"Left eigenvalues: "<<solver.eigenvalues().transpose()<<std::endl;
+    int dim_d=LambdaB.size();
+    std::vector<std::pair<int, std::complex<double> > > srt(dim_d);
+    for(int d=0; d<dim_d; d++){
+      srt[d].first=d; srt[d].second=solver.eigenvalues()(d);
+    }
+    std::sort(srt.begin(), srt.end(), [] (const std::pair<int, std::complex<double> > & a, const std::pair<int, std::complex<double> > &b){ return std::abs(a.second)>std::abs(b.second);});
+    std::cout<<"Largest eigenvalue: "<<srt[0].second<<" (nr="<<srt[0].first<<")"<<std::endl;
+    vl=solver.eigenvectors().col(srt[0].first).transpose();
+  }
+
+
+  //write:
+  std::string write_PT=param.get_as_string("write_PT");
+  int buffer_blocksize=param.get_as_int("buffer_blocksize",-1);
+
+  if(param.get_as_bool("write_as_PTB",false)){
+    std::shared_ptr<ProcessTensorForward> result(new ProcessTensorBuffer());
+    ProcessTensorBuffer *PTB = dynamic_cast<ProcessTensorBuffer*>(result.get());
+    if(write_PT!=""){
+      PTB->set_new_file(write_PT, buffer_blocksize);
+    }
+    PTB->resize(tgrid.n_tot);
+    for(int n=0; n<tgrid.n_tot; n++){
+      ProcessTensorElement &e = PTB->get(n);
+      e.clear();
+      e.accessor.dict.set_default_diag(N);
+      e.M.resize(NL,f.dim_d1,f.dim_d2);
+      for(int i=0; i<NL; i++){
+        e.M.get_Matrix_d1_d2(i)=f.get_Matrix_d1_d2(i);
+      }
+    } 
+    std::complex<double> prod=vl.transpose()*vr;
+    vr/=prod;
+    std::cout<<"vl.transpose()*vr="<<vl.transpose()*vr<<std::endl;
+    std::cout<<"vl.transpose()*frag0*vr="<<vl.transpose()*frag0*vr<<std::endl;
+    PTB->get(0).M.inner_multiply_left(vl.transpose());
+    PTB->get(tgrid.n_tot-1).M.inner_multiply_right(vr);
+    PTB->expand_DiagBB(diagBB, dict_zero);
+    PTB->calculate_closures();
+    
+    return result;
+  }else{ //write as ProcessTensorRepeat
+    std::shared_ptr<ProcessTensorForward> result(new ProcessTensorRepeat());
+    ProcessTensorRepeat *PTR = dynamic_cast<ProcessTensorRepeat*>(result.get());
+    PTR->set_specs(write_PT, buffer_blocksize);
+
+    ProcessTensorBuffer PTB;
+    PTB.resize(3);
+    for(int n=0; n<3; n++){
+      ProcessTensorElement &e = PTB.get(n);
+      e.clear();
+      e.accessor.dict.set_default_diag(N);
+      e.M.resize(NL,f.dim_d1,f.dim_d2);
+      for(int i=0; i<NL; i++){
+        e.M.get_Matrix_d1_d2(i)=f.get_Matrix_d1_d2(i);
+      }
+    } 
+    std::complex<double> prod=vl.transpose()*vr;
+    vr/=prod;
+    std::cout<<"vl.transpose()*vr="<<vl.transpose()*vr<<std::endl;
+    std::cout<<"vl.transpose()*frag0*vr="<<vl.transpose()*frag0*vr<<std::endl;
+    PTB.get(0).M.inner_multiply_left(vl.transpose());
+    PTB.get(2).M.inner_multiply_right(vr);
+    PTB.expand_DiagBB(diagBB, dict_zero);
+    PTB.calculate_closures();
+  
+    PTR->initial.resize(1);
+    PTR->initial.get(0)=PTB.get(0);
+    PTR->repeated.resize(1);
+    PTR->repeated.get(0)=PTB.get(1);
+   
+    return result;
+  }
+
+}
+
+}//namespace

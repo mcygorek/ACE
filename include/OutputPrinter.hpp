@@ -31,6 +31,7 @@ public:
 
   virtual void clear();
   virtual void setup(Parameters & param, int setdim=-1);
+  virtual void set_stream(const std::string &outfile, int precision=-1);
 
   virtual void print(int n, double t, const Eigen::VectorXcd & rho_reduced,
                  const std::vector<std::complex<double> > & env_reduced = 
@@ -39,7 +40,14 @@ public:
   virtual void print_eigenstate_occupations(double t, const Eigen::MatrixXcd &H, const Eigen::MatrixXcd &prop);
 
   virtual void finish();
+  inline const std::vector<Eigen::VectorXcd> & extract()const{
+    return rho_t;
+  }
 
+  OutputPrinter(const std::string &outfile, const std::vector<Eigen::MatrixXcd> & list){
+    set_stream(outfile);
+    output_Op=Output_Ops(list);
+  }
   OutputPrinter(Parameters & param, int setdim=-1){
     setup(param, setdim);
   }

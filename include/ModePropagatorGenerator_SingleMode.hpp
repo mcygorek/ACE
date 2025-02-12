@@ -27,8 +27,8 @@ public:
   
   void setup(const std::vector<std::string> & str);
 
-  inline virtual std::vector<Eigen::MatrixXcd> get_env_ops(int k) const{
-    return envops;
+  inline virtual EnvironmentOperators get_env_ops(int k) const{
+    return EnvironmentOperators(envops);
   }
   inline virtual Eigen::MatrixXcd get_bath_init(int k)const{
     return rho_init;

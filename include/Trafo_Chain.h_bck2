@@ -1,0 +1,357 @@
+#ifndef ACE_TRAFO_CHAIN_DEFINED_H
+#define ACE_TRAFO_CHAIN_DEFINED_H
+
+#include "MPS.hpp"
+#include "ModePropagatorGenerator.hpp"
+#include "Tensor.hpp"
+
+class Trafo_Chain{
+public:
+  std::vector<Eigen::MatrixXd> T;
+
+  size_t size()const{return T.size();}
+  int lastdim()const{
+    if(T.size()<1)return 0;
+    return T.back().cols();
+  }
+  void print_info(std::ostream &ofs=std::cout){
+    ofs<<"Trafo_Chain: size="<<T.size()<<":";
+    for(size_t i=0; i<T.size(); i++){
+      ofs<<" ("<<T[i].rows()<<","<<T[i].cols()<<")";
+    }
+    ofs<<std::endl;
+  }
+  void add_low_to_high(Eigen::MatrixXd R){
+    for(int i=0; i<R.rows(); i++){
+      R.row(i).normalize();
+    }
+    T.push_back(R.adjoint());
+  }
+  void add_high_to_low(Eigen::MatrixXd L){
+    if(L.rows()!=T.back().cols()){
+      std::cerr<<"Trafo_Chain: L.rows()!=T.back().cols() ("<<L.rows()<<" vs. "<<T.back().cols()<<")!"<<std::endl;
+      exit(1);
+    }
+  
+    for(int i=0; i<L.cols(); i++){
+      L.col(i).normalize();
+    }
+    Eigen::MatrixXd tmp=T.back()*L; 
+    T.back()=tmp;
+  }
+
+  std::vector<int> get_dims()const{
+    std::vector<int> dims(T.size());
+    int lastdim=1;
+    for(size_t i=0; i<T.size(); i++){
+      if(i>0)lastdim=T[i-1].cols();
+      dims[i]=T[i].rows()/lastdim;
+    }
+    return dims;
+  }
+
+  void check_compatible(const Trafo_Chain &other)const{
+    if(other.size()!=size()){
+      std::cerr<<"Trafo_Chain::check_compatible: other.size()!=size()!"<<std::endl;
+      exit(1);
+    }
+    std::vector<int> dims=get_dims();
+    std::vector<int> dims2=other.get_dims();
+    for(size_t i=0; i<dims.size(); i++){
+      if(dims[i]!=dims2[i]){
+        std::cerr<<"Trafo_Chain::check_compatible: dims["<<i<<"]!=dims2["<<i<<"] ("<<dims[i]<<" vs. "<<dims2[i]<<")!"<<std::endl;
+        exit(1);
+      }
+    }
+  }
+
+  double overlap_single(int k1, int k2, const Trafo_Chain &other)const{
+    double res=0.;
+    check_compatible(other);
+    std::vector<int> dims=get_dims(); 
+    Tensor_Dimensions ten(dims);
+ 
+    for(Tensor_Index i(ten); !i.done(ten); i.increment(ten)){
+      Eigen::VectorXd v1=Eigen::VectorXd::Zero(T.back().cols()); v1(k1)=1;
+      Eigen::VectorXd v2=Eigen::VectorXd::Zero(other.T.back().cols()); v2(k2)=1;
+      for(int o=(int)dims.size()-1; o>=0; o--){
+        Eigen::VectorXd v3=T[o]*v1;
+        Eigen::VectorXd v4=other.T[o]*v2;
+        v1=Eigen::VectorXd::Zero(v3.rows()/dims[o]);
+        for(int j=0; j<v1.rows(); j++){
+          v1(j)=v3(j*dims[o]+i[o]);
+        }
+        v2=Eigen::VectorXd::Zero(v4.rows()/dims[o]);
+        for(int j=0; j<v2.rows(); j++){
+          v2(j)=v4(j*dims[o]+i[o]);
+        }
+      }
+      res+=v1(0)*v2(0);
+    } 
+
+    return res;
+  }
+  
+  Eigen::MatrixXd overlap_matrix(const Trafo_Chain &other)const{
+    Eigen::MatrixXd v(1,1); v(0,0)=1;
+    std::vector<int> dims=get_dims(); 
+    for(size_t o=0; o<dims.size(); o++){
+      Eigen::MatrixXd v2=Eigen::MatrixXd::Zero(T[o].rows(), other.T[o].rows());
+      for(size_t i=0; i<dims[o]; i++){
+        for(int d1=0; d1<v.rows(); d1++){
+          for(int d2=0; d2<v.cols(); d2++){
+            v2(d1*dims[o]+i, d2*dims[o]+i) += v(d1, d2);
+          }
+        }
+      }
+      v=T[o].adjoint()*v2*other.T[o];
+    }
+    return v;
+  }
+  double overlap(const Trafo_Chain &other)const{
+    Eigen::MatrixXd v=overlap_matrix(other);
+    double res=0;
+    for(int k1=0; k1<lastdim(); k1++){
+      for(int k2=0; k2<other.lastdim(); k2++){
+        res+=v(k1,k2)*v(k1,k2);
+      }
+    }
+    return res;
+  }
+
+  void mimimize_overlap(Trafo_Chain &other){
+    Eigen::MatrixXd v(1,1); v(0,0)=1;
+    std::vector<int> dims=get_dims(); 
+    for(size_t o=0; o<dims.size(); o++){
+      Eigen::MatrixXd v2=Eigen::MatrixXd::Zero(T[o].rows(), other.T[o].rows());
+      for(size_t i=0; i<dims[o]; i++){
+        for(int d1=0; d1<v.rows(); d1++){
+          for(int d2=0; d2<v.cols(); d2++){
+            v2(d1*dims[o]+i, d2*dims[o]+i) += v(d1, d2);
+          }
+        }
+      }
+      v=T[o].adjoint()*v2*other.T[o];
+      Eigen::JacobiSVD<Eigen::MatrixXd> svd( v , Eigen::ComputeFullU | Eigen::ComputeFullV);
+//      Eigen::VectorXd sval=svd.singularValues();
+      Eigen::MatrixXd V2=svd.matrixV();
+      Eigen::MatrixXd V(V2.rows(), V2.cols());
+      for(int i=0; i<V2.cols(); i++){
+        V.col(i)=V2.col(V2.cols()-1-i);
+      }
+       
+      other.T[o]=other.T[o]*V;
+      v=v*V;
+      if(o<dims.size()-1){
+        Eigen::MatrixXd Id=Eigen::MatrixXd::Identity(dims[o+1],dims[o+1]);
+        other.T[o+1]=otimes_real(V.adjoint(), Id)*other.T[o+1];
+      }
+    }
+  }
+
+  void add_ortho(Trafo_Chain other, double epsilon){
+    { Eigen::MatrixXd v=overlap_matrix(other);
+    for(int k1=0; k1<lastdim(); k1++){ 
+      std::cout<<v(k1, 0)<<" ";
+    }std::cout<<std::endl; }
+
+    check_compatible(other);
+    if(T.size()<1)return;
+    std::vector<int> dims=get_dims(); 
+//    mimimize_overlap(other);
+
+
+    std::vector<Eigen::MatrixXd> R(T.size());
+    for(size_t o=0; o<T.size(); o++){
+      if(o==0){
+        R[o].resize(T[0].rows(), T[0].cols()+other.T[0].cols());
+        R[o].block(0,0,T[o].rows(),T[o].cols())=T[o];
+        R[o].block(0,T[o].cols(),other.T[o].rows(),other.T[o].cols())=other.T[o];
+      }else{
+        R[o]=Eigen::MatrixXd::Zero(T[o].rows()+other.T[o].rows(),
+                                   T[o].cols()+other.T[o].cols());
+        R[o].block(0,0,T[o].rows(),T[o].cols())=T[o];
+        R[o].block(T[o].rows(),T[o].cols(),other.T[o].rows(),other.T[o].cols())=other.T[o];
+      }
+    }
+    
+    Eigen::MatrixXd OM=overlap_matrix(other);
+    Eigen::MatrixXd OM2=Eigen::MatrixXd::Identity(R.back().cols(), R.back().cols());
+    for(size_t i=0; i<T.back().cols(); i++){
+      for(size_t j=0; j<other.T.back().cols(); j++){
+        OM2(i, T.back().cols()+j)=OM(i,j);
+        OM2(T.back().cols()+j, i)=OM(i,j);
+      }
+    }
+
+    
+    for(size_t r=T.back().cols(); r<R.back().cols(); r++){
+      double norm=1;
+      for(size_t i=0; i<r; i++){
+        R.back().col(r)-=OM2(i,r)*R.back().col(i);
+        norm+=OM2(i,r)*OM2(i,r);
+      } 
+//      R.back().col(r)/=sqrt(norm);
+
+/*
+      for(size_t p=r+1; p<R.back().cols(); p++){
+        for(size_t i=0; i<r; i++){
+          OM2(r,p)=-OM2(i,r)*OM2(i,p); ///sqrt(norm);
+          OM2(p,r)=-OM2(i,r)*OM2(i,p); ///sqrt(norm);
+        }
+      }
+*/
+    }
+
+    
+/*
+    for(size_t o=0; o<T.size(); o++){
+      for(int c=T[o].cols(); c<R[o].cols(); c++){
+        for(int d=0; d<c; d++){
+          double norm=sqrt(R[o].col(d).dot(R[o].col(d)));
+          double overlap=R[o].col(d).dot(R[o].col(c)) / norm;
+          R[o].col(c)-=overlap*R[o].col(d)/norm;
+          if(o<T.size()-1){
+            for(size_t i=0; i<dims[o]; i++){
+              R[o+1].row(d*dims[i]+i)+=overlap*R[o+1].row(c*dims[i]+i);
+            }
+          }
+        }
+std::cout<<"o="<<o<<" c="<<c<<" norm="<<R[o].col(c).norm()<<std::endl;
+//        if(o>0)R[o].col(c).normalize();
+      }
+    }
+*/
+    
+    T=R;
+   
+    Eigen::MatrixXd v=overlap_matrix(other);
+    double res=0; 
+    for(int k1=0; k1<lastdim(); k1++){
+      for(int k2=0; k2<other.lastdim(); k2++){
+        res+=v(k1,k2)*v(k1,k2);
+      }
+    }
+    std::cout<<"res: "<<res<<std::endl;
+
+    for(int k1=0; k1<lastdim(); k1++){ 
+      std::cout<<v(k1, 0)<<" ";
+    }std::cout<<std::endl;
+  }
+
+  void combine(const Trafo_Chain &other){
+    check_compatible(other);
+    if(T.size()<1)return;
+    std::vector<int> dims=get_dims(); 
+
+    std::vector<Eigen::MatrixXd> R(T.size());
+    for(size_t o=0; o<T.size(); o++){
+      if(o==0){
+        R[o].resize(T[0].rows(), T[0].cols()+other.T[0].cols());
+        R[o].block(0,0,T[o].rows(),T[o].cols())=T[o];
+        R[o].block(0,T[o].cols(),other.T[o].rows(),other.T[o].cols())=other.T[o];
+      }else{
+        R[o]=Eigen::MatrixXd::Zero(T[o].rows()+other.T[o].rows(),
+                                   T[o].cols()+other.T[o].cols());
+        R[o].block(0,0,T[o].rows(),T[o].cols())=T[o];
+        R[o].block(T[o].rows(),T[o].cols(),other.T[o].rows(),other.T[o].cols())=other.T[o];
+      }
+    }
+    T=R;
+  }
+  void add_SVD(const Trafo_Chain & other, double epsilon){
+    combine(other);
+
+    if(epsilon>0){
+      std::vector<int> dims=get_dims(); 
+      for(size_t o=0; o<T.size(); o++){
+        Eigen::JacobiSVD<Eigen::MatrixXd> svd( T[o] , Eigen::ComputeThinU | Eigen::ComputeThinV);
+   
+        Eigen::VectorXd sval=svd.singularValues();
+        int newdim=0;
+        for(int i=0; i<sval.rows(); i++){
+          if(sval(i)>epsilon*sval(0))newdim++;
+          else break;
+        }
+        T[o]=svd.matrixU().block(0,0,T[o].rows(),newdim);
+        if(o<dims.size()-1){
+          Eigen::MatrixXd pass_on=sval.head(newdim).asDiagonal()*svd.matrixV().adjoint().block(0,0,newdim, svd.matrixV().rows());
+          Eigen::MatrixXd Id=Eigen::MatrixXd::Identity(dims[o+1],dims[o+1]);
+          T[o+1]=otimes_real(pass_on, Id)*T[o+1];
+        }
+      }
+    }
+  } 
+
+
+  void read(const std::string &fname){
+    T.clear();
+    std::ifstream ifs(fname.c_str());
+    if(!ifs.good()){
+      std::cerr<<"Cannot read Trafo_Chain file '"<<fname<<"'!"<<std::endl;
+      exit(1);
+    }
+
+    int sz; 
+    ifs.read((char*)&sz, sizeof(int));
+    if(sz!=9090){
+      std::cerr<<"Cannot interpret '"<<fname<<"' as Trafo_Chain file!"<<std::endl;
+      exit(1);
+    }
+    ifs.read((char*)&sz, sizeof(int));
+    T.resize(sz);
+    
+    if(!ifs.good()){
+      std::cerr<<"Reading Trafo_Chain from file '"<<fname<<"': !ifs.good()!"<<std::endl;
+      exit(1);
+    }
+    for(size_t i=0; i<T.size(); i++){
+      int rmax, cmax;
+      ifs.read((char*)&rmax, sizeof(int));
+      ifs.read((char*)&cmax, sizeof(int));
+      T[i]=Eigen::MatrixXd(rmax,cmax);
+
+      double *d=new double[T[i].rows()*T[i].cols()];
+      ifs.read((char*)d, sizeof(double)*T[i].rows()*T[i].cols());
+      for(int r=0; r<T[i].rows(); r++){
+        for(int c=0; c<T[i].cols(); c++){
+          T[i](r,c)=d[r*T[i].cols()+c];
+        }
+      }
+      delete[] d;
+
+      if(!ifs.good()){
+        std::cerr<<"Reading Trafo_Chain from file '"<<fname<<"': !ifs.good()!"<<std::endl;
+        exit(1);
+      }
+    }
+  }
+  void write(const std::string &fname){
+    std::ofstream ofs(fname.c_str());
+
+    int sz=9090; //let this be our magic number
+    ofs.write((char*)&sz, sizeof(int));
+    sz=T.size();
+    ofs.write((char*)&sz, sizeof(int));
+    
+    for(size_t i=0; i<T.size(); i++){
+      sz=T[i].rows(); ofs.write((char*)&sz, sizeof(int));
+      sz=T[i].cols(); ofs.write((char*)&sz, sizeof(int));
+      double *d=new double[T[i].rows()*T[i].cols()];
+      for(int r=0; r<T[i].rows(); r++){
+        for(int c=0; c<T[i].cols(); c++){
+          d[r*T[i].cols()+c]=T[i](r,c);
+        }
+      }
+      ofs.write((char*)d, sizeof(double)*T[i].rows()*T[i].cols());
+      delete[] d;
+    }
+  }
+  Trafo_Chain(const std::string &fname){
+    read(fname);
+  }
+  Trafo_Chain(){}
+  virtual ~Trafo_Chain(){}
+};
+
+#endif

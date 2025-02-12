@@ -48,7 +48,7 @@ std::vector<std::complex<double> > discreteFT(
 
 //Corrections for integrals  (cf. "Numerical Recipes" Chap. 13.9)
 double FFT_trapezoidal_correction_W(double t){
-  if(abs(t)>1e-9){
+  if(abs(t)>1e-6){
     return 2.*(1.-cos(t))/(t*t);
   }else{
     double t2=t*t; double t4=t2*t2; double t6=t4*t2;
@@ -56,14 +56,14 @@ double FFT_trapezoidal_correction_W(double t){
   }
 }
 std::complex<double> FFT_trapezoidal_correction_a0(double t) { 
-  if(abs(t)>1e-9){ 
+  if(abs(t)>1e-6){ 
     double t2=t*t;
     return std::complex<double>(-(1.-cos(t))/t2, (t-sin(t))/t2);
   }else{
     double t2=t*t; double t4=t2*t2; double t6=t4*t2;
     return std::complex<double>(
             -1./2.+t2/24.-t4/720.+t6/40320.,
-            1./6.-t2/120.+t4/5040.-t6/362880.);
+            t*(1./6.-t2/120.+t4/5040.-t6/362880.));
   }
 }
 

@@ -25,6 +25,13 @@ public:
   inline void deallocate(){
     delete[] mem;
   }
+  inline double norm()const{
+    double res=0;
+    for(int i=0; i<dim_d1*dim_d2*dim_i; i++){
+      res+=std::norm(mem[i]);
+    }
+    return sqrt(res);
+  }
 
   void resize(int dim_i_, int dim_d1_, int dim_d2_);
   
@@ -41,10 +48,15 @@ public:
   Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> get_Matrix_d1_id2()const;
   void set_from_Matrix_d1i_d2(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &M, int dimi);
   void set_from_Matrix_d1_id2(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &M, int dimi);
+ 
+
+  inline Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>, 0 , Eigen::OuterStride<> >  get_Matrix_d1_d2(int i)const{
+    return Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>, 0 , Eigen::OuterStride<> > (mem+i*dim_d2, dim_d1, dim_d2, Eigen::OuterStride<>(dim_i*dim_d2));
+  }
   
   void print_dims(std::ostream &os=std::cout)const;
   
-  void print_HR(const std::string &fname)const;
+  void print_HR(const std::string &fname, double threshold=0)const;
   
   void copy(const MPS_Matrix_ScalarType<T> &other);
 

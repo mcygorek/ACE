@@ -17,6 +17,9 @@ public:
   inline operator Eigen::MatrixXcd&(){
     return rho;
   }
+  inline operator const Eigen::MatrixXcd&()const{
+    return rho;
+  }
   inline void initialize(){
     rho=Operators(2).ketbra(0,0);
   }
@@ -27,6 +30,9 @@ public:
   }
   inline InitialState(){
     initialize();
+  }
+  inline InitialState(const Eigen::MatrixXcd & M){
+    rho=M;
   }
 };
 

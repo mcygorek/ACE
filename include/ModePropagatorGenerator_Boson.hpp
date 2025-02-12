@@ -7,6 +7,17 @@
 #include "Function.hpp"
 
 namespace ACE{
+class InteractionPictureFunction: public ComplexFunction{
+public:
+  double w, dt;
+  virtual std::complex<double> f(double t) const{
+    double x=w*dt/2.;
+    double s=1.-x*x/6.;
+    if(abs(x)>1e-6)s=sin(x)/x;
+    return exp(std::complex<double>(0.,w*t+x))*s;
+  }
+  InteractionPictureFunction(double w_, double dt_) : w(w_), dt(dt_){}
+};
 
 class ModePropagatorGenerator_Boson: public ModePropagatorGenerator{
 public:
@@ -19,6 +30,8 @@ public:
   Parameters gparam;
   bool use_anharmonic; double anharmonic_chi;
   double thermalize;
+
+  bool interaction_picture; double interaction_picture_dt;
 
   bool use_initial_thermal; double E_shift_init, temperature;
   bool use_initial_coherent; std::complex<double> initial_coherent;
@@ -47,7 +60,7 @@ public:
   
   double env_ops_filter(int k)const;
   
-  virtual std::vector<Eigen::MatrixXcd> get_env_ops(int k)const;
+  virtual EnvironmentOperators get_env_ops(int k)const;
   
   Eigen::MatrixXcd get_HE_diag(int k)const;
   Eigen::MatrixXcd get_HE(int k)const;

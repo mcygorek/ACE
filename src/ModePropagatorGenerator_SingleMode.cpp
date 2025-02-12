@@ -36,6 +36,7 @@ namespace ACE{
 std::cout<<"SingleMode: HE: "<<std::endl<<HE<<std::endl;
 
     envops.clear();
+    envops.push_back(Eigen::MatrixXcd::Identity(rho_init.rows(), rho_init.cols()));
     for(size_t i=2; i<ops.size(); i++)envops.push_back(ops[i]);
     check_validity();
   }

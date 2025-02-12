@@ -11,12 +11,20 @@ namespace ACE{
 class EnvironmentOperators{
 public:
   std::vector<Eigen::VectorXcd> ops;
+  int use_fermion;
  
   inline void swap(EnvironmentOperators &other){
     ops.swap(other.ops);
+    std::swap(use_fermion, other.use_fermion);
   }
-  inline void clear(){ ops.clear(); }
-  inline void remove_all_but_first(){ ops.resize(1);}
+  inline void clear(){ 
+    ops.clear();
+    use_fermion=0;
+  }
+  inline void remove_all_but_first(){ 
+    ops.resize(1);
+    use_fermion=0;
+  }
   inline bool is_used()const{
     return (ops.size()>0);
   }
@@ -27,7 +35,7 @@ public:
   inline size_t size()const{return ops.size();}
   const Eigen::VectorXcd & operator[] (int i)const;
 
-  void set_from_matrices(const std::vector<Eigen::MatrixXcd> & Mvec, int N_mode);
+  void set_from_matrices(const std::vector<Eigen::MatrixXcd> & Mvec);
   void join(const EnvironmentOperators &other);
   void join_select_indices(const EnvironmentOperators &other,
                            const SelectIndices &k_right);
@@ -40,6 +48,13 @@ public:
 
   void read_binary(std::istream &is);
   void write_binary(std::ostream &os)const;
+
+  EnvironmentOperators() : use_fermion(0){
+  }
+  EnvironmentOperators(const std::vector<Eigen::MatrixXcd> & Mvec, int fermion=0){
+    set_from_matrices(Mvec);
+    use_fermion=fermion;
+  }
 };
 
 

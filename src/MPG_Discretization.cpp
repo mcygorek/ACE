@@ -253,6 +253,7 @@ std::cout<<"E="<<E.back()<<" g="<<g.back()<<std::endl;
                  -> sort according to expected amplitudes.
                  It turns out this is monotonically related to the angle
                  tan(theta)=hbar|g[k]|/|E[k]|
+       "random": randomly shuffle list
     */
     std::string sort_mode=param.get_as_string(add_name(mpgname,"sort"),sort_default);
     std::vector<std::pair<double,int> > sorter(N);
@@ -321,6 +322,13 @@ std::cout<<"E="<<E.back()<<" g="<<g.back()<<std::endl;
         }
       }
       sort(sorter.begin(), sorter.end(), compare_abs_less);
+
+    }else if(sort_mode=="random"){
+      do_sort=true;
+      for(size_t i=0; i<sorter.size(); i++){
+        sorter[i]=std::make_pair(E[i], i);
+      }
+      std::random_shuffle(sorter.begin(), sorter.end());
 
     }else if(sort_mode=="none"||sort_mode==""){
 

@@ -23,11 +23,12 @@ namespace ACE{
     }
   }
 
-  std::vector<Eigen::MatrixXcd> ModePropagatorGenerator_Potential1D::get_env_ops(int k)const{
+  EnvironmentOperators ModePropagatorGenerator_Potential1D::get_env_ops(int k)const{
     std::vector<Eigen::MatrixXcd> mats;
+    mats.push_back(Eigen::MatrixXcd::Identity(M,M));
     mats.push_back(Operators_Boson::n(M));
 //    mats.push_back(Operators_Boson::n(M)*Operators_Boson::n(M));
-    return mats;
+    return EnvironmentOperators(mats);
   }
 
   void ModePropagatorGenerator_Potential1D::setup(Parameters &param){

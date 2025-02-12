@@ -15,13 +15,8 @@ const Eigen::VectorXcd & EnvironmentOperators::operator[] (int i)const{
   return ops[i];
 }
 
-void EnvironmentOperators::set_from_matrices(const std::vector<Eigen::MatrixXcd> & Mvec, int N_mode){
+void EnvironmentOperators::set_from_matrices(const std::vector<Eigen::MatrixXcd> & Mvec){
   /*
-  if(Mvec.size()<1){
-    ops.clear();
-    return;
-  }
-  */
   ops.resize(Mvec.size()+1);
   ops[0]=H_Matrix_to_L_Vector(Eigen::MatrixXcd::Identity(N_mode,N_mode));
   for(int i=0; i<(int)Mvec.size(); i++){
@@ -31,9 +26,27 @@ void EnvironmentOperators::set_from_matrices(const std::vector<Eigen::MatrixXcd>
     }
     ops[i+1]=H_Matrix_to_L_Vector(Mvec[i].transpose());
   }
+  */
+ try{
+  ops.resize(Mvec.size());
+  for(int i=0; i<(int)Mvec.size(); i++){
+    ops[i]=H_Matrix_to_L_Vector(Mvec[i].transpose());
+  }
+  for(int i=1; i<(int)Mvec.size(); i++){
+    if(ops[i].size()!=ops[0].size()){
+      std::cerr<<"ops[i].size()!=ops[0].size()!"<<std::endl;
+      throw DummyException();
+    }
+  }
+ }catch(std::exception &e){
+   std::cerr<<"called from EnvironmentOperators::set_from_matrices"<<std::endl;
+   throw e;
+ }
 }
 
 void EnvironmentOperators::join(const EnvironmentOperators &other){
+  if(other.use_fermion>0){use_fermion=other.use_fermion;}
+
 //std::cout<<"EnvOps::join: size()="<<size()<<" other.size()="<<other.size()<<std::endl;
   if(size()<1 || other.size()<1){
     ops.clear();
@@ -61,10 +74,36 @@ void EnvironmentOperators::join(const EnvironmentOperators &other){
   }
 
   std::vector<Eigen::VectorXcd> new_ops(size()); 
-  new_ops[0]=Vector_otimes(ops[0], other[0]);
-  for(size_t i=1; i<size(); i++){
-    new_ops[i] = Vector_otimes(ops[i], other[0])  
-               + Vector_otimes(ops[0], other[i]);
+  if(use_fermion>0){
+//   std::cout<<"USE_FERMION!!!"<<std::endl;
+//   std::cout<<ops[1].transpose()<<std::endl;
+//   std::cout<<other[1].transpose()<<std::endl;
+    if(size()<2){
+      std::cerr<<"EnvironmentOperators::join: size()<2 with use_fermion!"<<std::endl;
+      throw DummyException();
+    }
+    new_ops[0]=Vector_otimes(ops[0], other[0]);
+    new_ops[1]=Vector_otimes(ops[1], other[1]);
+    for(size_t i=2; i<size(); i++){
+      if(i==3){
+        if(use_fermion==2){
+          new_ops[i] = Vector_otimes(ops[i], other[1])  
+                     + Vector_otimes(ops[0], other[i]);
+        }else{
+          new_ops[i] = Vector_otimes(ops[i], other[0])  
+                     + Vector_otimes(ops[1], other[i]);
+        }
+      }else{
+        new_ops[i] = Vector_otimes(ops[i], other[0])  
+                   + Vector_otimes(ops[0], other[i]);
+      }
+    }
+  }else{
+    new_ops[0]=Vector_otimes(ops[0], other[0]);
+    for(size_t i=1; i<size(); i++){
+      new_ops[i] = Vector_otimes(ops[i], other[0])  
+                 + Vector_otimes(ops[0], other[i]);
+    }
   }
   ops.swap(new_ops);
 }
@@ -72,6 +111,7 @@ void EnvironmentOperators::join(const EnvironmentOperators &other){
 void EnvironmentOperators::join_select_indices(
         const EnvironmentOperators &other, const SelectIndices &k_right){
 
+  if(other.use_fermion>0){use_fermion=other.use_fermion;}
 //std::cout<<"EnvOps::join_select_indices: size()="<<size()<<" other.size()="<<other.size()<<std::endl;
   if(size()<1 || other.size()<1){
     ops.clear();
@@ -99,10 +139,33 @@ void EnvironmentOperators::join_select_indices(
   }
 
   std::vector<Eigen::VectorXcd> new_ops(size()); 
-  new_ops[0]=k_right.Vector_otimes(ops[0], other[0]);
-  for(size_t i=1; i<size(); i++){
-    new_ops[i] = k_right.Vector_otimes(ops[i], other[0])  
-               + k_right.Vector_otimes(ops[0], other[i]);
+  if(use_fermion>0){
+    if(size()<2){
+      std::cerr<<"EnvironmentOperators::join: size()<2 with use_fermion!"<<std::endl; 
+      throw DummyException();
+    }
+    new_ops[0]=k_right.Vector_otimes(ops[0], other[0]);
+    new_ops[1]=k_right.Vector_otimes(ops[1], other[1]);
+    for(size_t i=2; i<size(); i++){
+      if(i==3){
+        if(use_fermion==2){
+          new_ops[i] = k_right.Vector_otimes(ops[i], other[1])  
+                     + k_right.Vector_otimes(ops[0], other[i]);
+        }else{
+          new_ops[i] = k_right.Vector_otimes(ops[i], other[0])  
+                     + k_right.Vector_otimes(ops[1], other[i]);
+        }
+      }else{
+        new_ops[i] = k_right.Vector_otimes(ops[i], other[0])  
+                   + k_right.Vector_otimes(ops[0], other[i]);
+      }
+    }
+  }else{
+    new_ops[0]=k_right.Vector_otimes(ops[0], other[0]);
+    for(size_t i=1; i<size(); i++){
+      new_ops[i] = k_right.Vector_otimes(ops[i], other[0])  
+                 + k_right.Vector_otimes(ops[0], other[i]);
+    }
   }
   ops.swap(new_ops);
 }

@@ -28,7 +28,8 @@ template <typename T>
   }
 template <typename T>
   void MPS_Matrix_ScalarType<T>::set_zero(){
-    for(int i=0; i<dim_i*dim_d1*dim_d2; i++)mem[i]=0.;
+    //for(int i=0; i<dim_i*dim_d1*dim_d2; i++)mem[i]=0.;
+    memset(mem, 0., sizeof(T)*dim_i*dim_d1*dim_d2);
   }
 
 template <typename T>
@@ -124,13 +125,15 @@ template <typename T>
   }
 
 template <typename T>
-  void MPS_Matrix_ScalarType<T>::print_HR(const std::string &fname)const{
+  void MPS_Matrix_ScalarType<T>::print_HR(const std::string &fname, double thr)const{
     std::ofstream ofs(fname.c_str());
     ofs<<"Dimensions: "<<dim_i<<" "<<dim_d1<<" "<<dim_d2<<std::endl;
     for(int i=0; i<dim_i; i++){
       for(int d1=0; d1<dim_d1; d1++){
         for(int d2=0; d2<dim_d2; d2++){
-          ofs<<dim_i<<" "<<dim_d1<<" "<<dim_d2<<" "<<operator()(i,d1,d2)<<std::endl;
+          if(thr<=0. || abs(operator()(i,d1,d2))>thr){
+            ofs<<i<<" "<<d1<<" "<<d2<<" "<<operator()(i,d1,d2)<<std::endl;
+          }
         }
       }
     }
@@ -166,9 +169,11 @@ template <typename T>
       std::cerr<<"MPS_Matrix::inner_multiply_left: dim_d1!=M.cols() ("<<dim_d1<<" vs. "<<M.cols()<<")!"<<std::endl;
       exit(1);
     }
-    MPS_Matrix_ScalarType<T> A(dim_i, M.rows(), dim_d2); 
+    int new_d1=M.rows();
+    MPS_Matrix_ScalarType<T> A(dim_i, new_d1, dim_d2); 
+/*
     for(int i=0; i<dim_i; i++){
-      for(int r=0; r<M.rows(); r++){
+      for(int r=0; r<new_d1; r++){
         for(int d2=0; d2<dim_d2; d2++){
           A(i,r,d2)=0.;
           for(int d1=0; d1<dim_d1; d1++){
@@ -177,6 +182,13 @@ template <typename T>
         }
       }
     }
+*/
+    A.set_zero();
+    for(int i=0; i<dim_i; i++){
+      Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>, 0, Eigen::OuterStride<> >(A.mem+i*dim_d2,new_d1,dim_d2,Eigen::OuterStride<>(dim_i*dim_d2)).noalias() += M * \
+      Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>, 0, Eigen::OuterStride<> >(mem+i*dim_d2,dim_d1,dim_d2,Eigen::OuterStride<>(dim_i*dim_d2));
+    }
+
     swap(A);
   }
 
@@ -186,10 +198,13 @@ template <typename T>
       std::cerr<<"MPS_Matrix::inner_multiply_right: dim_d2!=M.rows() ("<<dim_d2<<" vs. "<<M.rows()<<")!"<<std::endl;
       exit(1);
     }
-    MPS_Matrix_ScalarType<T> A(dim_i, dim_d1, M.cols()); 
+
+    int new_d2=M.cols();
+    MPS_Matrix_ScalarType<T> A(dim_i, dim_d1, new_d2); 
+/*
     for(int i=0; i<dim_i; i++){
       for(int d1=0; d1<dim_d1; d1++){
-        for(int c=0; c<M.cols(); c++){
+        for(int c=0; c<new_d2; c++){
           A(i,d1,c)=0.;
           for(int d2=0; d2<dim_d2; d2++){
             A(i,d1,c)+=operator()(i,d1,d2)*M(d2,c);
@@ -197,6 +212,13 @@ template <typename T>
         }
       }
     }
+*/
+    A.set_zero();
+    for(int i=0; i<dim_i; i++){
+      Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>, 0, Eigen::OuterStride<> >(A.mem+i*new_d2,dim_d1,new_d2,Eigen::OuterStride<>(dim_i*new_d2)).noalias() += \
+      Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>, 0, Eigen::OuterStride<> >(mem+i*dim_d2,dim_d1,dim_d2,Eigen::OuterStride<>(dim_i*dim_d2))  *  M;
+    }
+
     swap(A);
   }
 

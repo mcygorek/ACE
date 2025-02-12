@@ -19,7 +19,7 @@ public:
 
   inline virtual int get_N()const{ return N_system; }
 
-  virtual std::vector<Eigen::MatrixXcd> get_env_ops(int k)const;
+  virtual EnvironmentOperators get_env_ops(int k)const;
 
   virtual void setup(Parameters &param);
 

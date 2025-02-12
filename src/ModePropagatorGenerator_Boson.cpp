@@ -38,14 +38,15 @@ namespace ACE{
     }
   }
 
-  std::vector<Eigen::MatrixXcd> ModePropagatorGenerator_Boson::get_env_ops(int k) const{
+  EnvironmentOperators ModePropagatorGenerator_Boson::get_env_ops(int k) const{
     std::vector<Eigen::MatrixXcd> mats;
     double filter=env_ops_filter(k);
+    mats.push_back(Eigen::MatrixXcd::Identity(M,M));
     mats.push_back(filter* Operators_Boson::n(M) );
     mats.push_back(filter* get_HE_diag(k) );
     mats.push_back(filter* 2.*get_g(k) * Operators_Boson::adagger(M) );
     mats.push_back(filter* 2.*get_E(k)*get_g(k) * Operators_Boson::adagger(M) );
-    return mats;
+    return EnvironmentOperators(mats);
   }
 
 
@@ -112,6 +113,8 @@ namespace ACE{
     anharmonic_chi=param.get_as_double(add_name("anharmonic_chi"),0.);
 
     use_polaron_shift=param.get_as_bool(add_name("subtract_polaron_shift"),true);
+    interaction_picture=param.get_as_bool(add_name("interaction_picture"),false);
+    interaction_picture_dt=param.get_as_double(add_name("interaction_picture_dt"),param.get_as_double("dt"));
 
     std::string print_E_g=param.get_as_string(add_name("print_E_g"));
     if(print_E_g!=""){
@@ -191,13 +194,33 @@ namespace ACE{
     }
 
     int sysdim=sysop.rows();
-    Eigen::MatrixXcd HE=get_HE(k);
 
     Parameters kparam=gparam;
     ModePropagatorPtr ptr=std::make_shared<ModePropagator>(sysdim, get_bath_init(k));
     ptr->FreePropagator::setup(kparam);
     ptr->env_ops=get_env_ops(k);
-    ptr->add_Hamiltonian(HE);
+    if(interaction_picture){
+      ptr->add_Hamiltonian(Eigen::MatrixXcd::Zero(M*get_N(),M*get_N()));
+      double pshift=0;
+      if(fabs(get_E(k))>1e-12){
+        double hg=hbar_in_meV_ps*get_g(k);
+        double w=get_E(k)/hbar_in_meV_ps;
+        if(!use_polaron_shift){
+          pshift-=hg*hg/get_E(k);
+        }
+        pshift+=hg*hg/get_E(k)*sin(w*interaction_picture_dt)/(w*interaction_picture_dt);
+        ptr->add_Hamiltonian(pshift*otimes(sysop.adjoint()*sysop, Operators_Boson::id(M)));
+      }
+       
+      ComplexFunctionPtr tmpfct=std::make_shared<InteractionPictureFunction>(get_E(k)/hbar_in_meV_ps, interaction_picture_dt);
+      Eigen::MatrixXcd tmpop=hbar_in_meV_ps*get_g(k)*otimes(get_pos_phase_op(k), Operators_Boson::adagger(M));
+
+      ptr->add_Pulse(tmpfct, tmpop);
+
+    }else{
+      Eigen::MatrixXcd HE=get_HE(k);
+      ptr->add_Hamiltonian(HE);
+    }
  
     if(reduced_fb>0){
       ptr->rBasis=std::make_shared<ReducedLiouvilleBasis_Boson_FB>(get_bath_init(k),reduced_fb);

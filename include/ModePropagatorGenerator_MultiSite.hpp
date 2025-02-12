@@ -44,7 +44,7 @@ public:
   //print initial boson number per mode
   void print_initial_n(const std::string &fname);
   
-  virtual std::vector<Eigen::MatrixXcd> get_env_ops(int k) const;
+  virtual EnvironmentOperators get_env_ops(int k) const;
   
   virtual void setup(Parameters &param);
 

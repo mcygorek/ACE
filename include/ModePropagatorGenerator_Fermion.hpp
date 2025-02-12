@@ -10,11 +10,11 @@ class ModePropagatorGenerator_Fermion: public ModePropagatorGenerator{
 public:
 
   MPG_Discretization_E_g E_g;
-  int continuum_subdiv_N;
-  ModePropagator::low_pass_struct low_pass;
 
   double EFermi, temperature;
   double thermalize;
+  int fermion_sign_space;
+  int env_sign;
   Eigen::MatrixXcd sysop;
   Parameters gparam;
 
@@ -34,7 +34,7 @@ public:
   }
   virtual double k_label(int k)const;
 
-  virtual std::vector<Eigen::MatrixXcd> get_env_ops(int k) const;
+  virtual EnvironmentOperators get_env_ops(int k) const;
 
   virtual void setup(Parameters &param);
 

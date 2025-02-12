@@ -3,6 +3,7 @@
 #include "ProcessTensorStream.hpp"
 #include "ProcessTensorBuffer.hpp"
 #include "ProcessTensorRepeat.hpp"
+#include "PT_infinite.hpp"
 #include <iostream>
 #include "otimes.hpp"
 #include "LiouvilleTools.hpp"
@@ -10,6 +11,7 @@
 #include "TempFileName.hpp"
 #include "Reader.hpp"
 #include "InitialState.hpp"
+#include "Timings.hpp"
 
 namespace ACE{
 
@@ -102,7 +104,8 @@ void ProcessTensorForwardList::add_PT(Parameters &param){
   }
 }
 
-void ProcessTensorForwardList::setup(Parameters &param, int setdim){
+void ProcessTensorForwardList::setup(Parameters &param, int setdim, bool print_timings){
+ time_point time1=now();
  try{
   list.clear();
   temp_expand.clear();
@@ -133,9 +136,11 @@ void ProcessTensorForwardList::setup(Parameters &param, int setdim){
             param.get_as_bool("use_Gaussian_divide_and_conquer",false))
        ) | use_Gaussian_repeat | (use_Gaussian_log_hybrid>0);
 
+  bool use_Gaussian_infinite = param.get_as_bool("use_Gaussian_infinite");
+
   bool use_Gaussian_fw = param.get_as_bool("use_Gaussian_fw");
   bool use_Gaussian_select = param.get_as_bool("use_Gaussian_select",false);
-  bool use_Gaussian = param.get_as_bool("use_Gaussian",use_Gaussian_fw|use_Gaussian_log|use_Gaussian_select|use_Gaussian_repeat);
+  bool use_Gaussian = param.get_as_bool("use_Gaussian",use_Gaussian_fw|use_Gaussian_log|use_Gaussian_select|use_Gaussian_repeat|use_Gaussian_infinite);
 
   int intermediate_sweep_n = param.get_as_size_t("intermediate_sweep_n", 0);
 
@@ -171,6 +176,9 @@ void ProcessTensorForwardList::setup(Parameters &param, int setdim){
     }
     
     add_PT(param);
+
+    time_point time2=now();
+    std::cout<<"runtime for setting up PT: "<<time_diff(time2-time1)<<"ms"<<std::endl;
     return;
   }
 
@@ -193,6 +201,9 @@ void ProcessTensorForwardList::setup(Parameters &param, int setdim){
     }
 
     add_PT(param);
+
+    time_point time2=now();
+    std::cout<<"runtime for setting up PT: "<<time_diff(time2-time1)<<"ms"<<std::endl;
     return; 
   }
  }catch(DummyException &e){
@@ -217,7 +228,10 @@ void ProcessTensorForwardList::setup(Parameters &param, int setdim){
     }
   }
 
-  if(use_Gaussian_repeat){ 
+  if(use_Gaussian_infinite){
+    list.push_back(PT_infinite(param, diagBB));
+
+  }else if(use_Gaussian_repeat){ 
     std::cout<<"use_Gaussian_repeat=true"<<std::endl;
     list.push_back(std::shared_ptr<ProcessTensorForward>(new ProcessTensorRepeat()));
     ProcessTensorRepeat *PTR = dynamic_cast<ProcessTensorRepeat*>(list.back().get()); 
@@ -300,6 +314,8 @@ std::cout<<"using: add_modes_tree"<<std::endl;
    std::cerr<<"called by ProcessTensorForwardList::setup"<<std::endl;
    throw e;
  }
+  time_point time2=now();
+  std::cout<<"runtime for setting up PT: "<<time_diff(time2-time1)<<"ms"<<std::endl;
 }
 
 void ProcessTensorForwardList::read(const std::string &fname){
