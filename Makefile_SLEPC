@@ -1,0 +1,50 @@
+
+ifneq ($(MKLROOT),)
+  MKL_INCL = -I$(MKLROOT)/include -DEIGEN_USE_MKL_ALL
+  MKL_LINK = -DMKL_LP64 -m64 -L$(MKLROOT)/lib/intel64 -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl 
+else 
+  $(info )
+  $(info ########################################)
+  $(info ACE will not be compiled against MKL. If you would like to use it, please specify variable MKLROOT, e.g., MKLROOT=/opt/intel/mkl/. )
+  $(info ########################################)
+  $(info )
+endif
+
+
+ifeq ($(EIGEN_HOME),)
+  EIGEN_HOME=/usr/include/eigen3/
+endif
+ifeq (,$(wildcard $(EIGEN_HOME)/Eigen/Eigen))
+    $(error Please specify variable EIGEN_HOME)
+endif
+
+#FFTW_FLAGS=-lfftw3
+
+ifeq ($(OPTIM),)
+  OPTIM = 3
+endif
+
+
+
+OPTS += -O$(OPTIM) -fno-math-errno -g -m64 --std=c++11
+ifneq ($(CXX),icpc)
+  OPTS += -Wno-ignored-attributes
+endif
+OPTS += -Winvalid-pch -fPIC -pthread
+OPTS += -Iinclude -I$(EIGEN_HOME) $(MKL_INCL)
+OPTSLINK += $(OPTS) -lm     #$(MKL_LINK)
+
+
+SLEPC_AND_PETSC = $(PETSC_CC_INCLUDES) $(SLEPC_SYS_LIB) $(PETSC_SYS_LIB) $(SLEPC_INCLUDE)
+
+all: experimental
+
+EXPERIMENTAL = SLEPC_PT_infinite
+
+experimental: $(EXPERIMENTAL)
+$(EXPERIMENTAL): %: src_exec/experimental/%.cpp 
+	$(CXX) -o tools/$@ $< $(OPTSLINK) -Llib -lACE -Wl,-rpath,$(shell pwd)/lib ${SLEPC_AND_PETSC}
+
+
+include $(SLEPC_DIR)/lib/slepc/conf/slepc_common
+include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
