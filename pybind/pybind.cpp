@@ -4,6 +4,7 @@
 #include "Simulation_PT.hpp"
 #include "FreePropagator.hpp"
 #include "ComplexFunction_Interpolate.hpp"
+#include "DynamicalMap.hpp"
 
 namespace py = pybind11;
 
@@ -106,4 +107,16 @@ PYBIND11_MODULE(ACE, m) {
     .def("run",&ACE::Simulation_PT::run_)
     ;
 
+  py::class_<ACE::DynamicalMap>(m, "DynamicalMap")
+    .def(py::init<>())
+    .def(py::init<ACE::Parameters &>())
+    .def(py::init<ACE::FreePropagator &, ACE::ProcessTensorForwardList &, ACE::Simulation_PT &, const ACE::TimeGrid &>())
+    .def("calculate", static_cast<void (ACE::DynamicalMap::*)(ACE::Parameters &)>(&ACE::DynamicalMap::calculate))
+    .def("calculate", static_cast<void (ACE::DynamicalMap::*)(ACE::Propagator &, ACE::ProcessTensorForwardList &, ACE::Simulation_PT &, const ACE::TimeGrid &, int)>(&ACE::DynamicalMap::calculate))
+    .def_readwrite("E", &ACE::DynamicalMap::E)
+    .def("size", &ACE::DynamicalMap::size)
+    .def("get_dE", [](const ACE::DynamicalMap& DM, int i){return DM.get_dE(i);})
+//    .def("get_dE", &ACE::DynamicalMap::get_dE, py::arg("i") , py::arg("regularize") = 0., py::arg("os") = (std::ostream*)NULL)
+//    .def("get_dE", static_cast<Eigen::MatrixXcd (ACE::DynamicalMap::*)(int)>(&ACE::DynamicalMap::get_dE))
+    ;
 }
