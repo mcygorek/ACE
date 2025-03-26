@@ -19,8 +19,13 @@ double ta, dt;
 std::vector<Eigen::MatrixXcd> E;
 std::vector<Eigen::MatrixXcd> Pade;
 
+inline size_t size()const{return E.size();}
+
 const Eigen::MatrixXcd &get(int i)const;
 static Eigen::MatrixXcd invert(const Eigen::MatrixXcd &M, double regularize=0., std::ostream *os=NULL);
+
+//Eigen::MatrixXcd get_dE(int i, double regularize, std::ostream *os=NULL)const;
+//inline Eigen::MatrixXcd get_dE(int i)const{return get_dE(i,0);}
 Eigen::MatrixXcd get_dE(int i, double regularize=0., std::ostream *os=NULL)const;
 Eigen::MatrixXcd get_dE_ref(int i, double eps, double tref)const;
 
@@ -132,6 +137,10 @@ void write(const std::string &fname)const;
 
 DynamicalMap(){}
 DynamicalMap(const std::string &fname){ read(fname); }
+DynamicalMap(Parameters &param){ calculate(param); }
+DynamicalMap(Propagator &prop, ProcessTensorForwardList &PT, Simulation_PT &sim, const TimeGrid &tgrid, int verbosity=0) { 
+  calculate(prop, PT, sim, tgrid, verbosity);
+}
 ~DynamicalMap(){}
 
 };
