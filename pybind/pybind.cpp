@@ -1,6 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/eigen.h>
+#include <pybind11/iostream.h>
 #include "Simulation_PT.hpp"
 #include "FreePropagator.hpp"
 #include "ComplexFunction_Interpolate.hpp"
@@ -44,14 +45,24 @@ PYBIND11_MODULE(ACE, m) {
     .def("set_Hamiltonian",&ACE::FreePropagator::set_Hamiltonian)
     .def("add_Hamiltonian",&ACE::FreePropagator::add_Hamiltonian)
     .def("add_Pulse",static_cast<void (ACE::FreePropagator::*)(const std::pair<std::vector<double>,std::vector<std::complex<double> > > & shape, const Eigen::MatrixXcd &A)>(&ACE::FreePropagator::add_Pulse))
+    .def("add_forward_Pulse",static_cast<void (ACE::FreePropagator::*)(const std::pair<std::vector<double>,std::vector<std::complex<double> > > & shape, const Eigen::MatrixXcd &A)>(&ACE::FreePropagator::add_forward_Pulse))
+    .def("add_backward_Pulse",static_cast<void (ACE::FreePropagator::*)(const std::pair<std::vector<double>,std::vector<std::complex<double> > > & shape, const Eigen::MatrixXcd &A)>(&ACE::FreePropagator::add_backward_Pulse))
+    .def("add_Lindblad", [](ACE::FreePropagator &prop, double gamma, const Eigen::MatrixXcd & L){prop.add_Lindblad(gamma, L);})
+    .def("apply_Operator_left", [](ACE::FreePropagator &prop, double time, const Eigen::MatrixXcd & Op, bool apply_before){prop.add_MultitimeOp(time, Op, Eigen::MatrixXcd::Identity(Op.rows(), Op.cols()), apply_before);}, 
+      py::arg("time"), py::arg("Op"), py::arg("apply_before")=false)
+    .def("apply_Operator_right", [](ACE::FreePropagator &prop, double time, const Eigen::MatrixXcd & Op, bool apply_before){prop.add_MultitimeOp(time, Eigen::MatrixXcd::Identity(Op.rows(), Op.cols()), Op, apply_before);}, 
+      py::arg("time"), py::arg("Op"), py::arg("apply_before")=false)
     .def("get_Htot",&ACE::FreePropagator::get_Htot)
     .def_readwrite("const_H",&ACE::FreePropagator::const_H)
     ;
 
   py::class_<ACE::ProcessTensorForwardList>(m, "ProcessTensors")
     .def(py::init<>())
-    .def(py::init<ACE::Parameters &>())
+    .def(py::init([](ACE::Parameters & param){
+      py::scoped_ostream_redirect stream(std::cout,py::module_::import("sys").attr("stdout"));
+      return new ACE::ProcessTensorForwardList(param);}))
     ;
+//    .def(py::init<ACE::Parameters &>())
    
   py::class_<ACE::InitialState>(m, "InitialState")
     .def(py::init<>())
@@ -94,6 +105,7 @@ PYBIND11_MODULE(ACE, m) {
        return printer;
      }))*/
      .def_readwrite("do_extract",&ACE::OutputPrinter::do_extract)
+     .def("clear",&ACE::OutputPrinter::clear)
      .def("extract",&ACE::OutputPrinter::extract)
     ;
 
