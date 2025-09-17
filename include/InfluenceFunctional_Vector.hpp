@@ -28,7 +28,7 @@ public:
 //  virtual int get_dim()const{return diagBB.get_dim();}
   inline virtual int get_dim()const{return groups.sys_dim();}
 
-  inline int get_n_max()const{return b.size()-1;}
+  inline int get_n_max()const{return b.size();}
   inline double get_dt()const{return dt;}
 
 

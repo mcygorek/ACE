@@ -177,7 +177,7 @@ namespace ACE{
 
 //    std::cout<<"HB_base["<<k<<"]:"<<std::endl<<HB_base<<std::endl;
 
-    return ModePropagatorPtr(new ModePropagator(2,get_bath_init(k),HB_base+HB_B,get_env_ops(k)));
+    return ModePropagatorPtr(new ModePropagator(get_bath_init(k),HB_base+HB_B,get_env_ops(k)));
   }
 
   Eigen::MatrixXcd ModePropagatorGenerator_RandomSpin::get_bath_init(int k)const{

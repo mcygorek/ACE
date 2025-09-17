@@ -2,6 +2,41 @@ import csv
 import numpy as np
 from ACE import *
 
+ACE_sigma_p=np.array([[0,0],[1,0]],dtype=complex)
+ACE_sigma_m=np.array([[0,1],[0,0]],dtype=complex)
+ACE_sigma_x=np.array([[0,1],[1,0]],dtype=complex)
+ACE_sigma_y=np.array([[0,1j],[-1j,0]],dtype=complex)
+ACE_sigma_z=np.array([[-1,0],[0,1]],dtype=complex)
+
+def Boson_create(dim):
+    O = np.zeros((dim,dim),dtype=complex)
+    for i in range(dim-1):
+        O[i+1,i]=np.sqrt(i+1)
+    return O
+
+def Boson_destroy(dim):
+    O = np.zeros((dim,dim),dtype=complex)
+    for i in range(dim-1):
+        O[i,i+1]=np.sqrt(i+1)
+    return O
+
+def Boson_n(dim):
+    O = np.zeros((dim,dim),dtype=complex)
+    for i in range(dim):
+        O[i,i]=i
+    return O
+
+def Boson_vacuum(dim):
+    O = np.zeros((dim,dim),dtype=complex)
+    O[0,0]=1
+    return O
+
+def KetBra(i,j,dim):   # |i><j|_dim
+    O = np.zeros((dim,dim),dtype=complex)
+    O[i,j]=1
+    return O
+
+
 def run(parameter_list):
     param = Parameters(parameter_list)
     fprop = FreePropagator(param)

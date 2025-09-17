@@ -104,7 +104,7 @@ std::cout<<"DEBUG: ModePropagator: update called: t="<<t<<std::endl;
     : FreePropagator(fprop), bath_init(binit), env_ops(env_ops_), 
       fermion_sign_space(-1){
 
-    N_system=fprop.get_dim()/bath_init.rows();
+    int N_system=fprop.get_dim()/bath_init.rows();
     if(N_system<2){
       std::cerr<<"ModePropagator(FreePropagator..): N_system<2!"<<std::endl;
       throw DummyException();
@@ -116,16 +116,16 @@ std::cout<<"DEBUG: ModePropagator: update called: t="<<t<<std::endl;
     rBasis=std::make_shared<ReducedLiouvilleBasis>();
   }
 
-  ModePropagator::ModePropagator(int Ns, 
+  ModePropagator::ModePropagator(
                  const Eigen::MatrixXcd &binit,
                  const Eigen::MatrixXcd &H, 
                  EnvironmentOperators env_mat)
-    : N_system(Ns), bath_init(binit), env_ops(env_mat), fermion_sign_space(-1){
+    : bath_init(binit), env_ops(env_mat), fermion_sign_space(-1){
 
-    if(H.rows()!=Ns*get_N_mode() || H.cols()!=Ns*get_N_mode()){
-      std::cerr<<"Error constructing ModePropagator: .rows()!=Ns*Nm || H.cols()!=Ns*Nm!"<<std::endl;
-      throw DummyException();
-    }
+//    if(H.rows()!=Ns*get_N_mode() || H.cols()!=Ns*get_N_mode()){
+//      std::cerr<<"Error constructing ModePropagator: .rows()!=Ns*Nm || H.cols()!=Ns*Nm!"<<std::endl;
+//      throw DummyException();
+//    }
     set_Hamiltonian(H);
     rBasis=std::make_shared<ReducedLiouvilleBasis>();
   }

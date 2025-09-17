@@ -1,0 +1,8 @@
+dt              0.01
+te             10
+threshold       1e-7
+initial         {|1><1|_2}
+add_single_mode {hbar*((|0><1|_2 otimes |1><0|_2)+(|1><0|_2 otimes |0><1|_2))} {|0><0|_2}
+add_single_mode {hbar*((|0><1|_2 otimes |1><0|_2)+(|1><0|_2 otimes |0><1|_2))} {|0><0|_2}
+add_Output      {|1><1|_2}
+outfile         TwoModes.out

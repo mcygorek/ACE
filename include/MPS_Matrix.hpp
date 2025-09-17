@@ -32,6 +32,11 @@ public:
     }
     return sqrt(res);
   }
+  inline void scale(T c){
+    for(int i=0; i<dim_d1*dim_d2*dim_i; i++){
+      mem[i]*=c;
+    }
+  }
 
   void resize(int dim_i_, int dim_d1_, int dim_d2_);
   

@@ -15,7 +15,8 @@ public:
 
   bool print_timestep;
   std::unique_ptr<std::ofstream> ofs;
-//  Simulation_Results results;
+
+  bool full_densmat; //extracts full density matrix; overrides Output_Ops
   Output_Ops output_Op;
   Which_Env_Ops_List which_env_ops;
 
@@ -25,6 +26,7 @@ public:
 
 //Storage for reduced density matrices at last few time steps:
   std::vector<Eigen::VectorXcd> rho_t;
+  std::vector<double> rho_times;
   int start_extract; 
   bool do_extract;
 
@@ -40,11 +42,14 @@ public:
   virtual void print_eigenstate_occupations(double t, const Eigen::MatrixXcd &H, const Eigen::MatrixXcd &prop);
 
   virtual void finish();
-  inline const std::vector<Eigen::VectorXcd> & extract()const{
-    return rho_t;
-  }
+
+  virtual std::pair<Eigen::VectorXd,Eigen::MatrixXcd> extract()const;
+//  inline const std::vector<Eigen::VectorXcd> & extract()const{
+//    return rho_t;
+//  }
 
   OutputPrinter(const std::string &outfile, const std::vector<Eigen::MatrixXcd> & list){
+    clear();
     set_stream(outfile);
     output_Op=Output_Ops(list);
   }
@@ -52,6 +57,7 @@ public:
     setup(param, setdim);
   }
   OutputPrinter(){
+    clear();
   }
 };
 }//namespace

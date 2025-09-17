@@ -26,6 +26,7 @@ template <typename T> int TruncatedSVD_T<T>::get_truncated_dim(const Eigen::Vect
     }
   }
 
+  if(mink>0){if(dim<mink)dim=mink; if(dim>svals.size())dim=svals.size();}
   return dim;
 }
 template <typename T> SelectIndices TruncatedSVD_T<T>::get_select_indices(
@@ -40,7 +41,7 @@ template <typename T> SelectIndices TruncatedSVD_T<T>::get_select_indices(
   double thr=threshold; 
   int mk=maxk; 
   
-  if(mk<=0){
+  if(mk<=0 && mink<=0){
     SelectIndices k_list;
     for(int k1=0; k1<(int)s1.size(); k1++){
       for(int k2=0; k2<(int)s2.size(); k2++){
@@ -53,7 +54,7 @@ template <typename T> SelectIndices TruncatedSVD_T<T>::get_select_indices(
     }
     return k_list;
 
-  }else{ //maxk>0: have to sort products of SVs first
+  }else{ //maxk>0 or mink>0: have to sort products of SVs first
     std::vector<std::pair<double, std::pair<int, int> > > vec;
     for(int k1=0; k1<(int)s1.size(); k1++){
       for(int k2=0; k2<(int)s2.size(); k2++){
@@ -71,7 +72,9 @@ template <typename T> SelectIndices TruncatedSVD_T<T>::get_select_indices(
           return e1.first>e2.first;} );
 
     SelectIndices k_list;
-    int n_elem=vec.size(); if(n_elem>mk)n_elem=mk;
+    int n_elem=vec.size(); 
+    if(n_elem>mk)n_elem=mk; 
+    if(mink>0){if(n_elem<mink)n_elem=mink; if(n_elem>vec.size())n_elem=vec.size();}
     for(int s=0; s<n_elem; s++){
       k_list.push_back(vec[s].second);
     }
@@ -176,7 +179,7 @@ template <typename T> void TruncatedSVD_T<T>::print_info(std::ostream &ofs)const
   if(use_QR){
     ofs<<"use_QR=true";
   }else{
-    ofs<<"threshold="<<threshold<<" maxk="<<maxk; //<<" keep="<<keep;
+    ofs<<"threshold="<<threshold<<" maxk="<<maxk<<" mink="<<mink; //<<" keep="<<keep;
   }
   if(Tikhonov>0.){
     ofs<<" Tikhonov="<<Tikhonov;
@@ -186,6 +189,7 @@ template <typename T> void TruncatedSVD_T<T>::print_info(std::ostream &ofs)const
 template <typename T> void TruncatedSVD_T<T>::setup(Parameters &param){
   threshold = param.get_as_double("threshold",0.);
   maxk = param.get_as_int("compress_maxk",0.);
+  mink = param.get_as_int("compress_mink",0.);
   keep = param.get_as_double("compress_keep",0.);
   use_QR = false; //param.get_as_bool("use_QR");
   Tikhonov = param.get_as_double("compress_Tikhonov",0.);

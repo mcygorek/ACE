@@ -1,6 +1,7 @@
 #include "FreePropagator.hpp"
 #include "Constants.hpp"
 #include "Pulse_Selector.hpp"
+#include "Pulse.hpp"
 #include "TimedepMatrix.hpp"
 #include <Eigen/Core>
 #include <unsupported/Eigen/MatrixFunctions>
@@ -74,6 +75,25 @@ namespace ACE{
       matH += timedep_H[i]->f(t);
     }
     return matH;
+  }
+  Eigen::MatrixXcd FreePropagator::get_H_nonhermitian(double t, double dt){
+    Eigen::MatrixXcd L=Total_Generator(t,dt)/dt;
+    std::complex<double> trH=(get_Htot(t)).trace();
+    std::complex<double> trL=(L).trace();
+    int N=sqrt(L.rows());
+    Eigen::MatrixXcd trLbw=Eigen::MatrixXcd::Zero(N,N);
+    for(int i=0; i<N; i++){
+      for(int j=0; j<N; j++){
+        for(int k=0; k<N; k++){
+          trLbw(i,j)+=L(i*N+k,j*N+k);
+        }
+      }
+    }
+    Eigen::MatrixXcd Htilde=
+                 std::complex<double>(0.,1.)*hbar_in_meV_ps/((double) N) *
+                 ( trLbw-(trL/(2.*N))*Eigen::MatrixXcd::Identity(N,N) );
+    Htilde+=trH*Eigen::MatrixXcd::Identity(N,N);
+    return Htilde;
   }
   Eigen::MatrixXcd FreePropagator::get_H_forward(double t)const{
     //constant part:
@@ -228,20 +248,6 @@ std::cout<<"DEBUG: skipping calculation (precalculated)"<<t<<std::endl;
     const_H+=H;
     precalculated=false;
   }
-
-  void FreePropagator::add_Pulse(const std::pair<std::vector<double>,std::vector<std::complex<double> > > & shape, const Eigen::MatrixXcd &A){
-
-    ComplexFunctionPtr ptr=std::make_shared<ComplexFunction_Interpolate>();
-    ComplexFunction_Interpolate* p = static_cast<ComplexFunction_Interpolate*>(ptr.get());
-    int length=shape.first.size();
-    p->val.resize(length);
-    for(int i=0; i<length; i++){
-      p->val[i].first=shape.first[i];
-      p->val[i].second= (i<shape.second.size() ? shape.second[i] : 0.);
-    }
-    add_Pulse(ptr, A);
-  }
-
   void FreePropagator::add_Pulse(ComplexFunctionPtr &f, const Eigen::MatrixXcd &A){
     if(A.rows()!=A.cols()){
         std::cerr<<"FreePropagator::add_Pulse: Operator not square!"<<std::endl;
@@ -250,6 +256,11 @@ std::cout<<"DEBUG: skipping calculation (precalculated)"<<t<<std::endl;
     set_dim(A,"FreePropagator::add_Pulse: Mismatch in dimensions!");
     timedep_H.push_back(std::make_shared<TimedepMatrix_Const_Shape_Hermitian>(f, A));
   }
+  void FreePropagator::add_Pulse(const std::pair<std::vector<double>,std::vector<std::complex<double> > > & shape, const Eigen::MatrixXcd &A){
+    ComplexFunctionPtr ptr=Pulse_from_data(shape);
+    add_Pulse(ptr, A);
+  }
+
   void FreePropagator::add_forward_Pulse(ComplexFunctionPtr &f, const Eigen::MatrixXcd &A){
     if(A.rows()!=A.cols()){
         std::cerr<<"FreePropagator::add_forward_Pulse: Operator not square!"<<std::endl;
@@ -258,6 +269,12 @@ std::cout<<"DEBUG: skipping calculation (precalculated)"<<t<<std::endl;
     set_dim(A,"FreePropagator::add_forward_Pulse: Mismatch in dimensions!");
     timedep_H_forward.push_back(std::make_shared<TimedepMatrix_Const_Shape_Hermitian>(f, A));
   }  
+  void FreePropagator::add_forward_Pulse(const std::pair<std::vector<double>,std::vector<std::complex<double> > > & shape, const Eigen::MatrixXcd &A){
+
+    ComplexFunctionPtr ptr=Pulse_from_data(shape);
+    add_forward_Pulse(ptr, A);
+  }
+
   void FreePropagator::add_backward_Pulse(ComplexFunctionPtr &f, const Eigen::MatrixXcd &A){
     if(A.rows()!=A.cols()){
         std::cerr<<"FreePropagator::add_backward_Pulse: Operator not square!"<<std::endl;
@@ -265,7 +282,14 @@ std::cout<<"DEBUG: skipping calculation (precalculated)"<<t<<std::endl;
     }
     set_dim(A,"FreePropagator::add_backward_Pulse: Mismatch in dimensions!");
     timedep_H_backward.push_back(std::make_shared<TimedepMatrix_Const_Shape_Hermitian>(f, A));
+  } 
+  void FreePropagator::add_backward_Pulse(const std::pair<std::vector<double>,std::vector<std::complex<double> > > & shape, const Eigen::MatrixXcd &A){
+
+    ComplexFunctionPtr ptr=Pulse_from_data(shape);
+    add_backward_Pulse(ptr, A);
   }
+
+
   void FreePropagator::add_TimedepMatrix(TimedepMatrixPtr & mp){
     set_dim(mp->get_dim(), "FreePropagator::add_Timedep: mp");
     timedep_H.push_back(mp);

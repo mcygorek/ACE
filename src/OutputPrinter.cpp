@@ -12,10 +12,12 @@ void OutputPrinter::clear(){
   print_timestep=false;
   ofs.reset(nullptr);
   output_Op=Output_Ops();
+  full_densmat=false;
   which_env_ops=Which_Env_Ops_List();
   ofs_eigenstates.reset(nullptr);
   {std::vector<size_t> tmp; eigenstate_components.swap(tmp);}
   {std::vector<Eigen::VectorXcd> tmp; rho_t.swap(tmp);}
+  {std::vector<double> tmp; rho_times.swap(tmp);}
   start_extract=0;
   do_extract=false;
 }
@@ -31,8 +33,8 @@ void OutputPrinter::set_stream(const std::string &outfile, int precision){
 }
 void OutputPrinter::setup(Parameters & param, int setdim){
 
+  full_densmat=false;
   //setup output_Op and check dimensions of input
-
   output_Op.setup(param);
   if(setdim>=0 && output_Op.size()>0 && output_Op.get_dim() != setdim){
     std::cerr<<"Mismatching dimensions: output_Op.get_dim()="<<output_Op.get_dim()<<" instead of "<<setdim<<"!"<<std::endl;
@@ -45,9 +47,15 @@ void OutputPrinter::setup(Parameters & param, int setdim){
     throw DummyException();
   }
 
+
+/*
   if(output_Op.size()<1 && which_env_ops.size()<1){
     std::cerr<<"No output operator specified! Try 'add_Output OPERATOR'!"<<std::endl; 
     throw DummyException();
+  }
+*/
+  if(output_Op.size()<1){
+    full_densmat=true;
   } 
 
   //only if that checked out, open file:
@@ -73,15 +81,36 @@ void OutputPrinter::setup(Parameters & param, int setdim){
 
 //Initialize density matrix storage:
   {std::vector<Eigen::VectorXcd> tmp; rho_t.swap(tmp);}
+  {std::vector<double> tmp; rho_times.swap(tmp);}
   do_extract=false;
   start_extract=0;
 }
 
 void OutputPrinter::print(int n, double t, const Eigen::VectorXcd & rho_reduced,
                        const std::vector<std::complex<double> > & env_reduced){ 
- 
+
+
+  Eigen::VectorXcd exp_vals;
+  if(full_densmat){
+    exp_vals=rho_reduced;
+  }else{
+    exp_vals=Eigen::VectorXcd::Zero(output_Op.size());
+
+    Eigen::MatrixXcd rho=L_Vector_to_H_Matrix(rho_reduced);
+    Eigen::MatrixXcd rho2=output_Op.trafoIP(rho,-t);
+
+    for(size_t o=0; o<output_Op.size(); o++){
+      for(int i=0; i<rho.rows(); i++){
+        for(int j=0; j<rho.cols(); j++){
+          exp_vals(o)+=output_Op[o](j,i)*rho2(i,j);
+        }
+      }
+    }
+  }
+
   if(do_extract && n>=start_extract){
-    rho_t.push_back(rho_reduced);
+    rho_t.push_back(exp_vals);
+    rho_times.push_back(t);
   }
 
   if(!ofs)return;
@@ -90,19 +119,10 @@ void OutputPrinter::print(int n, double t, const Eigen::VectorXcd & rho_reduced,
     throw DummyException();
   }
 
-  Eigen::MatrixXcd rho=L_Vector_to_H_Matrix(rho_reduced);
-  Eigen::MatrixXcd rho2=output_Op.trafoIP(rho,-t);
-
   *ofs<<t;
-  for(size_t o=0; o<output_Op.size(); o++){
-    std::complex<double> res=0;
-    for(int i=0; i<rho.rows(); i++){
-      for(int j=0; j<rho.cols(); j++){
-        res+=output_Op[o](j,i)*rho2(i,j);
-      }
-    }
-    *ofs<<" "<<res.real();
-    *ofs<<" "<<res.imag();
+  for(int o=0; o<exp_vals.rows(); o++){
+    *ofs<<" "<<exp_vals(o).real();
+    *ofs<<" "<<exp_vals(o).imag();
   }
 
   for(size_t i=0; i<env_reduced.size(); i++){
@@ -150,5 +170,29 @@ void OutputPrinter::print_eigenstate_occupations(double t, const Eigen::MatrixXc
 void OutputPrinter::finish(){
 }
 
+std::pair<Eigen::VectorXd,Eigen::MatrixXcd> OutputPrinter::extract()const{
+  std::pair<Eigen::VectorXd,Eigen::MatrixXcd> res;
+
+  if(rho_t.size()<1){ return res; }
+  if(rho_times.size()!=rho_t.size()){
+    std::cerr<<"Error: rho_times.size()!=rho_t.size() in OutputPrinter::extract()!"<<std::endl;
+    throw DummyException();
+  }
+
+  res.first=Eigen::VectorXd::Zero(rho_times.size());
+  for(int i=0; i<res.first.rows();i++){res.first(i)=rho_times[i];}
+
+  res.second=Eigen::MatrixXcd::Zero(rho_t.size(), rho_t[0].rows());
+  for(size_t i=0; i<rho_t.size(); i++){
+    if(rho_t[i].rows()!=res.second.cols()){
+      std::cerr<<"Error: Inconsistent number of observables in OutputPrinter::extract()!"<<std::endl;
+      throw DummyException();
+    }
+    for(int r=0; r<rho_t[i].rows(); r++){
+      res.second(i, r)=rho_t[i](r);
+    }
+  }
+  return res;
+}
 
 }//namespace

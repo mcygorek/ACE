@@ -1,4 +1,5 @@
 #include "Pulse.hpp"
+#include "ComplexFunction_Interpolate.hpp"
 #include "Function.hpp"
 #include "Constants.hpp"
 #include "Parameters.hpp"
@@ -269,5 +270,19 @@ std::vector<ComplexFunctionPtr> Pulses_from_Parameters(Parameters &param){
       if(C<1.-1e-8)pulses.push_back(std::make_shared<Pulse_rect_freq>(center, eff_area1, dw1, detuning-DW/2.));
       if(C>-1.+1e-8)pulses.push_back(std::make_shared<Pulse_rect_freq>(center, eff_area2, dw2, detuning+DW/2.));
     }
+  }
+
+
+
+  ComplexFunctionPtr Pulse_from_data(const std::pair<std::vector<double>,std::vector<std::complex<double> > > & shape){
+    ComplexFunctionPtr ptr=std::make_shared<ComplexFunction_Interpolate>(); 
+    ComplexFunction_Interpolate* p = static_cast<ComplexFunction_Interpolate*>(ptr.get()); 
+    int length=shape.first.size(); 
+    p->val.resize(length); 
+    for(int i=0; i<length; i++){ 
+      p->val[i].first=shape.first[i]; 
+      p->val[i].second= (i<shape.second.size() ? shape.second[i] : 0.); 
+    }
+    return ptr;
   }
 }//namespace

@@ -1,5 +1,6 @@
 #include "ACE.hpp"
 #include "DynamicalMap.hpp"
+#include "DummyException.hpp"
 
 using namespace ACE;
 
@@ -464,7 +465,7 @@ int main(int args, char **argv){
 //    param_prop.print();
     TimeGrid tgrid(param_prop);
     InitialState initial(param_prop);
-    OutputPrinter printer(param_prop);
+    OutputPrinter printer(param_prop, initial.rho.cols());
     std::cout<<"Propagating from initial state:"<<std::endl;
     std::cout<<(Eigen::MatrixXcd)initial<<std::endl;   
 

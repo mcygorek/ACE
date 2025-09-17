@@ -1,0 +1,10 @@
+te                     12.8
+dt                      0.1
+t_mem                   6.4
+threshold               1e-9
+threshold_range_factor 10
+use_Gaussian_periodic   true
+Boson_J_type        QDPhonon
+Boson_omega_max        10
+Boson_temperature       4.2
+write_PT         QDPhonon.pt

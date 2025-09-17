@@ -17,7 +17,7 @@ namespace ACE{
       exit(1);
     }
     if(ops.size()>0 && ops[0].rows()!=op.rows()){
-      std::cerr<<"Output_Ops::add: ops[0].rows()!=op.rows()!"<<std::endl;
+      std::cerr<<"Output_Ops::add: ops[0].rows()!=op.rows() ("<<ops[0].rows()<<" vs. "<<op.rows()<<")!"<<std::endl;
       exit(1);
     }
     ops.push_back(op);
@@ -51,13 +51,15 @@ namespace ACE{
   }
 
   void Output_Ops::setup(Parameters &param, bool set_default_output){
+    clear();
     if(param.is_specified("add_Output")){
       for(int i=0; i<param.get_nr_rows("add_Output"); i++){
         std::string str=param.get_as_single_string("add_Output", i);
 //std::cout<<"add_Output: "<<str<<std::endl;
         add(ReadExpression(str)); 
       }
-    }else{
+    }
+/*else{
       if(set_default_output){
         Operators op(2);
         add( op.ketbra(1,1) );
@@ -65,7 +67,7 @@ namespace ACE{
         add( op.ketbra(0,1) );
       }
     }
-   
+*/   
     if(param.is_specified("apply_InteractionPicture_Output")){ 
       use_IP=true;
       H_IP=param.get_as_operator("apply_InteractionPicture_Output");

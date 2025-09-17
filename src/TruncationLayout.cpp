@@ -9,6 +9,7 @@ namespace ACE{
 template <typename T> void TruncationLayout_T<T>::print_info(std::ostream &ofs)const{
   ofs<<"base_threshold="<<base_threshold;
   ofs<<" base_maxk="<<base_maxk;
+  ofs<<" base_mink="<<base_mink;
   ofs<<" keep="<<keep;
   ofs<<" forward_threshold_ratios="<<forward_threshold_ratio;
   ofs<<" backward_threshold_ratios="<<backward_threshold_ratio;
@@ -27,6 +28,7 @@ template <typename T> void TruncationLayout_T<T>::print_info(std::ostream &ofs)c
 template <typename T> void TruncationLayout_T<T>::setup(Parameters &param){
   base_threshold = param.get_as_double("threshold",0.);
   base_maxk = param.get_as_int("compress_maxk",0);
+  base_mink = param.get_as_int("compress_mink",0);
   keep = param.get_as_double("compress_keep",-1);
   base_Tikhonov = param.get_as_double("compress_Tikhonov",0.);
 

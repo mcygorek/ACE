@@ -8,6 +8,7 @@
 #include "Parameters.hpp"
 #include "Which_Env_Ops.hpp"
 #include "ReadPT_struct.hpp"
+#include "ModePropagatorGenerator.hpp"
 #include <cstdio>
 
 namespace ACE{
@@ -38,7 +39,17 @@ public:
 
   static std::shared_ptr<ProcessTensorForward> PTptr_from_file(const std::string &str, bool read_only);
   void add_PT(Parameters &param);
-  void setup(Parameters &param, int setdim=-1, bool print_timings=true);
+
+  void setup2(Parameters &param, 
+      std::vector<std::shared_ptr<ModePropagatorGenerator> > & initial_mpgs,
+      int setdim=-1, bool print_timings=true);
+
+  inline void setup(Parameters &param, int setdim=-1, bool print_timings=true){
+    std::vector<std::shared_ptr<ModePropagatorGenerator> > initial_mpgs;
+    setup2(param, initial_mpgs, setdim, print_timings);
+  }
+
+
   void read(const std::string &fname);
   
   void propagate(Eigen::MatrixXcd & state, bool reverse_order); 
@@ -50,6 +61,10 @@ public:
   }
   ProcessTensorForwardList(Parameters &param, int setdim=-1){
     setup(param, setdim);
+  }
+  ProcessTensorForwardList(Parameters &param, 
+      std::vector<std::shared_ptr<ModePropagatorGenerator> > & initial_mpgs){
+    setup2(param, initial_mpgs, -1, true);
   }
   ~ProcessTensorForwardList(){
 //NOTE: Order of desctruction is crucial!

@@ -30,6 +30,7 @@ public:
   //relevant for concrete sweeps:
   double threshold;
   int    maxk;
+  int    mink;
   double keep;  //scaling factor: keep <= 0: keep largest singular value.
 
   bool use_QR; //Orthogonalization using QR instead of compressing sweep
@@ -68,9 +69,10 @@ public:
   TruncatedSVD_T(Parameters &param){
     setup(param);
   }
-  TruncatedSVD_T(double threshold_=0, int maxk_=0, int keep_=0, bool use_QR_=false, double Tikhonov_=0.){
+  TruncatedSVD_T(double threshold_=0, int maxk_=0, int mink_=0, int keep_=0, bool use_QR_=false, double Tikhonov_=0.){
     threshold=threshold_;
     maxk=maxk_;
+    mink=mink_;
     keep=keep_;
     use_QR=use_QR_;
     Tikhonov=Tikhonov_;

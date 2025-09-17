@@ -3,6 +3,7 @@
 #define MODE_PROPAGATOR_GENERATOR_SINGLEMODES_DEFINED_H
 
 #include "ModePropagatorGenerator.hpp"
+#include "ModePropagatorGenerator_SingleModeFromFile.hpp"
 #include <vector>
 #include <Eigen/Dense>
 
@@ -30,12 +31,22 @@ public:
 
   void add_single_mode_from_file(const std::vector<std::string> & str);
 
+  void add_single_mode(std::vector<std::shared_ptr<ModePropagator> > & list);
+
+  inline void add_single_mode(std::shared_ptr<ModePropagator> & SM){
+    std::vector<std::shared_ptr<ModePropagator> > list(1, SM);
+    add_single_mode(list);
+  }
+
   virtual EnvironmentOperators get_env_ops(int k) const;
   virtual Eigen::MatrixXcd get_bath_init(int k)const;
   virtual ModePropagatorPtr getModePropagator(int k)const;
 
   ModePropagatorGenerator_SingleModes(Parameters &param){
     setup(param);
+  }
+  inline ModePropagatorGenerator_SingleModes(std::vector<std::shared_ptr<ModePropagator> > & list){
+    add_single_mode(list);
   }
 };
 

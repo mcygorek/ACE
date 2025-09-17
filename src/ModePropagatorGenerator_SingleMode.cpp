@@ -60,7 +60,7 @@ std::cout<<"SingleMode: HE: "<<std::endl<<HE<<std::endl;
 
     int sysdim=get_N();
 
-    return ModePropagatorPtr(new ModePropagator(sysdim,get_bath_init(k),HE,get_env_ops(k)));
+    return ModePropagatorPtr(new ModePropagator(get_bath_init(k),HE,get_env_ops(k)));
   }
 
 }//namespace

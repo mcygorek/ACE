@@ -27,6 +27,9 @@ public:
                                           const Eigen::MatrixXcd& val){
     return ops.insert(position, val);
   }
+  inline void clear(){
+    ops.clear(); proj.clear(); use_IP=false; H_IP=Eigen::MatrixXcd();
+  }
 
   void add(const Eigen::MatrixXcd &op);
   
@@ -39,9 +42,11 @@ public:
   void setup(Parameters &param, bool set_default_output=true);
 
   inline Output_Ops(const std::vector<Eigen::MatrixXcd> & list){
+    use_IP=false;
     ops=list;
   }
   inline Output_Ops(Parameters &param, bool set_default_output=true){
+    use_IP=false;
     setup(param, set_default_output);
   }
   inline Output_Ops(){

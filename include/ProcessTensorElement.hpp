@@ -2,7 +2,6 @@
 #define ACE_PROCESS_TENSOR_ELEMENT_DEFINED_H
 
 #include <memory>
-//#include "InfluenceFunctional_OD.hpp"
 #include "ProcessTensorElementAccessor.hpp"
 #include "PassOn.hpp"
 #include "EnvironmentOperators.hpp"
@@ -17,7 +16,6 @@
 */
 
 namespace ACE{
-class InfluenceFunctional_OD;
 
 struct ProcessTensorElement{
 
@@ -130,7 +128,6 @@ struct ProcessTensorElement{
 
   void set_from_ModePropagator(ModePropagator &mprop, double ta, double dt, double dict_zero=0);
 
-  void set_from_InfluenceFunctional_OD(const InfluenceFunctional_OD &IF, int n);
 
   IF_OD_Dictionary detect_dict(double dict_zero)const;
   void reduce_to_dict(const IF_OD_Dictionary &dict);
@@ -158,9 +155,6 @@ struct ProcessTensorElement{
   ProcessTensorElement(){}
   ProcessTensorElement(int N_sys){
     set_trivial(N_sys);
-  }
-  ProcessTensorElement(const InfluenceFunctional_OD &IF, int n){
-   set_from_InfluenceFunctional_OD(IF, n);
   }
 };
 

@@ -2,6 +2,7 @@
 #include "Propagator.hpp"
 #include "InfluenceFunctional_Vector.hpp"
 #include "Tensor.hpp"
+#include "LiouvilleTools.hpp"
 
 namespace ACE{
 
@@ -82,10 +83,11 @@ namespace ACE{
            int step, RankCompressor *compressor, bool use_symmetric_Trotter){
 
     check_dimensions();
-    int n_mem=get_n_max();
+    int n_max=get_n_max();
     int n_mem_IF=IF.get_n_max();
-    if(n_mem_IF<n_mem){
-      std::cerr<<"ADM_MPS::propagate: n_mem_IF<n_mem!"<<std::endl;
+std::cout<<"step="<<step<<" n_max="<<n_max<<" n_mem_IF="<<n_mem_IF<<std::endl;
+    if(n_mem_IF<n_max+1){
+      std::cerr<<"ADM_MPS::propagate: n_mem_IF<n_max+1!"<<std::endl;
       exit(1);
     }
  
@@ -99,11 +101,12 @@ namespace ACE{
     int Ngrps2=IF.lgroups.get_Ngrps();
     const std::vector<int> & grp2=IF.lgroups.grp;
 
-    Eigen::MatrixXcd M2=Eigen::MatrixXcd::Identity(NL,NL);
     if(use_symmetric_Trotter){
-      prop.update(t+dt/2.,dt/2.);
-      M2=prop.M;
-      prop.update(t,dt/2.);
+      if(step==1){
+        prop.update(t,dt/2.);
+      }else{
+        prop.update(t-dt/2.,dt);
+      }
     }else{
       prop.update(t,dt);
     }
@@ -113,7 +116,7 @@ namespace ACE{
     if(step<1){
       std::cerr<<"AugmentedDensityMatrix::propagate: step <1!"<<std::endl;
       exit(1);
-    }else if(step == 1 || n_mem<2){//first step: contract last index
+    }else if(step == 1 || n_mem_IF<2){//first step: contract last index
       ten2.a.resize(1);
       ten2.a[0].resize(NL,1,1);
       ten2.a[0].fill(0.);
@@ -123,38 +126,43 @@ namespace ACE{
           ten2.a[0](i,0,0) += IF.b[0](gi,gi)* prop.M(i,j) * ten.a[0](j,0,0);
         }
       }
-      if(use_symmetric_Trotter){
-        MPS_Matrix tmp(ten2.a[0].dim_i, ten2.a[0].dim_d1, ten2.a[0].dim_d2);
-        tmp.set_zero();
-        for(int i=0; i<NL; i++){
-          for(int j=0; j<NL; j++){
-            tmp(i,0,0) += M2(i,j) * ten2.a[0](j,0,0);
-          }
+    }else if(step==n_mem_IF && n_mem_IF==2){ //M and truncation over same index
+      ten2.a.resize(1);
+      ten2.a[0].resize(NL,1,1);
+      ten2.a[0].fill(0.);
+      for(int i=0; i<NL; i++){
+        int gi=grp2[i];
+        for(int j=0; j<NL; j++){
+          int gj=grp2[j];
+          ten2.a[0](i,0,0) += IF.b[0](gi,gi) * IF.b[1](gi,gj) 
+                              * prop.M(i,j) * ten.a[0](j,0,0);
         }
-        ten2.a[0].swap(tmp);
       }
     }else{
 
       ten2.a.resize(ten.a.size()+1);
-  
       ten2.a[0].resize(NL,1,NL);
       ten2.a[0].fill(0.);
       for(int i=0; i<NL; i++){
+        int gi=grp2[i];
+/*
         for(int j=0; j<NL; j++){
           int gj=grp2[j];
-          ten2.a[0](i, 0, j)=M2(i,j)*IF.b[0](gj,gj) ;
+          ten2.a[0](i, 0, j)=prop.M(i,j)*IF.b[0](gi,gi) ;
         }
+*/
+          ten2.a[0](i, 0, i)=IF.b[0](gi,gi) ;
       } 
 
       ten2.a[1].resize(Ngrps2, NL, Ngrps2*ten.a[0].dim_d2);
       ten2.a[1].fill(0.);
-      for(int l1=0; l1<NL; l1++){
-        int gi=grp2[l1];
+      for(int i=0; i<NL; i++){
+        int gi=grp2[i];
         for(int j=0; j<NL; j++){ 
           int gj=grp2[j];
-          for(int d1=0; d1<ten.a[0].dim_d2; d1++){
-            ten2.a[1](gj, l1, d1*Ngrps2+gi) +=
-              prop.M(l1,j) * IF.b[1](gi, gj) * ten.a[0](j, 0, d1);
+          for(int d=0; d<ten.a[0].dim_d2; d++){
+            ten2.a[1](gi, j, d*Ngrps2+gj) +=
+              IF.b[1](gj, gi) * prop.M(j,i)* ten.a[0](i, 0, d);
           }
         }
       }
@@ -187,7 +195,7 @@ namespace ACE{
         ref.swap(mmat);
       }
 
-      if(step>n_mem){ //contract last index
+      if(step>n_max){ //contract last index
         MPS_Matrix &ref=ten2.a[ten2.a.size()-2];
         MPS_Matrix mmat(ref.dim_i, ref.dim_d1, 1);
         mmat.fill(0.);
@@ -207,7 +215,7 @@ namespace ACE{
  
 
     //swap ten with ten2
-    if(step<=n_mem){ 
+    if(step<=n_max){ 
       ten.swap(ten2);
     }else{
       for(size_t n=0; n<ten.a.size(); n++){
@@ -242,6 +250,10 @@ namespace ACE{
     }
 
     update_rho(step);
+    if(use_symmetric_Trotter){
+      prop.update(t+dt/2.,dt/2.);
+      rho=L_Vector_to_H_Matrix( prop.M * H_Matrix_to_L_Vector(rho) );
+    }
   }
   
   

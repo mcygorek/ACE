@@ -2,7 +2,7 @@
 #include "DummyException.hpp"
 #include "BinaryReader.hpp"
 #include "InfluenceFunctional_Vector.hpp" 
-#include "Simulation.hpp"
+#include "Simulation_QUAPI.hpp"
 
 namespace ACE{
 
@@ -129,7 +129,8 @@ void DynamicalMap::calculate(Propagator &prop, ProcessTensorForwardList &PT, Sim
       initial_rho(i,j)=1;
 
       OutputPrinter extractor; 
-      extractor.do_extract=true; extractor.start_extract=0;
+      extractor.do_extract=true; extractor.start_extract=0; 
+      extractor.full_densmat=true;
       sim.run_std(prop, PT, initial_rho, tgrid, extractor);
 
       for(int l=0; l<tgrid.n_tot; l++){
@@ -264,6 +265,12 @@ void DynamicalMap::propagate(const TimeGrid &tgrid, const Eigen::MatrixXcd &init
   
   int n_tot=tgrid.n_tot;
   if((int)E.size()<n_tot){n_tot=E.size();}
+  
+  if(initial_state.rows()*initial_state.cols()!=get(0).cols()){
+    std::cerr<<"initial_state.rows()="<<initial_state.rows()<<std::endl;
+    std::cerr<<"versus get(0).cols="<<get(0).cols()<<std::endl;
+    throw DummyException();
+  }
 
   printer.print(0, tgrid.ta, rho);
   for(int n=0; n<n_tot; n++){

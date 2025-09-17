@@ -234,23 +234,6 @@ void ProcessTensorBuffer::copy_read_only(ProcessTensorBuffer & other){
   set_write_buffer_none();
 }
 
-void ProcessTensorBuffer::copy_InfluenceFunctional_OD(const InfluenceFunctional_OD &IF){
-  clear();
-  int n_tot=IF.size();
-  for(int n=0; n<n_tot; n++){
-/*
-    ProcessTensorElement e;
-    e.clearNF();
-    e.M=IF.a[n];
-    e.closure=IF.c[n];
-    e.env_ops.ops=IF.env_ops[n];
-    e.accessor.set_from_dict(IF.dict);
-    push_back(e);
-*/
-    push_back(ProcessTensorElement(IF,n));
-  }
-}
-
 void ProcessTensorBuffer::delete_files(){
   bool debug=false;
   if(debug){std::cout<<"delete files: info: "; print_info(); std::cout<<std::endl;}
@@ -570,6 +553,69 @@ void ProcessTensorBuffer::calculate_closures(){
   for(int n=n_tot-2; n>=0; n--){
     get(n).calculate_closure(&last);
     last=get(n);
+  }
+}
+void ProcessTensorBuffer::distribute_weights(){
+  ProcessTensorElement & e0 = get(0, ForwardPreload);
+  if(e0.is_forwardNF()){
+    double val=0;
+    for(int n=0; n<get_n_tot(); n++){
+      ProcessTensorElement & e = get(n, ForwardPreload);
+      val+=log(e.forwardNF(0));
+    }
+//std::cout<<"total val="<<val<<std::endl;
+    val/=get_n_tot();
+//std::cout<<"exp(val/site)="<<exp(val)<<std::endl;
+    double lastr=1;
+    for(int n=0; n<get_n_tot(); n++){
+      ProcessTensorElement & e = get(n, ForwardPreload);
+      double r=e.forwardNF(0)*lastr/exp(val);
+//std::cout<<"n="<<n<<" largest="<<e.forwardNF(0)<<" r="<<r<<std::endl;
+      if(n==get_n_tot()-1){
+        e.M.scale(lastr);
+        e.forwardNF*=lastr;
+      }else{
+        e.M.scale(lastr/r);
+        e.forwardNF*=lastr/r;
+        lastr=r;
+        e.closure*=r;
+        for(int i=0; i<e.env_ops.ops.size(); i++){
+          e.env_ops.ops[i]*=r;
+        }
+      }
+//std::cout<<"largest(after)="<<e.forwardNF(0)<<std::endl;
+    }
+  }else if(e0.is_backwardNF()){
+    double val=0;
+    for(int n=0; n<get_n_tot(); n++){
+      ProcessTensorElement & e = get(n, ForwardPreload);
+      val+=log(e.backwardNF(0));
+    }
+//std::cout<<"total val="<<val<<std::endl;
+    val/=get_n_tot();
+//std::cout<<"exp(val/site)="<<exp(val)<<std::endl;
+    double lastr=1;
+    for(int n=0; n<get_n_tot(); n++){
+      ProcessTensorElement & e = get(n, ForwardPreload);
+      double r=e.backwardNF(0)*lastr/exp(val);
+//std::cout<<"n="<<n<<" largest="<<e.backwardNF(0)<<" r="<<r<<std::endl;
+      if(n==get_n_tot()-1){
+        e.M.scale(lastr);
+        e.backwardNF*=lastr;
+      }else{
+        e.M.scale(lastr/r);
+        e.backwardNF*=lastr/r;
+        lastr=r;
+        e.closure*=r;
+        for(int i=0; i<e.env_ops.ops.size(); i++){
+          e.env_ops.ops[i]*=r;
+        }
+      }
+//std::cout<<"largest(after)="<<e.backwardNF(0)<<std::endl;
+    }
+  }else{
+    std::cerr<<"PTB::distribute_weights: please put into forwardNF or backwardNF first!"<<std::endl;
+    throw DummyException();
   }
 }
 
@@ -922,6 +968,7 @@ void ProcessTensorBuffer::join_and_sweep_backward(
       pass_on=PassOn(e.M.dim_d2);
     }
     e.sweep_backward(trunc, pass_on, (n==shift_extend.shift_second));
+
     if(e.M.dim_d1>maxdim_out)maxdim_out=e.M.dim_d1;
   }
   if(verbosity>0)std::cout<<"Maxdim: "<<maxdim_in1<<","<<maxdim_in2<<" -> "<<maxdim_out<<std::endl;
@@ -939,7 +986,8 @@ void ProcessTensorBuffer::join_select_and_sweep_backward(
   bool subsequent_sweep = true;
   PassOn pass_on;
 
-  bool debug=false;//true;
+//  bool debug=true;
+  bool debug=false;
 if(debug)std::cout<<"jnsbw: started"<<std::endl;
 
   int n_tot_old=n_tot;
@@ -1338,7 +1386,6 @@ void ProcessTensorBuffer::sweep_intermediate_or_final_start_backward(const Trunc
       sweep_backward(trunc_final, verbosity, range_start, range_end);
     }
 }
-
 void ProcessTensorBuffer::set_from_DiagBB_single_line(DiagBB &diagBB, double dt, int n){
 
   if(!diagBB.is_set_up()){
@@ -1865,6 +1912,7 @@ void ProcessTensorBuffer::set_from_ModePropagator(
     }
     push_back(element);
   } 
+//  calculate_closures();
 }
 
 void ProcessTensorBuffer::add_modes(
@@ -2068,12 +2116,14 @@ void ProcessTensorBuffer::add_modes_tree_get(int level, int max_level,
       trunc_fw.print_info(); std::cout<<std::endl;
     }
     sweep_forward(trunc_fw, verbosity);
+//    distribute_weights();
 
     if(verbosity>0){
       std::cout<<"sweep second forward"<<std::endl;
       trunc_fw.print_info(); std::cout<<std::endl;
     }
     PTB2.sweep_forward(trunc_fw, verbosity);
+//    PTB2.distribute_weights();
 
     if(verbosity>0)std::cout<<"join and sweep backward"<<std::endl;
     TruncatedSVD trunc_select=trunc.get_backward(level, max_level, true);
@@ -2082,6 +2132,7 @@ void ProcessTensorBuffer::add_modes_tree_get(int level, int max_level,
     trunc_select.print_info(); std::cout<<std::endl;
     trunc_bw.print_info(); std::cout<<std::endl;
     join_select_and_sweep_backward(PTB2, trunc_select, trunc_bw, verbosity);
+    distribute_weights();
 
 #ifdef TEST_SWEEP_PAIR
 std::cout<<"TEST_SWEEP_PAIR is set!"<<std::endl;
@@ -2137,6 +2188,7 @@ void ProcessTensorBuffer::set_from_modes_tree(
   add_modes_tree_get(N_hierarchy, N_hierarchy+1, 0, mpg, tgrid, trunc, 
                           dict_zero, verbosity);
  
+  calculate_closures();
 }
 void ProcessTensorBuffer::add_modes_tree(
           ModePropagatorGenerator &mpg, const TimeGrid &tgrid,

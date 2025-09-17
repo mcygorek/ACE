@@ -112,6 +112,8 @@ public:
 
 
 
+
+
 void Pulses_print(const std::vector<ComplexFunctionPtr> & pulses, 
                   const std::string &fname, 
                   double ta, double dt, double te);
@@ -120,6 +122,8 @@ void Pulses_print_sum(const std::vector<ComplexFunctionPtr> & pulses,
                   const std::string &fname, 
                   double ta, double dt, double te);
 
+
+ComplexFunctionPtr Pulse_from_data(const std::pair<std::vector<double>,std::vector<std::complex<double> > > & t_f);
 
 }//namespace
 #endif

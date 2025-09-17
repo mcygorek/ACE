@@ -1,0 +1,16 @@
+ta             {-3000/2}
+te              {3000/2}
+dt                  0.1
+#add_PT          QDPhonon.pt 0 2
+#add_PT          QDPhonon.pt 2 0
+initial         {|0><0|_2 otimes |0><0|_2}
+#pumping:
+add_Lindblad   0.002  {|1><0|_2 otimes Id_2}
+add_Lindblad   0.002  {Id_2 otimes |1><0|_2} 
+#superradiant decay:
+add_Lindblad   0.002  {|0><1|_2 otimes Id_2 + Id_2 otimes |0><1|_2} 
+#extract two-time correlations:
+apply_Operator_left  0 {|0><1|_2 otimes Id_2 + Id_2 otimes |0><1|_2}
+apply_Operator_right 0 {|1><0|_2 otimes Id_2 + Id_2 otimes |1><0|_2}
+add_Output  {(|1><0|_2 otimes Id_2+Id_2 otimes |1><0|_2)*(|0><1|_2 otimes Id_2+Id_2 otimes |0><1|_2)}
+outfile     G2_nophonon.out

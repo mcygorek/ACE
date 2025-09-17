@@ -20,6 +20,9 @@ public:
   inline operator const Eigen::MatrixXcd&()const{
     return rho;
   }
+  inline int get_dim()const{
+    return rho.rows();
+  }
   inline void initialize(){
     rho=Operators(2).ketbra(0,0);
   }

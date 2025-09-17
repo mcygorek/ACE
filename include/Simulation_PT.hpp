@@ -50,6 +50,12 @@ public:
            OutputPrinter &printer){
     run(prop, PT, initial.rho, tgrid, printer); 
   }
+  inline void run__(  //used for pybind11
+           FreePropagator &prop, ProcessTensorForwardList &PT,
+           const Eigen::MatrixXcd & rho, const TimeGrid &tgrid,
+           OutputPrinter &printer){
+    run(prop, PT, rho, tgrid, printer); 
+  }
 
   void setup(Parameters &param);
 

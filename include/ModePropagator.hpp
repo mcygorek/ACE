@@ -13,7 +13,6 @@ namespace ACE{
 
 class ModePropagator: public FreePropagator{
 public:
-  int N_system;
   int fermion_sign_space;
 
   std::vector<std::vector<Eigen::MatrixXcd> > A;
@@ -23,10 +22,17 @@ public:
 
 
 
-  inline int get_N_system()const{return N_system;}
+  inline int get_N_system()const{if(get_N_mode()<2)return 0; 
+                                 return get_dim()/get_N_mode();}
   inline int get_N_mode()const{return bath_init.rows();}
   inline const Eigen::MatrixXcd &get_bath_init()const{return bath_init;}
 
+  inline FreePropagator & get_fprop(){
+    return (FreePropagator &)*this;
+  }
+  inline Eigen::MatrixXcd & get_initial(){
+    return bath_init;
+  }
 
   void M_to_A();
 
@@ -41,7 +47,7 @@ public:
 
   inline ModePropagator(int Ns=2, 
                  const Eigen::MatrixXcd &binit=Eigen::MatrixXcd::Identity(2,2) )
-    : N_system(Ns), bath_init(binit), fermion_sign_space(-1){
+    : FreePropagator(Ns*binit.rows()), bath_init(binit), fermion_sign_space(-1){
     rBasis=std::make_shared<ReducedLiouvilleBasis>();
   }
 
@@ -49,11 +55,19 @@ public:
       const Eigen::MatrixXcd &binit=Eigen::MatrixXcd::Identity(2,2),
       EnvironmentOperators env_ops_=EnvironmentOperators() );
   
-  ModePropagator(int Ns, 
-                 const Eigen::MatrixXcd &binit,
+  ModePropagator(const Eigen::MatrixXcd &binit,
                  const Eigen::MatrixXcd &H, 
                  EnvironmentOperators env_mat=EnvironmentOperators());
   
+  ModePropagator(const std::string & filename, const Eigen::MatrixXcd &initial)
+    : FreePropagator(filename), bath_init(initial), fermion_sign_space(-1) {
+    rBasis=std::make_shared<ReducedLiouvilleBasis>();
+  }
+  ModePropagator(Parameters & param, const Eigen::MatrixXcd &initial)
+    : FreePropagator(param), bath_init(initial), fermion_sign_space(-1) {
+    rBasis=std::make_shared<ReducedLiouvilleBasis>();
+  }
+
   virtual ~ModePropagator(){}
 };
 

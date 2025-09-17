@@ -1,43 +1,43 @@
 import sys
-sys.path.append('/home/.../ACE/pybind/') #<---plug in your directory
-
+sys.path.append('.../ACE/pybind/') #<---plug in your directory
 from ACEutils import *
 
-#Prepare 
+# We now drive the TLS using a laser with a pulse shape defined using Python
 
-rho0 = np.array([[1,0],[0,0]], dtype=complex)
-initial = InitialState( rho0 )
+# Parameters:
+te = 100    # end time 
+dt = 0.01   # time step
+A = 3 # pulse area (pi)
 
-pulseTimes = np.arange(0, 100, 0.005, dtype=float)
-pulseShape = ( pulseTimes, np.array([
-               3*np.pi/(np.sqrt(2.*np.pi)*5)*np.exp(-0.5*((t-30)/5)**2)*(1+0j) 
-                                                   for t in pulseTimes]))
-dipole = hbar/2*np.array([[0,0],[1,0]], dtype=complex)
 
-sigma_x = np.array([[0,1],[1,0]], dtype=complex)
-fprop = FreePropagator()
+#Pulse function. Set output type to complex to generate the correct type of numpy array
+def myPulse(t) -> complex:
+    return 1/(np.sqrt(2.*np.pi)*5)*np.exp(-0.5*((t-30)/5)**2)
+
+# We discretize the pulse function on a regular grid
+pulseTimes = np.arange(0, te, dt/2, dtype=float)
+# The pulse shape consists of time points and function values. We rescale the latter by A*np.pi
+pulseShape = ( pulseTimes, np.multiply(A*np.pi, myPulse(pulseTimes)))
+# Dipole operator d. 
+dipole = hbar/2*KetBra(1,0,2)
+# Note that we specify only f(t)*d. The hermitian conjugate f^*(t)*d^\dagger is added automatically
+    
+# Define free system propagator and OutputPrinter
+fprop   = FreePropagator()
 fprop.add_Pulse( pulseShape, dipole )
 
-PT  = ProcessTensors()
+outp    = OutputPrinter([KetBra(1,1,2), KetBra(1,0,2)])
 
-outfile = "03_pulse.out"
-outp  = OutputPrinter( outfile,
-                      [np.array([[0,0],[0,1]],dtype=complex),
-                       np.array([[0,0],[1,0]],dtype=complex)])
+# Finally, we define a simulation and run it
+Simulation(fprop, ProcessTensors(), KetBra(0,0,2) , TimeGrid(0, te, dt), outp)
+# Extract data from OutputPrinter without using an output file
+(times, data) = outp.extract()
 
-tgrid = TimeGrid(0, 100, 0.01)
-
-sim   = Simulation()
-
-# Run:
-sim.run(fprop, PT, initial, tgrid, outp)
-
-# Read:
-(times, data) = read_outfile(outfile)
 print(data)
 
 # Now, plot the results:
 import matplotlib.pyplot as plt
+plt.gcf().set_size_inches((12,5))
 plt.xlabel("Time")
 plt.ylabel("Observable")
 plt.title("Gaussian 3*pi pulse")

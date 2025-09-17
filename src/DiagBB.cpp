@@ -76,7 +76,8 @@ namespace ACE{
 
     int dim=get_dim();
     int NL=dim*dim;
-    Eigen::MatrixXcd expS=Eigen::MatrixXcd::Zero(NL, NL);
+    //first index: later time, second index: earlier time
+    Eigen::MatrixXcd expS=Eigen::MatrixXcd::Zero(NL, NL); 
 
     std::complex<double> K=calculate_K(n,dt);
     for(int nu_k=0; nu_k<dim; nu_k++){

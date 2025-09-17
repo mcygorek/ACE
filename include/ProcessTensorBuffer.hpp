@@ -7,7 +7,6 @@
 #include "TempFileName.hpp"
 #include "ProcessTensorBufferSpec.hpp"
 #include "DiagBB.hpp"
-#include "InfluenceFunctional_OD.hpp"
 #include "TimeGrid.hpp"
 #include "LiouvilleTools.hpp"
 #include "ModePropagatorGenerator.hpp"
@@ -108,7 +107,6 @@ public:
   void copy_content(const std::string &filename);
   void copy_content(const ReadPT_struct &readPT);
   void copy_read_only(ProcessTensorBuffer & other);
-  void copy_InfluenceFunctional_OD(const InfluenceFunctional_OD &IF);
   void delete_files();
 
   void read_block(int bl, PreloadHint hint=NoPreload );
@@ -136,6 +134,7 @@ public:
 // operations
   void set_trivial(int n_max, int sysdim);
   void calculate_closures();
+  void distribute_weights();
 
   void sweep_forward(const TruncatedSVD &trunc, int verbosity,
                      int range_start=0, int range_end=-1);

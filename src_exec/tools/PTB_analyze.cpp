@@ -17,6 +17,10 @@ int main(int args, char ** argv){
 
   std::string print_SVD=param.get_as_string("print_SVD","");
   int nr_print_SVD=param.get_as_int("print_SVD",-1,0,1);
+
+  int print_dict_at=param.get_as_int("print_dict_at",-1);
+  int print_q_at=param.get_as_int("print_q_at",-1);
+  bool print_largest=param.get_as_bool("print_largest");
 /*
   DECISION: don't change PT at all. Use binaries like PTB_sweep_forward instead!
   //force users to acknowledge if the PT is to be modified:
@@ -92,6 +96,36 @@ int main(int args, char ** argv){
       ofs<<SVs(i)<<std::endl;
     }
     std::cout<<"Singular values of PT element "<<nr_print_SVD<<" written to '"<<print_SVD<<"'."<<std::endl;
+  }
+
+
+  if(print_dict_at>=0){
+    const ProcessTensorElement & e=PTB.get(print_dict_at);
+    std::cout<<"Dictionary at n="<<print_dict_at<<": ";e.accessor.dict.print_beta();std::cout<<std::endl;
+  }
+
+  if(print_q_at>=0){
+    const ProcessTensorElement & e=PTB.get(print_q_at);
+    std::cout<<"q at n="<<print_q_at<<": "<<e.closure.transpose()<<std::endl;
+  }
+
+  if(print_largest){
+    const ProcessTensorElement & e=PTB.get(0, ForwardPreload);
+    if(e.is_forwardNF()){
+      std::cout<<"Largest forwardNF:";
+      for(int n=0; n<PTB.get_n_tot(); n++){
+        const ProcessTensorElement & e=PTB.get(n, ForwardPreload);
+        std::cout<<" "<<e.forwardNF(0)<<std::flush;
+      } 
+      std::cout<<std::endl;
+    }else if(e.is_backwardNF()){
+      std::cout<<"Largest backwardNF:";
+      for(int n=0; n<PTB.get_n_tot(); n++){
+        const ProcessTensorElement & e=PTB.get(n, ForwardPreload);
+        std::cout<<" "<<e.backwardNF(0)<<std::flush;
+      } 
+      std::cout<<std::endl;
+    }
   }
  }catch (DummyException &e){
   return 1;

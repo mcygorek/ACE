@@ -154,14 +154,14 @@ public:
     map.clear();
     requested.clear();
   } 
-  Parameters(const std::string &fname){
+  inline Parameters(const std::string &fname){
     register_requested=false;
     add_from_file(fname);
   }
-  Parameters(const Parameters &other){
+  inline Parameters(const Parameters &other){
     map=other.map;
   }
-  Parameters(int args, char** argv, bool reg_req=false, bool read_first_as_driver=true){
+  inline Parameters(int args, char** argv, bool reg_req=false, bool read_first_as_driver=true){
     setup(args, argv, read_first_as_driver);
     register_requested=false;
   }

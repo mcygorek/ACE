@@ -1,0 +1,7 @@
+dt                   0.01
+te                  20
+initial              {|0><0|_2}
+add_Pulse  Gauss  10  4  {3.*pi}  0   {hbar/2*|1><0|_2}
+#add_Pulse file Gauss.pulse  {hbar/2*|1><0|_2}
+add_Output           {|1><1|_2}
+outfile              Gauss.out

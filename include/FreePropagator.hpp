@@ -5,6 +5,7 @@
 #include <iosfwd>
 #include "Eigen_fwd.hpp"
 #include "Propagator.hpp"
+#include "Parameters.hpp"
 #include "TimedepMatrix.hpp"
 #include "HilbertSpaceRotation.hpp"
 #include "MultitimeOp.hpp"
@@ -70,6 +71,7 @@ public:
   virtual void check_dimensions()const;
 
   virtual Eigen::MatrixXcd get_Htot(double t)const;
+  virtual Eigen::MatrixXcd get_H_nonhermitian(double t, double dt=1e-5);
   virtual Eigen::MatrixXcd get_H_forward(double t)const;
   virtual Eigen::MatrixXcd get_H_backward(double t)const;
 
@@ -90,10 +92,14 @@ public:
   
   void add_Hamiltonian(const Eigen::MatrixXcd & H);
 
-  void add_Pulse(const std::pair<std::vector<double>,std::vector<std::complex<double> > > & shape, const Eigen::MatrixXcd &A);
   void add_Pulse(ComplexFunctionPtr &f, const Eigen::MatrixXcd &A);
+  void add_Pulse(const std::pair<std::vector<double>,std::vector<std::complex<double> > > & shape, const Eigen::MatrixXcd &A);
+
   void add_forward_Pulse(ComplexFunctionPtr &f, const Eigen::MatrixXcd &A);
+  void add_forward_Pulse(const std::pair<std::vector<double>,std::vector<std::complex<double> > > & shape, const Eigen::MatrixXcd &A);
+
   void add_backward_Pulse(ComplexFunctionPtr &f, const Eigen::MatrixXcd &A);
+  void add_backward_Pulse(const std::pair<std::vector<double>,std::vector<std::complex<double> > > & shape, const Eigen::MatrixXcd &A);
   
   void add_TimedepMatrix(TimedepMatrixPtr & mp);
 
@@ -130,6 +136,10 @@ public:
     set_dim(dim);
   }
   inline FreePropagator(Parameters &param, int setdim=-1){
+    setup(param, setdim);
+  }
+  inline FreePropagator(const std::string &filename, int setdim=-1){
+    Parameters param(filename);
     setup(param, setdim);
   }
 };

@@ -7,7 +7,6 @@
 #include "LiouvilleTools.hpp"
 #include "DummyException.hpp"
 #include "DiagBB.hpp"
-#include "InfluenceFunctional_OD.hpp"
 #include "QRPinv_struct.hpp"
 
 
@@ -133,11 +132,11 @@ SelectIndices ProcessTensorElement::get_forwardNF_selected_indices(
 
   if(!is_forwardNF()){
     std::cerr<<"ProcessTensorElement::get_forwardNF_selected_indices: this MPS_Matrix is not in forward normal form!"<<std::endl;
-    exit(1);
+    throw DummyException();
   }
   if(!other.is_forwardNF()){
     std::cerr<<"ProcessTensorElement::get_forwardNF_selected_indices: other MPS_Matrix not in forward normal form!"<<std::endl;
-    exit(1);
+    throw DummyException();
   }  
 
   return trunc.get_select_indices(forwardNF, other.forwardNF);
@@ -247,7 +246,13 @@ void ProcessTensorElement::sweep_forward(const TruncatedSVD &trunc, PassOn &pass
   Eigen::MatrixXcd A=M.get_Matrix_d1i_d2();
   pass_on=trunc.compress_forward(A, forwardNF);
   double keep=forwardNF(0);
-  if(trunc.keep>0)keep=trunc.keep;
+  if(trunc.keep>0){
+    keep=trunc.keep;
+//  }else if(closure.size()==pass_on.P.cols()){
+//    Eigen::VectorXcd new_closure=pass_on.P*closure;
+//    std::cout<<"#"<<new_closure.norm()<<"#";
+//    keep=new_closure.norm();
+  }
   if(fabs(keep-1.)>1e-6){
     pass_on.P/=keep;
     pass_on.Pinv*=keep;
@@ -562,19 +567,6 @@ void ProcessTensorElement::set_from_ModePropagator(ModePropagator &mprop, double
 
   closure=H_Matrix_to_L_Vector(Eigen::MatrixXcd::Identity(N_mode,N_mode));
   env_ops=mprop.env_ops;
-}
-
-
-void ProcessTensorElement::set_from_InfluenceFunctional_OD(const InfluenceFunctional_OD &IF, int n){
-  if(n<0||n>=IF.size()){
-    std::cerr<<"ProcessTensorElement::set_from_InfluenceFunctional_OD: n<0||n>=IF.size() ("<<n<<" vs. "<<IF.size()<<")!"<<std::endl;
-    exit(1);
-  }
-  clearNF();
-  M=IF.a[n];
-  closure=IF.c[n];
-  env_ops.ops=IF.env_ops[n];
-  accessor.set_from_dict(IF.dict);
 }
 
 

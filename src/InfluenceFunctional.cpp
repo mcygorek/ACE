@@ -12,14 +12,14 @@ namespace ACE{
 
 #ifdef DEBUG
 std::cout<<"InfluenceFunctional::calculated called with n_max="<<n_max<<" and NL="<<NL<<std::endl;
-{int bs=1; for(int i=0; i<n_max+1; i++)bs*=NL;
+{int bs=1; for(int i=0; i<n_max; i++)bs*=NL;
 std::cout<<"InfluenceFunctional: Total blocksize: "<<bs<<std::endl;}
 #endif
 
     
-    ten.resize(n_max+1);
-    std::vector<Eigen::MatrixXcd> eS(n_max+1);
-    for(int i=0; i<n_max+1; i++){
+    ten.resize(n_max);
+    std::vector<Eigen::MatrixXcd> eS(n_max);
+    for(int i=0; i<n_max; i++){
       ten[i].resize(i+1, NL);
       eS[i]=diagBB.calculate_expS(i, get_dt());
 

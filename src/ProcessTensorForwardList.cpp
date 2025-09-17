@@ -104,7 +104,8 @@ void ProcessTensorForwardList::add_PT(Parameters &param){
   }
 }
 
-void ProcessTensorForwardList::setup(Parameters &param, int setdim, bool print_timings){
+void ProcessTensorForwardList::setup2(Parameters &param, std::vector<std::shared_ptr<ModePropagatorGenerator> > & initial_mpgs, int setdim, bool print_timings){
+
  time_point time1=now();
  try{
   list.clear();
@@ -119,6 +120,11 @@ void ProcessTensorForwardList::setup(Parameters &param, int setdim, bool print_t
   }
 
   std::vector<std::shared_ptr<ModePropagatorGenerator> > mpgs=MPG_Selector(param);
+  for(size_t i=0; i<initial_mpgs.size(); i++){
+    mpgs.push_back(initial_mpgs[i]);
+  }
+
+
   TimeGrid tgrid(param);
   TruncationLayout trunc(param);
   std::string initial_PT = param.get_as_string("initial_PT");  

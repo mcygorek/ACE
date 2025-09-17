@@ -48,8 +48,7 @@ void ModePropagatorGenerator_SingleModes::add_single_mode(const std::vector<Eige
   Eigen::MatrixXcd rho_init=ops[1];
   std::vector<Eigen::MatrixXcd> env_ops;
   for(size_t i=2; i<ops.size(); i++)env_ops.push_back(ops[i]);
-  int NS=HE.rows()/rho_init.rows();
-  modes.push_back(ModePropagatorPtr(new ModePropagator(NS, rho_init, HE, env_ops )));
+  modes.push_back(ModePropagatorPtr(new ModePropagator(rho_init, HE, env_ops )));
 //  check_validity();
   if(skip_list.size()<1){skip_was_set=true;}
   skip_list.resize(modes.size(),false);
@@ -78,6 +77,15 @@ void ModePropagatorGenerator_SingleModes::add_single_mode_from_file(const std::s
   Parameters param2;
   param2.add_from_file(file);
   modes.push_back(std::make_shared<ModePropagator>(FreePropagator(param2), rho_init, env_ops));
+  if(skip_list.size()<1){skip_was_set=true;}
+  skip_list.resize(modes.size(),false);
+}
+
+
+void ModePropagatorGenerator_SingleModes::add_single_mode(std::vector<std::shared_ptr<ModePropagator> > & list){
+  for(size_t i=0; i<list.size(); i++){
+   if(list[i]){modes.push_back(list[i]);}
+  }
   if(skip_list.size()<1){skip_was_set=true;}
   skip_list.resize(modes.size(),false);
 }

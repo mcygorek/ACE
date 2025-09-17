@@ -8,21 +8,24 @@
 namespace ACE{
 
 
-  void ModePropagatorGenerator_SingleModeFromFile::setup(const std::string &file, const std::vector<Eigen::MatrixXcd> & ops){
+  void ModePropagatorGenerator_SingleModeFromFile::setup(Parameters &param2, const std::vector<Eigen::MatrixXcd> & ops){
     set_N_modes(1);
     if(ops.size()<1){
       std::cerr<<"ModePropagatorGenerator_SingleModeFromFile: ops.size()<1!"<<std::endl;
       exit(1);
     }
 
-    rho_init=ops[0];
     envops.clear();
     for(size_t i=1; i<ops.size(); i++)envops.push_back(ops[i]);
 
+    mpp=std::make_shared<ModePropagator>(FreePropagator(param2), ops[0], envops);
+  }
+  void ModePropagatorGenerator_SingleModeFromFile::setup(const std::string &file, const std::vector<Eigen::MatrixXcd> & ops){
     Parameters param2;
     param2.add_from_file(file);
-    mpp=std::make_shared<ModePropagator>(FreePropagator(param2), rho_init, envops);
+    setup(param2, ops);
   }
+  
 
   void ModePropagatorGenerator_SingleModeFromFile::setup(const std::vector<std::string> & str){
     if(str.size()<2){

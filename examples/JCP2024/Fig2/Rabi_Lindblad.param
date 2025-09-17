@@ -1,0 +1,8 @@
+ta                  0
+te                 20
+dt                  0.01
+initial             {|0><0|_2}
+add_Lindblad   0.1  {|0><1|_2}
+add_Hamiltonian     {hbar/2*sigma_x}
+add_Output          {|1><1|_2}
+outfile             Rabi_Lindblad.out

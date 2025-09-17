@@ -1,0 +1,11 @@
+dt                  0.01
+te                  2.5
+threshold           1e-7
+initial             {|1><1|_2}
+Fermion_N_modes    10
+Fermion_rate        1.
+Fermion_omega_min  -5
+Fermion_omega_max   5
+Fermion_E_Fermi -1000
+add_Output          {|1><1|_2}
+outfile             Fermion.out

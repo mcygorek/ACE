@@ -4,6 +4,7 @@
 #include "InfluenceFunctional.hpp"
 #include "Tensor_Dense.hpp"
 #include <Eigen/Dense>
+#include "LiouvilleTools.hpp"
 
 namespace ACE{
 
@@ -51,9 +52,18 @@ namespace ACE{
                  Propagator &prop, const InfluenceFunctional &IF, 
                  double t, double dt, int step, RankCompressor *compressor,
                  bool use_symmetric_Trotter){
+    
+//It's not completely straightforward to define a QUAPI algorithm with symmetric Trotter splitting. This is because we have to connect to past points between time steps. We solve this by applying only a half-step M only in the first time step and use full steps for all other steps. The missing half-steps are added after update_rho(..). This implies that one should never call update_rho(..) from any other function than this one.
+
+
+//    if(use_symmetric_Trotter){
+//      std::cout<<"--------------------------------------------------------------------------"<<std::endl;
+//      std::cout<<"WARNING: using QUAPI with use_symmetric_Trotter=true might be problematic!"<<std::endl;
+//      std::cout<<"--------------------------------------------------------------------------"<<std::endl;
+//    }
 
     check_dimensions();
-    int n_mem=get_n_max();
+    int n_mem=get_n_max()+1;
     int NL=get_NL();
     int N=sqrt(NL);
 
@@ -72,17 +82,15 @@ namespace ACE{
       }
     }
 
-//std::cout<<"NL: "<<NL<<" n_mem: "<<n_mem<<" Ngrps: "<<Ngrps<<" ";
-//std::cout<<"ADM dims: "; ten.print_dims(std::cout); std::cout<<std::endl;
-
     Tensor_Dense ten2(ten.get_dims());
     ten2.fill(0);
 
-    Eigen::MatrixXcd M2=Eigen::MatrixXcd::Identity(NL,NL);
     if(use_symmetric_Trotter){
-      prop.update(t+dt/2.,dt/2.);
-      M2=prop.M;
-      prop.update(t,dt/2.);
+      if(step == 1){ 
+        prop.update(t,dt/2.);
+      }else{
+        prop.update(t-dt/2.,dt);
+      }
     }else{
       prop.update(t,dt);
     }
@@ -96,77 +104,56 @@ namespace ACE{
           ten2[i] += IF.ten[0][grp2[i]]* prop.M(i,j) * ten[j];
         }
       }
-      ten.swap(ten2);
-      ten2.fill(0.);
-      if(use_symmetric_Trotter){
-        for(int i=0; i<NL; i++){
-          for(int j=0; j<NL; j++){
-            ten2[i] += M2(i,j) * ten[j];
-          }
-        }
-      }
-    }else if(step<=n_mem){ //step with expansion
-      int last_back_block_size=1;
-      for(int i=0; i<step-2; i++)last_back_block_size*=Ngrps2;
+    }else if(step<n_mem){ //step with expansion
+      int BS=1;
+      for(int i=0; i<step-2; i++)BS*=Ngrps2;
 
       for(int i=0; i<NL; i++){
         int gi=grp2[i];
         for(int j=0; j<NL; j++){ 
           int gj=grp2[j];
-          for(int b=0; b<last_back_block_size; b++){
-            ten2[(i*Ngrps2+gj)*last_back_block_size+b] +=
-              IF.ten[step-1][(gi*Ngrps2+gj)*last_back_block_size+b] * 
-              prop.M(i,j) * ten[j*last_back_block_size+b];
+          for(int b=0; b<BS; b++){
+            ten2[(i*Ngrps2+gj)*BS+b] +=
+              IF.ten[step-1][(gi*Ngrps2+gj)*BS+b] * 
+              prop.M(i,j) * ten[j*BS+b];
           }
         }
       }
-      if(use_symmetric_Trotter){
-        ten.swap(ten2);
-        ten2.fill(0.);
-        for(int i=0; i<NL; i++){
-          for(int j=0; j<NL; j++){
-            for(int b=0; b<last_back_block_size*Ngrps2; b++){
-             ten2[i*last_back_block_size*Ngrps2+b] += 
-                  M2(i,j) * ten[j*last_back_block_size*Ngrps2+b];
-            }
-          }
+    }else if(step==n_mem && n_mem==2){ //M and truncation over same index
+      for(int i=0; i<NL; i++){
+        int gi=grp2[i];
+        for(int j=0; j<NL; j++){ 
+          int gj=grp2[j];
+          ten2[i] += IF.ten[step-1][gi*Ngrps2+gj] * prop.M(i,j) * ten[j];
         }
       }
     }else{ //propagate and contract last index   
-      int minus_two_block_size=1;
-      for(int i=0; i<n_mem-2; i++)minus_two_block_size*=Ngrps2;
+      int BS=1;
+      for(int i=0; i<n_mem-3; i++)BS*=Ngrps2;
 
       for(int i=0; i<NL; i++){
         int gi=grp2[i];
         for(int j=0; j<NL; j++){ 
           int gj=grp2[j];
-          for(int b=0; b<minus_two_block_size; b++){
+          for(int b=0; b<BS; b++){
             for(int l=0; l<Ngrps2; l++){ 
-              ten2[(i*Ngrps2+gj)*minus_two_block_size+b] +=
-                IF.ten[n_mem][((gi*Ngrps2+gj)*minus_two_block_size+b)*Ngrps2+l] * 
-                prop.M(i,j) * ten[(j*minus_two_block_size+b)*Ngrps2+l];
+              ten2[(i*Ngrps2+gj)*BS+b] +=
+                IF.ten[n_mem-1][((gi*Ngrps2+gj)*BS+b)*Ngrps2+l] * 
+                prop.M(i,j) * ten[(j*BS+b)*Ngrps2+l];
             }
           }
         }
       }
 
-      if(use_symmetric_Trotter){
-        ten.swap(ten2);
-        ten2.fill(0.);
-        for(int i=0; i<NL; i++){
-          for(int j=0; j<NL; j++){
-            for(int b=0; b<minus_two_block_size*Ngrps2; b++){
-             ten2[i*minus_two_block_size*Ngrps2+b] += 
-                  M2(i,j) * ten[j*minus_two_block_size*Ngrps2+b];
-            }
-          }
-        }
-      }
     }
 
     ten.swap(ten2);
 
     update_rho(step);
+    if(use_symmetric_Trotter){
+      prop.update(t+dt/2.,dt/2.);
+      rho=L_Vector_to_H_Matrix( prop.M * H_Matrix_to_L_Vector(rho) );
+    }
   }
   
   
@@ -182,10 +169,12 @@ namespace ACE{
     if(n_max>0)tensordims[0]=N*N;
     ten.resize(tensordims);
 
-    ten.fill(0.);
-    for(int i=0; i<N; i++){
-      for(int j=0; j<N; j++){
-        ten[i*N+j]=rho(i,j);
+    if(n_max>0){
+      ten.fill(0.);
+      for(int i=0; i<N; i++){
+        for(int j=0; j<N; j++){
+          ten[i*N+j]=rho(i,j);
+        }
       }
     }
   }

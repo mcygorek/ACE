@@ -13,8 +13,8 @@ namespace ACE{
       exit(1);
     }
     
-    b.resize(n_max+1);
-    for(int n=0; n<n_max+1; n++){
+    b.resize(n_max);
+    for(int n=0; n<n_max; n++){
 //      b[n]=diagBB.calculate_expS(n_max-n, get_dt());
       b[n]=diagBB.calculate_expS(n, get_dt());
     }   
