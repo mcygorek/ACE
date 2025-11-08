@@ -27,10 +27,11 @@ It has been tested to run under Windows with MSYS2:
 - install and run MSYS2
 - pacman -S mingw-w64-ucrt-x86_64-toolchain
 - pacman -S mingw-w64-ucrt-x86_64-eigen3
-- pacman -S mingw-w64-ucrt-x86_64-pybind11
 - pacman -S git
 - git clone https://github.com/mcygorek/ACE
 - export EIGEN_HOME=/ucrt64/include/eigen3
 - cd ACE; make -f Makefile_static
 
 Successful compilation produces a binary "ACE.exe" in the "bin" subdirectory
+
+Python bindings on Windows have not been tested yet.
