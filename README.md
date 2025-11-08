@@ -17,6 +17,8 @@ The Intel MKL is automatically used if set up correctly on the system.
 
 Successful compilation produces a binary "ACE" in the "bin" subdirectory
 
+If "pybind11" is installed, python bindings can be generated with "make pybind". See examples in pybind subdirectory.
+
 ## Windows: 
 
 A precompiled ACE.exe is included for easy usage, which however comes with limited functionality and suboptimal performance, and it may be outdated.
