@@ -28,6 +28,7 @@ It has been tested to run under Windows with MSYS2:
 - pacman -S mingw-w64-ucrt-x86_64-toolchain
 - pacman -S mingw-w64-ucrt-x86_64-eigen3
 - pacman -S git
+- pacman -S make
 - git clone https://github.com/mcygorek/ACE
 - export EIGEN_HOME=/ucrt64/include/eigen3
 - cd ACE; make -f Makefile_static
