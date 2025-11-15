@@ -26,19 +26,25 @@ If "pybind11" is installed, python bindings can be generated with "make pybind".
 First, install WSL2 with Ubuntu and update the repository. To this end, open the PowerShell and type:
 
 > wsl --install Ubuntu
+
 > sudo apt-get update
+
 > sudo apt-get upgrade
 
 Next, install C++ and Python compilers as well as required libraries
 
 > sudo apt install g++ autotools libeigen3-dev
+
 > sudo apt install python3-dev python3-matplotlib python3-pybind11
 
 Then, clone the github repository and compile (including python bindings)
 
 > git clone https://github.com/mcygorek/ACE
+
 > cd ACE
+
 > make
+
 > make pybind
 
 Now, there should be a binary file "ACE" in the "bin" subdirectory. Ideally, set the path to this directory by appending to your local .bashrc
@@ -58,15 +64,21 @@ but be sure to edit the second line and replace the /.../ by /PATH_TO/
 A precompiled ACE.exe is included for easy usage, which however comes with limited functionality and suboptimal performance, and it may be outdated.
 It has been tested to run under Windows with MSYS2:
 
-- install and run MSYS2
-- pacman -S mingw-w64-ucrt-x86_64-toolchain
-- pacman -S mingw-w64-ucrt-x86_64-eigen3
-- pacman -S git
-- pacman -S make
-- git clone https://github.com/mcygorek/ACE
-- export EIGEN_HOME=/ucrt64/include/eigen3
-- cd ACE; make -f Makefile_static
+First, install and run MSYS2. Then, in the UCRT version of MSYS2, run
+> pacman -S mingw-w64-ucrt-x86_64-toolchain
+
+> pacman -S mingw-w64-ucrt-x86_64-eigen3
+
+> pacman -S git
+
+> pacman -S make
+
+> git clone https://github.com/mcygorek/ACE
+ 
+> export EIGEN_HOME=/ucrt64/include/eigen3
+
+> cd ACE; make -f Makefile_static
 
 Successful compilation produces a binary "ACE.exe" in the "bin" subdirectory
 
-Python bindings on Windows have not been tested yet.
+Python bindings on MSYS2 have not been tested yet.
