@@ -33,7 +33,7 @@ First, install WSL2 with Ubuntu and update the repository. To this end, open the
 
 Next, install C++ and Python compilers as well as required libraries
 
-> sudo apt install g++ autotools libeigen3-dev
+> sudo apt install g++ make libeigen3-dev
 
 > sudo apt install python3-dev python3-matplotlib python3-pybind11
 
