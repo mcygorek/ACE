@@ -44,7 +44,7 @@ LIBSRC = $(wildcard src/*.cpp)
 LIBOBJS = $(patsubst src/%.cpp, lib/%.o, $(LIBSRC))
 LIBSTRING = '$(shell pwd)/lib'
 
-EXECOBJS = ACE QUAPI TEMPO ACE_Network #ACE_env_obs 
+EXECOBJS = ACE QUAPI TEMPO #ACE_Network #ACE_env_obs 
 BINEXEC = $(patsubst %, bin/%, $(EXECOBJS))
 
 PYBINDSUF = $(shell python3-config --extension-suffix)
