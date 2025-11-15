@@ -39,6 +39,8 @@ Next, install C++ and Python compilers as well as required libraries
 
 Then, clone the github repository and compile (including python bindings)
 
+> cd
+
 > git clone https://github.com/mcygorek/ACE
 
 > cd ACE
