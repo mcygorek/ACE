@@ -35,7 +35,7 @@ Next, install C++ and Python compilers as well as required libraries
 
 > sudo apt install g++ make libeigen3-dev
 
-> sudo apt install python3-dev python3-matplotlib python3-pybind11
+> sudo apt install python3-dev python3-matplotlib
 
 Then, clone the github repository and compile (including python bindings)
 
@@ -47,8 +47,6 @@ Then, clone the github repository and compile (including python bindings)
 
 > make
 
-> make pybind
-
 Now, there should be a binary file "ACE" in the "bin" subdirectory. Ideally, set the path to this directory by appending to your local .bashrc
 > export PATH=$PATH:/PATH_TO/ACE/bin
 where PATH_TO is to be replaced by the path to the ACE directory, typically /home/USERNAME/ with the name of the user USERNAME
@@ -56,10 +54,27 @@ where PATH_TO is to be replaced by the path to the ACE directory, typically /hom
 Try running examples, e.g.
 > ACE ACE/examples/JCP2024/Fig5/phonon_assisted.param
 
-or the python examples in the pybind subdirectories, e.g., 
+#### Python bindings
+
+The ACE library provides Python bindings via pybind11. To install this, run 
+
+> sudo apt install python3-pybind11
+
+and in the ACE directory
+
+> make pybind
+
+You can check out the python examples in the ACE/pybind subdirectory, e.g., 
 > python3 /PATH_TO/ACE/pybind/06_cQED.py
 but be sure to edit the second line and replace the /.../ by /PATH_TO/
 
+#### Jupyter notebooks
+
+
+sudo apt install python3.12-venv 
+python3 -m venv ACE_env
+source ACE_env/bin/activate
+pip install matplotlib jupyter
 
 ### MSYS2:
 
