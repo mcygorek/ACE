@@ -80,6 +80,14 @@ If you run
 
 you will see a link (starting with "localhost:8888/"). Copy this to your browser and try out the examples. Note: the ".../ACE/pybind" in the second line in the examples should be replaced by "/home/WSLUSER/ACE/pybind", where WSLUSER is the username provided when installing WSL.
 
+#### VS Code with WSL extension
+
+There is an extension to VS Code that lets you access WSL. Just make sure you have 
+
+> sudo apt install python3-ipython
+
+installed on WSL and you should be able to access .ipynb notebooks on WSL using VS Code.
+
 ### MSYS2:
 
 A precompiled ACE.exe is included for easy usage, which however comes with limited functionality and suboptimal performance, and it may be outdated.
