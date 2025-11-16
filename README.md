@@ -91,7 +91,7 @@ installed on WSL and you should be able to access .ipynb notebooks on WSL using 
 ### MSYS2:
 
 A precompiled ACE.exe is included for easy usage, which however comes with limited functionality and suboptimal performance, and it may be outdated.
-It has been tested to run under Windows with MSYS2:
+A new Windows executable can be created with MSYS2:
 
 First, install and run MSYS2. Then, in the UCRT version of MSYS2, run
 > pacman -S mingw-w64-ucrt-x86_64-toolchain
