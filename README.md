@@ -70,11 +70,21 @@ but be sure to edit the second line and replace the /.../ by /PATH_TO/
 
 #### Jupyter notebooks
 
+If you want to use .ipynb notebooks, you can install jupyter on WSL, then access the notebooks via your regular browser (outside of WSL). The easiest way to set this up is installing jupyter in a virtual environment via pip:
 
-sudo apt install python3.12-venv 
-python3 -m venv ACE_env
-source ACE_env/bin/activate
-pip install matplotlib jupyter
+> sudo apt install python3.12-venv
+
+> python3 -m venv ACE_env
+
+> source ACE_env/bin/activate
+
+> pip install matplotlib jupyter
+
+If you run 
+
+> jupyter-notebook
+
+you will see a link (starting with "localhost:8888/"). Copy this to your browser and try out the examples. Note: the ".../ACE/pybind" in the second line in the examples should be replaced by "/home/WSLUSER/ACE/pybind", where WSLUSER is the username provided when installing WSL.
 
 ### MSYS2:
 
