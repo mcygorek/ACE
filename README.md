@@ -78,7 +78,7 @@ If you run
 
 > jupyter-notebook
 
-you will see a link (starting with "localhost:8888/"). Copy this to your browser and try out the examples. Note: the ".../ACE/pybind" in the second line in the examples should be replaced by "/home/WSLUSER/ACE/pybind", where WSLUSER is the username provided when installing WSL.
+you will see a link (starting with "localhost:8888/"). Copy this long URL into your browser and go there. To try out the examples in the ACE/pybind subdirectory, make sure to copy the content of the .py files into newly created .ipynb notebook files. Note: the ".../ACE/pybind" in the second line in the examples should be replaced by "/home/WSLUSER/ACE/pybind", where WSLUSER is the username provided when installing WSL.
 
 #### VS Code with WSL extension
 
