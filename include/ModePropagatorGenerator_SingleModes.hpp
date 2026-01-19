@@ -40,7 +40,7 @@ public:
 
   virtual EnvironmentOperators get_env_ops(int k) const;
   virtual Eigen::MatrixXcd get_bath_init(int k)const;
-  virtual ModePropagatorPtr getModePropagator(int k)const;
+  virtual ModePropagatorPtr get_ModePropagator(int k)const;
 
   ModePropagatorGenerator_SingleModes(Parameters &param){
     setup(param);

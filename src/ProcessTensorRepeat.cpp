@@ -26,6 +26,17 @@ const ProcessTensorElement & ProcessTensorRepeat::get_ro(int n_, PreloadHint hin
   return repeated.get_ro((n_-(int)initial.size()) % ((int)repeated.size()), hint);
 }
 
+int ProcessTensorRepeat::get_N_system(){
+  int this_n=ProcessTensorForward::n; 
+  if(this_n>=n_tot){ this_n=0; }
+  if(n_tot<1){
+    std::cerr<<"ProcessTensorRepeat::get_N_system(): n_tot<1!"<<std::endl;
+    throw DummyException();
+  }
+  const ProcessTensorElement &e=get_ro(this_n);
+  return e.get_N();
+}
+
 
 int ProcessTensorRepeat::get_n_mem(const TimeGrid &tgrid){
   int n_mem_tmp=tgrid.n_mem;

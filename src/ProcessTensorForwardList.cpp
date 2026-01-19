@@ -74,23 +74,37 @@ std::shared_ptr<ProcessTensorForward> ProcessTensorForwardList::PTptr_from_file(
   return ret;
 }
 
-void ProcessTensorForwardList::add_PT(Parameters &param){
-  std::vector<std::vector<std::string> > add_PT = param.get("add_PT");
+void ProcessTensorForwardList::add_PT(const ReadPT_struct &expand){
+    std::cout<<"add_PT: '"<<expand.fname<<"'";
+    if(expand.expand_front>1){std::cout<<" expand_front="<<expand.expand_front;}
+    if(expand.expand_back>1){std::cout<<" expand_back="<<expand.expand_back;}
+    std::cout<<std::endl;
 
-  for(size_t i=0; i<add_PT.size(); i++){
+    list.push_back(PTptr_from_file(expand.fname,true));
+    for(size_t j=temp_expand.size(); j<list.size(); j++){
+      temp_expand.push_back(ReadPT_struct());
+    }
+    temp_expand[list.size()-1]=expand;
+}
+void ProcessTensorForwardList::add_PT(Parameters &param){
+  std::vector<std::vector<std::string> > add_PT_svv = param.get("add_PT");
+
+  for(size_t i=0; i<add_PT_svv.size(); i++){
     bool complain=false;
-    if(add_PT[i].size()<1){
+    if(add_PT_svv[i].size()<1){
       std::cerr<<"USAGE: add_PT FILENAME [expand_dim_front] [expand_dim_back]!"<<std::endl;
       throw DummyException();
     }
-    ReadPT_struct expand(add_PT[i][0]);
-    if(add_PT[i].size()>1){
-      expand.expand_front=readDouble(add_PT[i][1],"add_PT FILENAME [expand_dim_front]");
+    ReadPT_struct expand(add_PT_svv[i][0]);
+    if(add_PT_svv[i].size()>1){
+      expand.expand_front=readDouble(add_PT_svv[i][1],"add_PT FILENAME [expand_dim_front]");
     }
-    if(add_PT[i].size()>2){
-      expand.expand_back=readDouble(add_PT[i][2],"add_PT FILENAME [expand_dim_front] [expand_dim_back]");
+    if(add_PT_svv[i].size()>2){
+      expand.expand_back=readDouble(add_PT_svv[i][2],"add_PT FILENAME [expand_dim_front] [expand_dim_back]");
     }
 
+    add_PT(expand);
+/*
     std::cout<<"add_PT: '"<<expand.fname<<"'";
     if(expand.expand_front>1){std::cout<<" expand_front="<<expand.expand_front;}
     if(expand.expand_back>1){std::cout<<" expand_back="<<expand.expand_back;}
@@ -101,6 +115,7 @@ void ProcessTensorForwardList::add_PT(Parameters &param){
       temp_expand.push_back(ReadPT_struct());
     }
     temp_expand[list.size()-1]=expand;
+*/
   }
 }
 
@@ -279,17 +294,49 @@ void ProcessTensorForwardList::setup2(Parameters &param, std::vector<std::shared
     }else{
       //read/set initial PT:
       bool use_combine_tree = param.get_as_bool("use_combine_tree");
+      bool use_combine_tree_randomized = param.get_as_bool("use_combine_tree_randomized");
       bool use_combine_select = param.get_as_bool("use_select");
+      bool use_combine_alternate = param.get_as_bool("use_combine_alternate");
       int sysdim=mpgs[0]->get_N();
 
+
+      std::shared_ptr<CompressionTree> TTree;
+      std::shared_ptr<CompressionTree> TTree_inv;
+      int TTree_at;
+      std::string TTree_filename;
+      if(param.is_specified("calculate_CompressionTree")){
+        TTree_filename = param.get_as_string_check("calculate_CompressionTree",0,0);
+        TTree_at = param.get_as_size_t("calculate_CompressionTree",tgrid.n_tot/2,0,1);
+        if(TTree_at <1 || TTree_at > tgrid.n_tot-3 ){
+          std::cerr<<"TTree_at="<<TTree_at<<" out of bounds!"<<std::endl;
+          throw DummyException();
+        }
+        TTree = std::make_shared<CompressionTree>(1);
+        TTree_inv = std::make_shared<CompressionTree>(1);
+        std::cout<<"Prepare CompressionTree at site "<<TTree_at<<" and select file "<<TTree_filename<<std::endl;
+      }
+
+
       if(initial_PT!=""){
+        if(TTree){
+          std::cerr<<"Combining initial_PT with CompressionTree not implemented yet!"<<std::endl;
+          throw DummyException();
+        }
         PTB->copy_content(initial_PT_struct);
       }else{
         PTB->set_trivial(tgrid.n_tot, sysdim);
+        PTB->TTree_at=TTree_at;
+        PTB->TTree=TTree;
+        PTB->TTree_inv=TTree_inv;
       }
 
       for(int i=0; i<(int)mpgs.size(); i++){
-        if(use_combine_tree){
+        if(use_combine_tree_randomized){
+          PTB->set_from_modes_tree_randomized(*mpgs[i].get(), tgrid, trunc, \
+                   param.get_as_double("randomized_chi_a", 0), \
+                   param.get_as_double("randomized_chi_b", 16), \
+                   dict_zero, verbosity);
+        }else if(use_combine_tree){
           if(initial_PT=="" && i==0){
 std::cout<<"using: set_from_modes_tree"<<std::endl;
             PTB->set_from_modes_tree(*mpgs[i].get(), tgrid, trunc, dict_zero, verbosity);
@@ -299,9 +346,21 @@ std::cout<<"using: add_modes_tree"<<std::endl;
           }
         }else if(use_combine_select){
           PTB->add_modes_select(*mpgs[i].get(), tgrid, trunc, dict_zero, verbosity);
+        }else if(use_combine_alternate){
+          PTB->add_modes_firstorder(*mpgs[i].get(), tgrid, trunc, dict_zero, verbosity, true);
         }else{
           PTB->add_modes(*mpgs[i].get(), tgrid, trunc, dict_zero, verbosity);
         }
+      }
+
+
+      if(TTree){  
+        TTree->write(TTree_filename);
+        TTree->print_info_file(TTree_filename+"_info");
+      }
+      if(TTree_inv){  
+        TTree_inv->write(TTree_filename+"_inv");
+        TTree_inv->print_info_file(TTree_filename+"_inv_info");
       }
     }
     

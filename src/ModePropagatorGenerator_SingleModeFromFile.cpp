@@ -40,7 +40,7 @@ namespace ACE{
     setup(str[0],ops);
   }
 
-  ModePropagatorPtr ModePropagatorGenerator_SingleModeFromFile::getModePropagator(int k)const{
+  ModePropagatorPtr ModePropagatorGenerator_SingleModeFromFile::get_ModePropagator(int k)const{
     if(k<0||k>=get_N_modes()){
       std::cerr<<"ModePropagatorGenerator_SingleMode: k<0||k>=get_N_modes()!"<<std::endl; 
       exit(1);

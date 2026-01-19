@@ -87,8 +87,8 @@ void ProcessTensorElement::join_thissecond(const ProcessTensorElement &other){
 }
 
 void ProcessTensorElement::join_symmetric(
-                         const ProcessTensorElement &other_left,
-                         const ProcessTensorElement &other_right){
+                         ProcessTensorElement &other_left,
+                         ProcessTensorElement &other_right){
 
   accessor.join_symmetric(other_left.accessor, other_right.accessor,
                           M, other_left.M, other_right.M);
@@ -97,6 +97,45 @@ void ProcessTensorElement::join_symmetric(
   env_ops.join(other_right.env_ops);  
 
   clearNF();
+}
+void ProcessTensorElement::pass_on_before_join_symmetric(
+                                  ProcessTensorElement &other_left,
+                                  ProcessTensorElement &other_right,
+                                  const TruncatedSVD &trunc, 
+                                  PassOn &pass_on, bool is_last){
+
+  accessor.pass_on_before_join_symmetric(
+                          other_left.accessor, other_right.accessor,
+                          M, other_left.M, other_right.M, pass_on);
+
+  closure=Vector_otimes(closure, other_right.closure);
+  env_ops.join(other_right.env_ops);  
+
+  clearNF();
+
+  if(is_last){
+    if(!is_forwardNF()){
+      forwardNF=Eigen::VectorXd::Ones(M.dim_d2);
+    }
+    pass_on.set(M.dim_d2);
+    return;
+  }
+
+  Eigen::MatrixXcd A=M.get_Matrix_d1i_d2();
+  pass_on=trunc.compress_forward(A, forwardNF);
+  double keep=forwardNF(0);
+  if(trunc.keep>0){
+    keep=trunc.keep;
+  }
+  if(fabs(keep-1.)>1e-6){
+    pass_on.P/=keep;
+    pass_on.Pinv*=keep;
+    A*=keep;
+  }
+  M.set_from_Matrix_d1i_d2(A, M.dim_i);
+
+  if(closure.size()==pass_on.P.cols())closure=pass_on.P*closure;
+  env_ops.process_forward(pass_on);
 }
 
 void ProcessTensorElement::join_thisfirst_sameinner(const ProcessTensorElement &e2){
@@ -159,27 +198,31 @@ SelectIndices ProcessTensorElement::get_backwardNF_selected_indices(
 
 
 void ProcessTensorElement::join_selected(
-                              int n, const ProcessTensorElement &other, 
+                              int n, ProcessTensorElement &other, 
                               const SelectIndices & k_list_left, 
                               const SelectIndices & k_list_right){
-//std::cout<<"tEsT0"<<std::endl;
-
+  constexpr bool debug=false;
+  if(debug){std::cout<<"join_selected: n="<<n<<std::endl;}
   accessor.join_select_indices_alternate(n, M, other.M, other.accessor, k_list_left, k_list_right);
-//std::cout<<"tEsT1"<<std::endl;
 
+  if(debug){std::cout<<"join_selected: Mark1"<<std::endl;}
+  if(debug){std::cout<<"k_list_left: ";k_list_left.print_info();std::cout<<std::endl;}
+  if(debug){std::cout<<"k_list_right: ";k_list_right.print_info();std::cout<<std::endl;}
+  if(debug){std::cout<<"closure.size()="<<closure.size()<<" other.closure.size()="<<other.closure.size()<<std::endl;}
   //closure=k_list_right.Vector_otimes(closure, other.closure);
   Eigen::VectorXcd new_closure(k_list_right.size());
   for(int kr=0; kr<k_list_right.size(); kr++){
+    if(debug){std::cout<<"kr="<<kr<<" k_list_right[kr].first="<<k_list_right[kr].first<<" k_list_right[kr].second="<<k_list_right[kr].second<<std::endl;}
     new_closure(kr) = closure(k_list_right[kr].first)
                     * other.closure(k_list_right[kr].second);
   }
   closure=new_closure;
+  if(debug){std::cout<<"join_selected: Mark2"<<std::endl;}
 
-//std::cout<<"tEsT2"<<std::endl;
   env_ops.join_select_indices(other.env_ops, k_list_right);
 
 
-//std::cout<<"tEsT3"<<std::endl;
+  if(debug){std::cout<<"join_selected: Mark2"<<std::endl;}
   if(is_forwardNF() && other.is_forwardNF()){
     Eigen::VectorXd new_forwardNF(k_list_right.size());
     for(int k=0; k<k_list_right.size(); k++){
@@ -196,22 +239,13 @@ void ProcessTensorElement::join_selected(
     }
     clearNF();
     backwardNF=new_backwardNF;
-/*  }else{
-//    if(k_list_left.size()==M.dim_d1
-    std::cerr<<"n="<<n<<" ";
-    std::cerr<<"k_list_left.size()="<<k_list_left.size()<<" ";
-    std::cerr<<"k_list_right.size()="<<k_list_right.size()<<" ";
-    std::cerr<<"M.dim_d1="<<M.dim_d1<<" M.dim_d2="<<M.dim_d2<<" ";
-    std::cerr<<"other.M.dim_d1="<<other.M.dim_d1<<" ";
-    std::cerr<<"other.M.dim_d2="<<other.M.dim_d2<<std::endl;   
-    std::cerr<<"ProcessTensorElement::join_selected: neither forwardNF nor backwardNF!"<<std::endl;
-    throw DummyException();
-*/
   }
-//std::cout<<"tEsT4"<<std::endl;
+
+  if(debug){std::cout<<"join_selected: done."<<std::endl;}
 }
+
 void ProcessTensorElement::join_average_selected(
-                              const ProcessTensorElement &other,
+                              ProcessTensorElement &other,
                               const SelectIndices & k_list_left,
                               const SelectIndices & k_list_right){
 
@@ -234,6 +268,7 @@ void ProcessTensorElement::join_average_selected(
 
 void ProcessTensorElement::sweep_forward(const TruncatedSVD &trunc, PassOn &pass_on, bool is_last){
   M.inner_multiply_left(pass_on.P);
+
   if(is_last){
     if(!is_forwardNF()){
       forwardNF=Eigen::VectorXd::Ones(M.dim_d2);
@@ -248,10 +283,6 @@ void ProcessTensorElement::sweep_forward(const TruncatedSVD &trunc, PassOn &pass
   double keep=forwardNF(0);
   if(trunc.keep>0){
     keep=trunc.keep;
-//  }else if(closure.size()==pass_on.P.cols()){
-//    Eigen::VectorXcd new_closure=pass_on.P*closure;
-//    std::cout<<"#"<<new_closure.norm()<<"#";
-//    keep=new_closure.norm();
   }
   if(fabs(keep-1.)>1e-6){
     pass_on.P/=keep;
@@ -270,6 +301,16 @@ void ProcessTensorElement::sweep_backward(const TruncatedSVD &trunc, PassOn &pas
     throw DummyException();
   }
   M.inner_multiply_right(pass_on.P);
+/*
+  if(T_cut_at_higher){
+    std::cout<<"sweep_backward: T_cut_at_higher"<<std::endl;
+    std::cout<<"P.rows()="<<pass_on.P.rows()<<" ";
+    std::cout<<"P.cols()="<<pass_on.P.cols()<<" ";
+    std::cout<<"T.rows()="<<T_cut_at_higher->T.rows()<<std::endl;
+    //update Tinv:
+    T_cut_at_higher->T = (pass_on.P.transpose())*T_cut_at_higher->T; 
+  }
+*/
   if(closure.size()==pass_on.Pinv.cols())closure=pass_on.Pinv*closure;
   env_ops.process_backward(pass_on);
   if(is_last){
@@ -292,6 +333,16 @@ void ProcessTensorElement::sweep_backward(const TruncatedSVD &trunc, PassOn &pas
     A*=keep;
   }
   M.set_from_Matrix_d1_id2(A, M.dim_i);
+/*
+  if(T_cut_at_lower){
+    std::cout<<"sweep_backward: T_cut_at_lower"<<std::endl;
+    std::cout<<"Pinv.rows()="<<pass_on.Pinv.rows()<<" ";
+    std::cout<<"Pinv.cols()="<<pass_on.Pinv.cols()<<" ";
+    std::cout<<"T.rows()="<<T_cut_at_lower->T.rows()<<std::endl;
+    //update Tinv:
+    T_cut_at_lower->T = (pass_on.Pinv)*T_cut_at_lower->T; 
+  }
+*/
 }
 
 void ProcessTensorElement::sweep_forward_QR(const TruncatedSVD &trunc, PassOn &pass_on, bool is_last){

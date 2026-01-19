@@ -33,6 +33,16 @@ int ProcessTensorStream_ro::get_n_tot()const{
   return s_pos.size();
 }
 
+int ProcessTensorStream_ro::get_N_system(){
+  int this_n=ProcessTensorForward::n; 
+  if(this_n>=n_tot){ this_n=0; }
+  if(n_tot<1){
+    std::cerr<<"ProcessTensorStream_ro::get_N_system(): n_tot<1!"<<std::endl;
+    throw DummyException();
+  }
+  const ProcessTensorElement &e=get(this_n);
+  return e.get_N();
+}
 const ProcessTensorElement * ProcessTensorStream_ro::current(){
   fwd_buffer = std::shared_ptr<ProcessTensorElement>(new ProcessTensorElement(get(ProcessTensorForward::n)));
   return fwd_buffer.get();

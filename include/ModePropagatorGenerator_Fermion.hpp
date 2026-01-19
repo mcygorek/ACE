@@ -38,7 +38,7 @@ public:
 
   virtual void setup(Parameters &param);
 
-  virtual ModePropagatorPtr getModePropagator(int k)const;
+  virtual ModePropagatorPtr get_ModePropagator(int k)const;
   
   double get_n_eq(int k)const; //particle number in therm. equil. 
   virtual Eigen::MatrixXcd get_bath_init(int k)const;

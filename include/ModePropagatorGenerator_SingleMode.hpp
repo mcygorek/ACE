@@ -33,7 +33,7 @@ public:
   inline virtual Eigen::MatrixXcd get_bath_init(int k)const{
     return rho_init;
   }
-  virtual ModePropagatorPtr getModePropagator(int k)const;
+  virtual ModePropagatorPtr get_ModePropagator(int k)const;
 
   inline ModePropagatorGenerator_SingleMode(const Eigen::MatrixXcd & HE_,  const Eigen::MatrixXcd & init_){
     setup(HE_, init_);

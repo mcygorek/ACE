@@ -38,6 +38,11 @@ public:
 
 
   static std::shared_ptr<ProcessTensorForward> PTptr_from_file(const std::string &str, bool read_only);
+
+  void add_PT(const ReadPT_struct &expand);
+  inline void add_PT(const std::string &fname, int front, int back){
+    add_PT(ReadPT_struct(fname, front, back));
+  }
   void add_PT(Parameters &param);
 
   void setup2(Parameters &param, 

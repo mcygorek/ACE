@@ -38,6 +38,7 @@ public:
 
   virtual int get_n_tot()const;
   virtual void dict_expand(const ReadPT_struct &readPT);
+  virtual int get_N_system();
   virtual const ProcessTensorElement * current();
   
   void process_file(const std::string &fname, bool complain=false);

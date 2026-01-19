@@ -52,8 +52,8 @@ public:
 
   void sweep_forward(const TruncatedSVD &trunc);
   void sweep_backward(const TruncatedSVD &trunc);
-  void join_halfdt(const ProcessTensor &other);
-  void join_and_sweep_halfdt(const ProcessTensor &other, const TruncatedSVD &trunc);
+  void join_halfdt(ProcessTensor &other);
+  void join_and_sweep_halfdt(ProcessTensor &other, const TruncatedSVD &trunc);
 //  void join_and_sweep_select(ProcessTensor &other, const TruncatedSVD &trunc, int verbosity);
 
   //requires both PTs in forward normal form

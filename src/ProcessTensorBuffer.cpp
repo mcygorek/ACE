@@ -7,6 +7,7 @@
 #include "DummyException.hpp"
 #include "AddPT.hpp"
 #include "TruncationLayout.hpp"
+#include "RandomizedCompression.hpp"
 #include <fstream>
 #include <string>
 
@@ -32,6 +33,11 @@ void ProcessTensorBuffer::check_write_buffer_bounds(int n)const{
     std::cerr<<"info: "; print_info(std::cerr); std::cerr<<std::endl;
     throw DummyException();
   }
+}
+int ProcessTensorBuffer::get_center_dim(){
+  if(n_tot<1)return 0;
+  const ProcessTensorElement &e=peek((n_tot-1)/2);
+  return e.M.dim_d2;
 }
 void ProcessTensorBuffer::print_dims(std::ostream &ofs, bool print_both){
   for(int n=0; n<n_tot; n++){
@@ -619,6 +625,22 @@ void ProcessTensorBuffer::distribute_weights(){
   }
 }
 
+
+void ProcessTensorBuffer::set_CompressionTree_at(int n){
+  if(n<=0 || n>=n_tot-2){
+    std::cerr<<"PTB::set_CompressionTree_at: out of bounds ("<<n<<" vs. "<<n_tot<<")!"<<std::endl;
+    throw DummyException();
+  }
+  constexpr bool debug=true;
+
+  const ProcessTensorElement &e = peek(n);
+  if(debug){std::cout<<"set_CompressionTree_at "<<n<<", dim="<<e.M.dim_d2<<std::endl;}
+  TTree_at = n;
+  TTree = std::make_shared<CompressionTree>(e.M.dim_d2);
+  TTree_inv=std::make_shared<CompressionTree>(e.M.dim_d2);
+}
+
+
 void ProcessTensorBuffer::sweep_forward(const TruncatedSVD &trunc, 
                                         int verbosity,
                                         int range_start, int range_end){
@@ -646,7 +668,9 @@ void ProcessTensorBuffer::sweep_forward(const TruncatedSVD &trunc,
     }
     if(element.M.dim_d2>maxdim_in)maxdim_in=element.M.dim_d2;
 
+    sweep_forward_pre(n, TTree_at, TTree, TTree_inv, pass_on);
     element.sweep_forward(trunc, pass_on, (n==range_end-1));
+    sweep_forward_post(n, TTree_at, TTree, TTree_inv, pass_on);
 
     if(element.M.dim_d2>maxdim_out){
       maxdim_out=element.M.dim_d2;
@@ -682,7 +706,11 @@ void ProcessTensorBuffer::sweep_backward(const TruncatedSVD &trunc,
       maxdim_at=n;
     }
     if(element.M.dim_d1>maxdim_in)maxdim_in=element.M.dim_d1;
+
+    sweep_backward_pre(n, TTree_at, TTree, TTree_inv, pass_on);
     element.sweep_backward(trunc, pass_on, (n==range_start));
+    sweep_backward_post(n, TTree_at, TTree, TTree_inv, pass_on);
+
     if(element.M.dim_d1>maxdim_out){
       maxdim_out=element.M.dim_d1;
       maxdim_at=n;
@@ -775,11 +803,26 @@ void ProcessTensorBuffer::join_and_sweep_forward(
     if(n==shift_extend.shift_second){
       pass_on=PassOn(e.M.dim_d1);
     }
+
+
+    if(TTree && TTree_at==n){
+        std::cout<<"join_and_sweep_forward: TTree_at: "<<n<<std::endl;
+        TTree->combine(PTB2.TTree);
+    }
+    if(TTree_inv && TTree_at+1==n){
+        std::cout<<"join_and_sweep_forward: TTree_at: "<<n<<std::endl;
+        TTree_inv->combine(PTB2.TTree_inv);
+    }
+    sweep_forward_pre(n, TTree_at, TTree, TTree_inv, pass_on);
+
+
     e.sweep_forward(trunc, pass_on, (n==n_tot_new-1));
     if(e.M.dim_d2>maxdim_out){
       maxdim_out=e.M.dim_d2;
       maxdim_at=n;
     }
+
+    sweep_forward_post(n, TTree_at, TTree, TTree_inv, pass_on);
   }
 
   //write overhanging elements of shiftet PT_ro2 (length: extend_first) )
@@ -798,12 +841,10 @@ void ProcessTensorBuffer::join_and_sweep_forward(
 void ProcessTensorBuffer::join_symmetric_and_sweep_forward(
                                 ProcessTensorBuffer & PTB2,
                                 const TruncatedSVD &trunc, int verbosity,
-                                ShiftExtend shift_extend){
+                                ShiftExtend shift_extend, int mode){
 
   PassOn pass_on;
-
 //  bool debug=false;
-
   int n_tot_old=n_tot;
 
   if(n_tot_old<=shift_extend.shift_second){ //no overlap in this case
@@ -849,21 +890,43 @@ void ProcessTensorBuffer::join_symmetric_and_sweep_forward(
     ProcessTensorElement & e2 = PTB2.get(2*n2, ForwardPreload);
     ProcessTensorElement & e3 = PTB2.get(2*n2+1, ForwardPreload);
 
+    if(n==shift_extend.shift_second){
+      pass_on=PassOn(e.M.dim_d1*e2.M.dim_d1);
+    }
+
     if(e.M.dim_d2>maxdim_in1)maxdim_in1=e.M.dim_d2;
     if(e3.M.dim_d2>maxdim_in2)maxdim_in2=e3.M.dim_d2;
+
+    if(TTree && TTree_at==n){
+        std::cout<<"join_symmetric_and_sweep_forward: TTree_at: "<<n<<std::endl;
+        TTree->combine(PTB2.TTree);
+    }
+    if(TTree_inv && TTree_at+1==n){
+        std::cout<<"join_symmetric_and_sweep_forward: TTree_at: "<<n<<std::endl;
+        TTree_inv->combine(PTB2.TTree_inv);
+    }
+    sweep_forward_pre(n, TTree_at, TTree, TTree_inv, pass_on);
 
     if(n==n_tot_old-n_trunc1-1){
       ProcessTensorElement e4=e3;
       e4.close_off(); 
-      e.join_symmetric(e2,e4);
-    }else{
-      e.join_symmetric(e2,e3);
-    }
+      if(mode==1){
+        e.pass_on_before_join_symmetric(e2, e4, trunc, pass_on, (n==n_tot_new-1));
+      }else{
+        e.join_symmetric(e2,e4);
+        e.sweep_forward(trunc, pass_on, (n==n_tot_new-1));
+      }
 
-    if(n==shift_extend.shift_second){
-      pass_on=PassOn(e.M.dim_d1);
+    }else{
+      if(mode==1){
+        e.pass_on_before_join_symmetric(e2, e3, trunc, pass_on, (n==n_tot_new-1));
+      }else{
+        e.join_symmetric(e2,e3);
+        e.sweep_forward(trunc, pass_on, (n==n_tot_new-1));
+      }
     }
-    e.sweep_forward(trunc, pass_on, (n==n_tot_new-1));
+    sweep_forward_post(n, TTree_at, TTree, TTree_inv, pass_on);
+
     if(e.M.dim_d2>maxdim_out){
       maxdim_out=e.M.dim_d2;
       maxdim_at=n;
@@ -961,13 +1024,25 @@ void ProcessTensorBuffer::join_and_sweep_backward(
       e2_tmp.close_off();
       e.join_thisfirst(e2_tmp);
     }else{
+      if(TTree && TTree_at==n){
+        std::cout<<"join_and_sweep_backward: TTree_at: "<<n<<std::endl;
+        TTree->combine(PTB2.TTree);
+      }
+
       e.join_thisfirst(e2);
+
+      if(TTree_inv && TTree_at+1==n){
+        std::cout<<"join_and_sweep_backward: TTree_at: "<<n<<std::endl;
+        TTree_inv->combine(PTB2.TTree_inv);
+      }
     }
 
     if(n==n_tot_old-1-n_trunc1 && !(extend_first>0 && sweep_overhang)){
       pass_on=PassOn(e.M.dim_d2);
     }
+    sweep_backward_pre(n, TTree_at, TTree, TTree_inv, pass_on);
     e.sweep_backward(trunc, pass_on, (n==shift_extend.shift_second));
+    sweep_backward_post(n, TTree_at, TTree, TTree_inv, pass_on);
 
     if(e.M.dim_d1>maxdim_out)maxdim_out=e.M.dim_d1;
   }
@@ -1014,7 +1089,7 @@ if(debug)std::cout<<"jnsbw: started"<<std::endl;
     n_trunc1=-extend_first;
     extend_first=0;
   }
-std::cout<<"extend_first="<<extend_first<<std::endl;
+if(verbosity>0){std::cout<<"extend_first="<<extend_first<<std::endl;}
 
   //if sweep_more!=0: lowest index of element touched:
   int sweep_more_limit=shift_extend.shift_second;
@@ -1110,6 +1185,8 @@ try{
       next_element1=peek(n-1);
       next_element2=PTB2.peek(n-1-shift_extend.shift_second);
       k_list_left=next_element1.get_forwardNF_selected_indices(next_element2, trunc_select);
+//      k_list_left.set_full(next_element1.forwardNF.size(), \
+                           next_element2.forwardNF.size());
 
     }
 
@@ -1124,7 +1201,17 @@ try{
 #elif defined(JNSBW_NOSYM)
     element1.join_selected(0, element2, k_list_left, k_list_right);
 #else
+    if(TTree && TTree_at==n){
+      std::cout<<"join_select_and_sweep_backward: TTree_at: "<<n<<std::endl;
+      TTree->combine_select(PTB2.TTree, k_list_right);
+    }
+
     element1.join_selected(n, element2, k_list_left, k_list_right);
+
+    if(TTree_inv && TTree_at+1==n){
+      std::cout<<"join_select_and_sweep_backward: TTree_at+1: "<<n<<std::endl;
+      TTree_inv->combine_select(PTB2.TTree_inv, k_list_left);
+    }
 #endif
 //std::cout<<"after join_selected n="<<n<<std::endl;
 
@@ -1151,6 +1238,7 @@ std::cout<<"pass_on.P.rows()="<<pass_on.P.rows()<<" pass_on.P.cols()="<<pass_on.
 
 
 //backward sweep of selected block
+    sweep_backward_pre(n, TTree_at, TTree, TTree_inv, pass_on);
     if(shift_extend.sweep_more!=0){
       int fin=0;
       if(shift_extend.sweep_more>0 && shift_extend.shift_second>shift_extend.sweep_more){
@@ -1160,6 +1248,7 @@ std::cout<<"pass_on.P.rows()="<<pass_on.P.rows()<<" pass_on.P.cols()="<<pass_on.
     }else if(subsequent_sweep){
       element1.sweep_backward(trunc_bw, pass_on, (n==shift_extend.shift_second));
     }
+    sweep_backward_post(n, TTree_at, TTree, TTree_inv, pass_on);
 //std::cout<<"after sweep backward n="<<n<<std::endl;
 
     if(element1.M.dim_d1>maxdim_out){
@@ -1182,7 +1271,9 @@ std::cout<<"pass_on.P.rows()="<<pass_on.P.rows()<<" pass_on.P.cols()="<<pass_on.
 //handle overhanging lower end:
   if(debug)std::cout<<"jnsbw: compress low end"<<std::endl;
   for(int n=shift_extend.shift_second-1; n>=sweep_more_limit; n--){
+    sweep_backward_pre(n, TTree_at, TTree, TTree_inv, pass_on);
     get(n).sweep_backward(trunc_bw, pass_on, (n==sweep_more_limit));
+    sweep_backward_post(n, TTree_at, TTree, TTree_inv, pass_on);
   }
  
   
@@ -1946,18 +2037,21 @@ void ProcessTensorBuffer::add_modes(
     if(verbosity>0){
       std::cout<<"Mode "<<k<<"/"<<mpg.get_N_modes()<<std::endl;
     }
-    ModePropagatorPtr mpp=mpg.getModePropagator(k);
+    ModePropagatorPtr mpp=mpg.get_ModePropagator(k);
 
     ProcessTensorBuffer PTB;
     PTB.set_new_temporary(*this);
     PTB.set_from_ModePropagator(*mpp.get(), tgrid2, dict_zero);
+    if(TTree){PTB.set_CompressionTree_at(2*TTree_at);}
 
     TruncatedSVD trunc_fw=trunc.get_forward(k, mpg.get_N_modes());
     if(trunc.use_QR)trunc_fw.use_QR=true;
     TruncatedSVD trunc_bw=trunc.get_backward(k, mpg.get_N_modes());
 
     if(verbosity>0){trunc_fw.print_info();std::cout<<std::endl;}
-    join_symmetric_and_sweep_forward(PTB, trunc_fw, verbosity);
+    join_symmetric_and_sweep_forward(PTB, trunc_fw, verbosity, ShiftExtend(), 0);
+//    join_symmetric_and_sweep_forward(PTB, trunc_fw, verbosity, ShiftExtend(), 1);
+
 
     if(verbosity>0){trunc_bw.print_info();std::cout<<std::endl;}
     sweep_backward(trunc_bw, verbosity);
@@ -1969,7 +2063,7 @@ void ProcessTensorBuffer::add_modes(
 void ProcessTensorBuffer::add_modes_firstorder(
           ModePropagatorGenerator &mpg, const TimeGrid &tgrid,
           TruncationLayout trunc, 
-          double dict_zero, int verbosity){
+          double dict_zero, int verbosity, bool alternate){
   
   int n_max=tgrid.n_tot;
   if(n_max!=n_tot){
@@ -1994,18 +2088,19 @@ void ProcessTensorBuffer::add_modes_firstorder(
     if(verbosity>0){
       std::cout<<"Mode "<<k<<"/"<<mpg.get_N_modes()<<std::endl;
     }
-    ModePropagatorPtr mpp=mpg.getModePropagator(k);
+    ModePropagatorPtr mpp=mpg.get_ModePropagator(k);
 
     ProcessTensorBuffer PTB;
     PTB.set_new_temporary(*this);
     PTB.set_from_ModePropagator(*mpp.get(), tgrid, dict_zero);
+    if(TTree){PTB.set_CompressionTree_at(TTree_at);}
 
     TruncatedSVD trunc_fw=trunc.get_forward(k, mpg.get_N_modes());
     if(trunc.use_QR)trunc_fw.use_QR=true;
     TruncatedSVD trunc_bw=trunc.get_backward(k, mpg.get_N_modes());
 
     if(verbosity>0){trunc_fw.print_info();std::cout<<std::endl;}
-    join_and_sweep_forward(PTB, trunc_fw, verbosity);
+    join_and_sweep_forward(PTB, trunc_fw, verbosity, ShiftExtend(), alternate);
 
     if(verbosity>0){trunc_bw.print_info();std::cout<<std::endl;}
     sweep_backward(trunc_bw, verbosity);
@@ -2035,17 +2130,38 @@ void ProcessTensorBuffer::add_modes_select(
   if(verbosity>0){
     std::cout<<"Calculating PT for Generator '"<<mpg.name()<<"'"<<std::endl;
   }
-
+  
   for(int k=mpg.first(); k<mpg.get_N_modes(); k=mpg.next(k)){
     if(verbosity>0){
       std::cout<<"Mode "<<k<<"/"<<mpg.get_N_modes()<<std::endl;
     }
-    ModePropagatorPtr mpp=mpg.getModePropagator(k);
+    ModePropagatorPtr mpp=mpg.get_ModePropagator(k);
 
     ProcessTensorBuffer PTB;
     PTB.set_new_temporary(*this);
     PTB.set_from_ModePropagator(*mpp.get(), tgrid, dict_zero);
+    if(TTree){
+      PTB.set_CompressionTree_at(TTree_at);
+    }
+/*
+    TruncatedSVD trunc_fw=trunc.get_forward(k, mpg.get_N_modes());
+    if(trunc.use_QR)trunc_fw.use_QR=true;
+    if(verbosity>0){trunc_fw.print_info();std::cout<<std::endl;}
+    TruncatedSVD trunc_bw=trunc.get_backward(k, mpg.get_N_modes());
+    if(verbosity>0){trunc_bw.print_info();std::cout<<std::endl;}
+    TruncatedSVD trunc_select=trunc.get_backward(k, mpg.get_N_modes(),true);
+    if(verbosity>0){trunc_select.print_info();std::cout<<std::endl;}
 
+    sweep_forward(trunc_fw, verbosity);
+    TruncatedSVD trunc_none(0.); trunc_none.keep=0;
+//    PTB.sweep_forward(trunc_none, verbosity);
+
+    if(verbosity>0){trunc_bw.print_info();std::cout<<std::endl;}
+    join_and_sweep_backward(PTB, trunc_bw, verbosity, ShiftExtend());
+//    join_select_and_sweep_backward(PTB, trunc_select, trunc_bw, verbosity);
+
+
+*/
     TruncatedSVD trunc_fw=trunc.get_forward(k, mpg.get_N_modes());
     TruncatedSVD trunc_bw=trunc.get_backward(k, mpg.get_N_modes());
     if(trunc.use_QR)trunc_bw.use_QR=true;
@@ -2056,9 +2172,16 @@ void ProcessTensorBuffer::add_modes_select(
     PTB.sweep_forward(trunc_fw, verbosity);
 
     if(verbosity>0){trunc_bw.print_info();std::cout<<std::endl;}
+if(TTree){std::cout<<"before: ";TTree->print_info();std::cout<<std::endl;}
+if(PTB.TTree){std::cout<<"PTB: ";PTB.TTree->print_info();std::cout<<std::endl;}
+
+    //join_and_sweep_backward(PTB, trunc_select, verbosity);
     join_select_and_sweep_backward(PTB, trunc_select, trunc_bw, verbosity);
+
+if(TTree){std::cout<<"after: ";TTree->print_info();std::cout<<std::endl;}
    
     sweep_intermediate_or_final_start_forward(trunc, k, mpg.get_N_modes(), verbosity);
+
   }
 }
 
@@ -2085,7 +2208,7 @@ void ProcessTensorBuffer::add_modes_tree_get(int level, int max_level,
     if(mpg.skip_list[first_elem]){
       set_trivial(tgrid.n_tot, mpg.get_N());
     }else{
-      ModePropagatorPtr mpp=mpg.getModePropagator(first_elem);
+      ModePropagatorPtr mpp=mpg.get_ModePropagator(first_elem);
       set_from_ModePropagator(*mpp.get(), tgrid, dict_zero);
 
       TruncatedSVD trunc_bw;
@@ -2131,6 +2254,7 @@ void ProcessTensorBuffer::add_modes_tree_get(int level, int max_level,
     if(trunc.use_QR)trunc_bw.use_QR=true;
     trunc_select.print_info(); std::cout<<std::endl;
     trunc_bw.print_info(); std::cout<<std::endl;
+//    join_and_sweep_backward(PTB2, trunc_select, verbosity);
     join_select_and_sweep_backward(PTB2, trunc_select, trunc_bw, verbosity);
     distribute_weights();
 
@@ -2227,6 +2351,133 @@ void ProcessTensorBuffer::add_modes_tree(
   join_select_and_sweep_backward(PTB2, trunc_select, trunc_bw, verbosity);
  
   sweep_intermediate_or_final_start_forward(trunc, 0, 1, verbosity);
+}
+
+void ProcessTensorBuffer::add_modes_tree_randomized_get(
+          int level, int max_level, int first_elem, 
+          ModePropagatorGenerator &mpg, const TimeGrid &tgrid,
+          const TruncationLayout & trunc, int chi_a, int chi_b, 
+          double dict_zero, int verbosity){
+
+  if(level==0 && first_elem==0){
+    trunc.print_info(); std::cout<<std::endl;
+  }
+
+  if(level==0){
+    if(first_elem>=mpg.get_N_modes()){
+      std::cerr<<"add_modes_tree_randomized_get: level="<<level<<"/"<<max_level<<" first_elem="<<first_elem<<": first_element>=mpg.get_N_modes()="<<mpg.get_N_modes()<<"!"<<std::endl;
+      throw DummyException();
+    }
+    
+    if(verbosity>0){
+      std::cout<<"--------------------------------------------"<<std::endl;
+      std::cout<<"level: "<<level<<"/"<<max_level<<" first_elem: "<<first_elem<<"/"<<pow(2,max_level-1-level)<<std::endl;
+      std::cout<<"--------------------------------------------"<<std::endl;
+    }
+    if(mpg.skip_list[first_elem]){
+      set_trivial(tgrid.n_tot, mpg.get_N());
+    }else{
+      ModePropagatorPtr mpp=mpg.get_ModePropagator(first_elem);
+      set_from_ModePropagator(*mpp.get(), tgrid, dict_zero);
+
+      for(int n=0; n<n_tot; n++){
+        get(n).env_ops=EnvironmentOperators();
+      }
+/*
+      TruncatedSVD trunc_bw;
+//      trunc_bw.use_QR=true;
+      if(verbosity>0){
+        std::cout<<"Sweep backward"<<std::endl;
+        trunc_bw.print_info(); std::cout<<std::endl;
+      }
+      sweep_backward(trunc_bw, verbosity);
+*/
+    }
+  }else{  
+    clear();
+    add_modes_tree_randomized_get(level-1, max_level, 2*first_elem, mpg, tgrid, trunc, chi_a, chi_b, dict_zero, verbosity);
+
+    ProcessTensorBuffer PTB2;
+    PTB2.set_new_temporary(*this);
+    PTB2.add_modes_tree_randomized_get(level-1, max_level, 2*first_elem+1, mpg, tgrid, trunc, chi_a, chi_b, dict_zero, verbosity);
+
+    if(verbosity>0){
+      std::cout<<"--------------------------------------------"<<std::endl;
+      std::cout<<"level: "<<level<<"/"<<max_level<<" first_elem: "<<first_elem<<"/"<<pow(2,max_level-1-level)<<std::endl;
+      std::cout<<"--------------------------------------------"<<std::endl;
+    }
+
+    TruncatedSVD trunc_fw=trunc.get_forward(level, max_level);
+    if(verbosity>0){
+      std::cout<<"sweep first forward"<<std::endl;
+      trunc_fw.print_info(); std::cout<<std::endl;
+    }
+    sweep_forward(trunc_fw, verbosity);
+/*
+    TruncatedSVD trunc_bw=trunc.get_backward(level, max_level);
+    if(verbosity>0){
+      std::cout<<"sweep first backward"<<std::endl;
+      trunc_bw.print_info(); std::cout<<std::endl;
+    }
+    sweep_backward(trunc_bw, verbosity);
+//    distribute_weights();
+*/
+    if(verbosity>0){
+      std::cout<<"sweep second forward"<<std::endl;
+      trunc_fw.print_info(); std::cout<<std::endl;
+    }
+    PTB2.sweep_forward(trunc_fw, verbosity);
+/*
+    if(verbosity>0){
+      std::cout<<"sweep second backward"<<std::endl;
+      trunc_bw.print_info(); std::cout<<std::endl;
+    }
+    PTB2.sweep_backward(trunc_bw, verbosity);
+//    PTB2.distribute_weights();
+*/
+    if(verbosity>0)std::cout<<"randomized combine"<<std::endl;
+    TruncatedSVD trunc_select=trunc.get_backward(level, max_level, true);
+//    TruncatedSVD trunc_bw=trunc.get_backward(level, max_level);
+//    if(trunc.use_QR)trunc_bw.use_QR=true;
+    trunc_select.print_info(); std::cout<<std::endl;
+//    trunc_bw.print_info(); std::cout<<std::endl;
+//    join_select_and_sweep_backward(PTB2, trunc_select, trunc_bw, verbosity);
+
+    int chi_new = chi_a*(get_center_dim()+PTB2.get_center_dim())+chi_b;
+    if(verbosity>0)std::cout<<"chi_a="<<chi_a<<" chi_b="<<chi_b<<"-> chi_new="<<chi_new<<std::endl;
+    Randomized_Combine(*this, PTB2, chi_new, trunc_select);
+    
+//    distribute_weights();
+
+   sweep_intermediate_or_final_start_forward(trunc, level, max_level, verbosity);
+  }
+}
+void ProcessTensorBuffer::set_from_modes_tree_randomized(
+          ModePropagatorGenerator &mpg, const TimeGrid &tgrid,
+          TruncationLayout trunc, int chi_a, int chi_b, 
+          double dict_zero, int verbosity){
+
+  int N_modes=mpg.get_N_modes();
+  if(N_modes<1)return;
+
+  int N_hierarchy=round(log((double)N_modes)/log(2.));
+  if(N_modes!=pow(2, N_hierarchy)){
+    if(N_modes<pow(2, N_hierarchy)){
+      std::cout<<"zero-pad from "<<N_modes<<" to "<<pow(2, N_hierarchy)<<std::endl;
+      mpg.zero_pad(pow(2, N_hierarchy));
+    }else{
+      std::cout<<"zero-pad from "<<N_modes<<" to "<<pow(2, N_hierarchy+1)<<std::endl;
+      mpg.zero_pad(pow(2, N_hierarchy+1));
+      N_hierarchy++;
+    }
+    N_modes=mpg.get_N_modes();
+  }
+  if(verbosity>0)std::cout<<"N_modes="<<N_modes<<"=2^"<<N_hierarchy<<std::endl;
+
+  add_modes_tree_randomized_get(N_hierarchy, N_hierarchy+1, 0, mpg, tgrid, \
+                          trunc, chi_a, chi_b, dict_zero, verbosity);
+ 
+  calculate_closures();
 }
 
 void ProcessTensorBuffer::set_from_coarse_grain(ProcessTensorBuffer &PTB, int coarse_grain){
@@ -2412,6 +2663,16 @@ void ProcessTensorBuffer::expand_outer(int N_front, int N_back){
 
 //Inherited from ProcessTensorForward:
 
+int ProcessTensorBuffer::get_N_system(){
+  int this_n=ProcessTensorForward::n; 
+  if(this_n>=n_tot){ this_n=0; }
+  if(n_tot<1){
+    std::cerr<<"ProcessTensorBuffer::get_N_system(): n_tot<1!"<<std::endl;
+    throw DummyException();
+  }
+  const ProcessTensorElement &e=peek(this_n);
+  return e.get_N();
+}
 const ProcessTensorElement * ProcessTensorBuffer::current(){
   return &get(ProcessTensorForward::n, ForwardPreload);
 }

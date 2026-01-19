@@ -69,7 +69,7 @@ namespace ACE{
     reduced_fb=param.get_as_size_t(add_name("reduced_fb"),0);
   }
 
-  ModePropagatorPtr ModePropagatorGenerator_Potential1D::getModePropagator(int k)const{
+  ModePropagatorPtr ModePropagatorGenerator_Potential1D::get_ModePropagator(int k)const{
     if(k<0||k>=get_N_modes()){
       std::cerr<<"ModePropagatorGenerator_Potential1D: k<0||k>=get_N_modes()!"<<std::endl; 
       exit(1);

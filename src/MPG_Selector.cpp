@@ -13,10 +13,6 @@ namespace ACE{
         || param.get_as_string("Boson_E_g_from_table")!="") ){
       mpgs.push_back(std::make_shared<ModePropagatorGenerator_Boson>(param));
     }
-    if(param.get_as_size_t("MultiSite_N_modes",0)>0
-      || param.get_as_string("MultiSite_E_g_from_table")!=""){
-      mpgs.push_back(std::make_shared<ModePropagatorGenerator_MultiSite>(param));
-    }
     if(param.get_as_size_t("Potential1D_N_modes",0)>0
       || param.get_as_string("Potential1D_E_g_from_table")!=""){
       mpgs.push_back(std::make_shared<ModePropagatorGenerator_Potential1D>(param));
@@ -28,37 +24,9 @@ namespace ACE{
     if(param.get_as_size_t("RandomSpin_N_modes",0)>0){
       mpgs.push_back(std::make_shared<ModePropagatorGenerator_RandomSpin>(param));
     }
-/*
-    if(param.get_as_size_t("QDPhonon_N_modes",0)>0){
-      mpgs.push_back(new ModePropagatorGenerator_QDPhonon(param));
-    }
-*/
-    if(param.get_as_size_t("Lasing_N_modes",0)>0){
-      mpgs.push_back(std::make_shared<ModePropagatorGenerator_Lasing>(param));
-    }
     if(param.is_specified("add_single_mode")||param.is_specified("add_single_mode_from_file")){
       mpgs.push_back(std::make_shared<ModePropagatorGenerator_SingleModes>(param));
     }
-/*    if(param.is_specified("add_single_mode")){
-      std::vector<std::vector<std::string> > lines=param.get("add_single_mode");
-      for(size_t r=0; r<lines.size(); r++){
-        mpgs.push_back(std::make_shared<ModePropagatorGenerator_SingleMode>(lines[r]));
-      }
-    }
-    if(param.is_specified("add_single_mode_from_file")){
-      std::vector<std::vector<std::string> > lines=param.get("add_single_mode_from_file");
-      for(size_t r=0; r<lines.size(); r++){
-        mpgs.push_back(std::make_shared<ModePropagatorGenerator_SingleModeFromFile>(lines[r]));
-      }
-    }
-*/
-/*    if(param.is_specified("interweave_modes")){
-      std::vector<std::vector<std::string> > lines=param.get("interweave_modes");
-      for(size_t r=0; r<lines.size(); r++){
-        mpgs.push_back(std::make_shared<ModePropagatorGenerator_Interweave>(lines[r], param));
-      }
-    }
-*/
   }
   
 

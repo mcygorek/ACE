@@ -49,6 +49,7 @@ public:
 
   //from ProcessTensorForward: 
   //imported: int n; n_tot;
+  virtual int get_N_system();
   virtual const ProcessTensorElement * current();
 
 
@@ -66,6 +67,12 @@ public:
   int write_buffer_block;
   std::future<bool> write_buffer_future;
   bool write_buffer_lock;
+
+// CompressionTree
+  int TTree_at;
+  std::shared_ptr<CompressionTree> TTree;
+  std::shared_ptr<CompressionTree> TTree_inv;
+
 
 //basic functions:
   
@@ -93,6 +100,7 @@ public:
   void check_buffer_bounds(int i)const;
   void check_preload_bounds(int i)const;
   void check_write_buffer_bounds(int i)const;
+  int get_center_dim();
   void print_dims(std::ostream &ofs=std::cout, bool print_both=false);
   void check_consistency();
   void clear();
@@ -135,6 +143,7 @@ public:
   void set_trivial(int n_max, int sysdim);
   void calculate_closures();
   void distribute_weights();
+  void set_CompressionTree_at(int n);
 
   void sweep_forward(const TruncatedSVD &trunc, int verbosity,
                      int range_start=0, int range_end=-1);
@@ -153,7 +162,8 @@ public:
   //implements symmetric Trotter; PTB2 must have time steps dt/2
   void join_symmetric_and_sweep_forward(ProcessTensorBuffer & PTB2, 
                      const TruncatedSVD &trunc, int verbosity,
-                     ShiftExtend shift_extend=ShiftExtend()); 
+                     ShiftExtend shift_extend=ShiftExtend(),
+                     int mode=0); 
 
   void join_and_sweep_backward(ProcessTensorBuffer & PTB2, 
                      const TruncatedSVD &trunc, int verbosity,
@@ -211,9 +221,9 @@ public:
                  TruncationLayout trunc, 
                  double dict_zero, int verbosity);
 
-  void add_modes_firstorder(ModePropagatorGenerator &mpg, const TimeGrid &tgrid, 
-                 TruncationLayout trunc, 
-                 double dict_zero, int verbosity);
+  void add_modes_firstorder(ModePropagatorGenerator &mpg, 
+                 const TimeGrid &tgrid, TruncationLayout trunc, 
+                 double dict_zero, int verbosity, bool alternate=false);
 
   void add_modes_select(ModePropagatorGenerator &mpg, const TimeGrid &tgrid, 
                  TruncationLayout trunc, 
@@ -224,13 +234,24 @@ public:
           const TruncationLayout & trunc, 
           double dict_zero, int verbosity);
 
+  void set_from_modes_tree(ModePropagatorGenerator &mpg, const TimeGrid &tgrid, 
+          TruncationLayout trunc, 
+          double dict_zero, int verbosity);
+
   void add_modes_tree(ModePropagatorGenerator &mpg, const TimeGrid &tgrid, 
           TruncationLayout trunc, 
           double dict_zero, int verbosity);
 
-  void set_from_modes_tree(ModePropagatorGenerator &mpg, const TimeGrid &tgrid, 
-          TruncationLayout trunc, 
+  void add_modes_tree_randomized_get(int level, int max_level, int first_elem, 
+          ModePropagatorGenerator &mpg, const TimeGrid &tgrid,
+          const TruncationLayout & trunc, int chi_a, int chi_b,  
           double dict_zero, int verbosity);
+
+  void set_from_modes_tree_randomized(
+          ModePropagatorGenerator &mpg, const TimeGrid &tgrid, 
+          TruncationLayout trunc, int chi_a, int chi_b, 
+          double dict_zero, int verbosity);
+
 
   void set_from_coarse_grain(ProcessTensorBuffer &PTB, int coarse_grain);
 // initializers

@@ -53,7 +53,7 @@ public:
   
   void setup_default(Parameters &param);
 
-  virtual ModePropagatorPtr getModePropagator(int k)const=0;
+  virtual ModePropagatorPtr get_ModePropagator(int k)const=0;
 
   inline ModePropagatorGenerator(){
     skip_was_set=false;

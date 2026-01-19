@@ -830,7 +830,7 @@ void ProcessTensorStream::add_modes(
     if(verbosity>0){
       std::cout<<"Mode "<<k<<"/"<<mpg.get_N_modes()<<std::endl;
     }
-    ModePropagatorPtr mpp=mpg.getModePropagator(k);
+    ModePropagatorPtr mpp=mpg.get_ModePropagator(k);
 
     set_from_ModePropagator(tmpname, *mpp.get(), tgrid, dict_zero);
 
@@ -876,7 +876,7 @@ void ProcessTensorStream::add_modes_reverse(
     if(verbosity>0){
       std::cout<<"Mode "<<k<<"/"<<mpg.get_N_modes()<<std::endl;
     }
-    ModePropagatorPtr mpp=mpg.getModePropagator(k);
+    ModePropagatorPtr mpp=mpg.get_ModePropagator(k);
 
     set_from_ModePropagator(tmpname, *mpp.get(), tgrid, dict_zero);
 
@@ -914,7 +914,7 @@ void ProcessTensorStream::add_modes_tree_get(
     if(mpg.skip_list[first_elem]){
       set_trivial(file_out, tgrid.n_tot, mpg.get_N());
     }else{
-      ModePropagatorPtr mpp=mpg.getModePropagator(first_elem);
+      ModePropagatorPtr mpp=mpg.get_ModePropagator(first_elem);
       set_from_ModePropagator(file_out, *mpp.get(), tgrid, dict_zero);
     }
   }else{  
@@ -1021,7 +1021,7 @@ void ProcessTensorStream::add_modes_tree_get_reverse(
     if(mpg.skip_list[first_elem]){
       set_trivial(file_out, tgrid.n_tot, mpg.get_N());
     }else{
-      ModePropagatorPtr mpp=mpg.getModePropagator(first_elem);
+      ModePropagatorPtr mpp=mpg.get_ModePropagator(first_elem);
       set_from_ModePropagator(file_out, *mpp.get(), tgrid, dict_zero);
     }
   }else{  

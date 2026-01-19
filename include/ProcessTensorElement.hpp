@@ -35,10 +35,6 @@ struct ProcessTensorElement{
   //Actual MPS matrix storage
   MPS_Matrix M;
 
-  //only relevant during creation: 
-  //std::shared_ptr<Trafo_Chain> link_left_TC;
-  //std::shared_ptr<Trafo_Chain> link_right_TC;
-  //
 
   inline void swap(ProcessTensorElement &e){
     accessor.swap(e.accessor);
@@ -51,6 +47,7 @@ struct ProcessTensorElement{
 
   //returns system dimension
   inline int get_N()const{  return accessor.get_N();  }
+  inline int get_NL()const{  return accessor.get_NL();  }
   //quit if mismatch in system dimension
   inline void check_N(int dim)const{ accessor.check_N(dim); }
   //
@@ -88,9 +85,16 @@ struct ProcessTensorElement{
   } 
 
   //Join as in symmetric Trotter combination: d2(left) connected to d1(right)
-  void join_symmetric(const ProcessTensorElement &other_left, 
-                      const ProcessTensorElement &other_right); 
+  void join_symmetric(ProcessTensorElement &other_left, 
+                      ProcessTensorElement &other_right); 
  
+  //Combination of sweep_forward and join_symmetric, but pass_on.P is multiplied
+  //with this e.M before it is combined with other_left and other_right. 
+  void pass_on_before_join_symmetric(ProcessTensorElement &other_left, 
+                                  ProcessTensorElement &other_right,
+                                  const TruncatedSVD &trunc, 
+                                  PassOn &pass_on, bool is_last); 
+
   //join along both, outer and inner indices: used, e.g., for coarse graining
   void join_thisfirst_sameinner(const ProcessTensorElement &e2);
 
@@ -116,10 +120,10 @@ struct ProcessTensorElement{
       const ProcessTensorElement &other, const TruncatedSVD &trunc)const;
 
 
-  void join_selected(int n, const ProcessTensorElement &other,
+  void join_selected(int n, ProcessTensorElement &other,
        const SelectIndices & k_list_left, const SelectIndices & k_list_right);
 
-  void join_average_selected(const ProcessTensorElement &other,
+  void join_average_selected(ProcessTensorElement &other,
        const SelectIndices & k_list_left, const SelectIndices & k_list_right);
 
   //clears everything
@@ -151,11 +155,27 @@ struct ProcessTensorElement{
   void read_binary(std::istream &is);
   void write_binary(std::ostream &os)const;
   
+  void copy(const ProcessTensorElement &other){
+    accessor=other.accessor;
+    closure=other.closure;
+    env_ops=other.env_ops;
+    forwardNF=other.forwardNF;
+    backwardNF=other.backwardNF;
+    M=other.M;
+  } 
 
+  ProcessTensorElement & operator=(const ProcessTensorElement &other){
+    copy(other); 
+    return(*this);
+  }
+  ProcessTensorElement(const ProcessTensorElement &other){
+    copy(other);
+  }
   ProcessTensorElement(){}
   ProcessTensorElement(int N_sys){
     set_trivial(N_sys);
   }
+  ~ProcessTensorElement(){}
 };
 
 }//namespace

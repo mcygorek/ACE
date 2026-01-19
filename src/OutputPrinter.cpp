@@ -21,6 +21,10 @@ void OutputPrinter::clear(){
   start_extract=0;
   do_extract=false;
 }
+void OutputPrinter::clear_results(){
+  {std::vector<Eigen::VectorXcd> tmp(0); rho_t.swap(tmp);}
+  {std::vector<double> tmp(0); rho_times.swap(tmp);}
+}
 void OutputPrinter::set_stream(const std::string &outfile, int precision){
   if(ofs){
     if(ofs->is_open())ofs->close();

@@ -1,6 +1,6 @@
 #ifndef ACE_SELECT_INDICES_DEFINED_H
 #define ACE_SELECT_INDICES_DEFINED_H
-#include "Eigen_fwd.hpp"
+#include "BinaryReader.hpp"
 #include <vector>
 
 namespace ACE{
@@ -54,7 +54,27 @@ struct SelectIndices{
 
   Eigen::VectorXcd Vector_otimes(const Eigen::VectorXcd & M1, 
                           const Eigen::VectorXcd & M2) const;
- 
+
+
+  void read(std::istream &ifs, const std::string &context="");
+  void write(std::ostream &ofs)const;
+
+  inline void read(const std::string &filename){
+    std::unique_ptr<std::ifstream> ifs = open_file_check(filename);
+    read(*(ifs.get()),filename);
+  }
+  inline void write(const std::string &filename)const{
+    std::ofstream ofs(filename);
+    write(ofs);
+  }
+  void print_info(std::ostream &ofs=std::cout)const;
+
+  SelectIndices(){}
+  SelectIndices(const std::string &filename){read(filename);}
+  SelectIndices(std::istream &ifs, const std::string &context=""){
+    read(ifs,context);
+  }
+  ~SelectIndices(){}
 };
 
 

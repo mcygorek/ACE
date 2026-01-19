@@ -60,7 +60,7 @@ PCH: include/PCH.hpp.gch
 include/PCH.hpp.gch: include/PCH.hpp
 	g++ -x c++-header -o include/PCH.hpp.gch -c include/PCH.hpp $(OPTS)
 
-TOOLS = PT_build PT_sweep PT_join IF_from_PT 
+TOOLS = PT_build PT_sweep PT_join 
 TOOLS += PT_analyze PT_apply_system_propagator PT_coarse_grain PT_extend
 TOOLS += integrate_outfile generate_J DiagBB_print_K block_combine
 TOOLS += TC_overlap TC_PT TC_join TC_TinvTcombine

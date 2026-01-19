@@ -87,7 +87,7 @@ int main(int args, char ** argv){
   std::shared_ptr<RankCompressor_real> compressor_dummy=std::make_shared<RankCompressor_None_real>();
   for(int k=0; k<mpg.get_N_modes(); k++){
     std::cout<<"Mode "<<k<<"/"<<mpg.get_N_modes()<<std::endl;
-    ModePropagatorPtr mpp=mpg.getModePropagator(k);
+    ModePropagatorPtr mpp=mpg.get_ModePropagator(k);
 
     ProcessTensor_real PT2(*mpp.get(), tgrid2); //, closure_ops);
     PT2.calculate_dict(dict_zero);

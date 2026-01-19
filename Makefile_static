@@ -1,14 +1,17 @@
+$(info Compiler is $(CXX))
+$(info Operating system is $(shell uname -o))
 
-#ifneq ($(MKLROOT),)
-#  MKL_INCL = -I$(MKLROOT)/include -DEIGEN_USE_MKL_ALL
+ifneq ($(MKLROOT),)
+  MKL_INCL = -I$(MKLROOT)/include -DEIGEN_USE_MKL_ALL
 #  MKL_LINK = -DMKL_LP64 -m64 -L$(MKLROOT)/lib/intel64 -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl 
-#else 
-#  $(info )
-#  $(info ########################################)
-#  $(info ACE will not be compiled against MKL. If you would like to use it, please specify variable MKLROOT, e.g., MKLROOT=/opt/intel/mkl/. )
-#  $(info ########################################)
-#  $(info )
-#endif
+  MKL_LINK = -m64  -Wl,--start-group ${MKLROOT}/lib/libmkl_intel_ilp64.a ${MKLROOT}/lib/libmkl_intel_thread.a ${MKLROOT}/lib/libmkl_core.a -Wl,--end-group -liomp5 -lpthread -lm -ldl
+else 
+  $(info )
+  $(info ########################################)
+  $(info ACE will not be compiled against MKL. If you would like to use it, please specify variable MKLROOT, e.g., MKLROOT=/opt/intel/mkl/. )
+  $(info ########################################)
+  $(info )
+endif
 
 
 ifeq ($(EIGEN_HOME),)
@@ -18,58 +21,98 @@ ifeq (,$(wildcard $(EIGEN_HOME)/Eigen/Eigen))
     $(error Please specify variable EIGEN_HOME)
 endif
 
+#FFTW_FLAGS=-lfftw3
 
 ifeq ($(OPTIM),)
   OPTIM = 3
 endif
 
+LIBNAME=libACE.a
 
-OPTS += -static -Wno-ignored-attributes
-OPTS += -O$(OPTIM) -fno-math-errno -g -m64 --std=c++11 
+USE_WINDOWS = 
+ifeq ($(shell uname -o),Msys) 	
+  USE_WINDOWS = yes
+endif
+ifeq ($(CXX),x86_64-w64-mingw32-gcc-win32)
+  USE_WINDOWS = yes
+endif
+ifdef USE_WINDOWS
+  OPTS += -DM_PI=3.14159265358979323846
+endif
+
+OPTS += -s -static -O$(OPTIM) -fno-math-errno -g -m64 --std=c++11
+ifneq ($(CXX),icpc)
+  OPTS += -Wno-ignored-attributes
+endif
+OPTS += -Winvalid-pch -fPIC -pthread
 OPTS += -Iinclude -I$(EIGEN_HOME) $(MKL_INCL)
 OPTSLINK += $(OPTS) -lm $(MKL_LINK)
 
+LIBSRC = $(wildcard src/*.cpp)
+LIBOBJS = $(patsubst src/%.cpp, lib/%.o, $(LIBSRC))
 
-EXECOBJS = ACE ACE_stream iQUAPI TEMPO 
+EXECOBJS = ACE QUAPI TEMPO #ACE_Network #ACE_env_obs 
 BINEXEC = $(patsubst %, bin/%, $(EXECOBJS))
 
-MOREEXECOBJS = ACE_env_obs ACE_env_wavepacket ACE_integrate_t1
-BINMORE = $(patsubst %, bin/%, $(MOREEXECOBJS))
+PYBINDSUF = $(shell python3-config --extension-suffix)
+PYBINDINC = $(shell python3 -m pybind11 --includes)
+#$(info $(PYBINDSUF) $(PYBINDINC) )
 
+all: code tools
+code: PCH $(EXECOBJS) 
+$(EXECOBJS): %: src_exec/%.cpp  lib/$(LIBNAME) 
+	$(CXX) -o bin/$@ $< $(OPTSLINK) lib/$(LIBNAME)
 
-all: $(EXECOBJS) 
-$(EXECOBJS): %: src_exec/%.cpp  
-	cat src/*.cpp > bin/tmp_$@.cpp 
-	wc -l bin/tmp_$@.cpp
-	cat $< >> bin/tmp_$@.cpp
-	$(CXX) -o bin/$@ bin/tmp_$@.cpp $(OPTSLINK) 
-	rm bin/tmp_$@.cpp
+pybind: pybind/ACE$(PYBINDSUF)
 
+pybind/ACE$(PYBINDSUF): pybind/pybind.cpp lib/$(LIBNAME)
+	$(CXX) -O3 -shared -std=c++11 -fPIC  -Iinclude -I$(EIGEN_HOME) $(MKL_INCL) $(PYBINDINC) pybind/pybind.cpp -o pybind/ACE$(PYBINDSUF) $(OPTSLINK) 
 
-more: $(MOREEXECOBJS) 
-$(MOREEXECOBJS): %: src_exec/%.cpp
-	cat src/*.cpp > bin/tmp_$@.cpp 
-	wc -l bin/tmp_$@.cpp
-	cat $< >> bin/tmp_$@.cpp
-	$(CXX) -o bin/$@ bin/tmp_$@.cpp $(OPTSLINK) 
-	rm bin/tmp_$@.cpp
+lib: lib/$(LIBNAME)
+lib/$(LIBNAME): $(LIBOBJS) 
+	ar rcs $@ $^ 
+#	$(CXX) -shared -fPIC -o lib/$(LIBNAME) -flto lib/*.o 
 
-TOOLS = PT_analyze PT_apply_system_propagator PT_coarse_grain PT_extend
-TOOLS += integrate_outfile generate_J DiagBB_print_K
-TOOLS += TC_overlap TC_PT TC_join TC_TinvTcombine
+$(LIBOBJS): lib/%.o: src/%.cpp include/%.hpp 
+	$(CXX) -o $@ -c $(OPTS) $< -fPIC 
+
+PCH: include/PCH.hpp.gch 
+include/PCH.hpp.gch: include/PCH.hpp
+	$(CXX) -x c++-header -o include/PCH.hpp.gch -c include/PCH.hpp $(OPTS)
+
+#TOOLS = PT_build PT_sweep PT_join 
+#TOOLS += PT_analyze PT_apply_system_propagator PT_coarse_grain PT_extend
+TOOLS = integrate_outfile differentiate_outfile FT_outfile smoothen_outfile
+TOOLS += PTB_sweep_forward PTB_sweep_backward PTB_apply_system_propagator
+TOOLS += PTB_analyze PTB_join PTR_to_PTB PTB_strip_env_ops PTB_extend
+TOOLS += PTB_transfer_env_ops PTB_expand_in_place PTB_coarse_grain 
+TOOLS += PTB_outer_contract
+TOOLS += PTR_sweep_backward PTR_analyze
+TOOLS += PME_renorm BCF_from_J
+TOOLS += readexpression print_densmat timedep_eigenstates
+
+EXPERIMENTAL = generate_J generate_noise 
+EXPERIMENTAL += DiagBB_print_K single_mode_K block_combine 
+EXPERIMENTAL += extract_singular_values 
+EXPERIMENTAL += richardson_extrapolate #Chebyshev_Expand
+EXPERIMENTAL += TC_overlap TC_PT TC_join TC_TinvTcombine
+EXPERIMENTAL += test_FFT estimate_memory test_split
+EXPERIMENTAL += test_buffer test_GaussNewton fit_K_single_mode 
+EXPERIMENTAL += test_MeierTannor test_DrudeLorentz
+EXPERIMENTAL += extract_effective_propagator DynamicalMap PT_traceout
+EXPERIMENTAL += test_HermitianLiouvilleBasis test_Largest_EV test_Largest_EV2
 
 tools: $(TOOLS)
-$(TOOLS): %: src_exec/tools/%.cpp
-	cat src/*.cpp > tools/tmp_$@.cpp 
-	wc -l tools/tmp_$@.cpp
-	cat $< >> tools/tmp_$@.cpp
-	$(CXX) -o tools/$@ tools/tmp_$@.cpp $(OPTSLINK) 
-	rm tools/tmp_$@.cpp
+$(TOOLS): %: src_exec/tools/%.cpp lib/$(LIBNAME)
+	$(CXX) -o tools/$@ $< $(OPTSLINK) -Llib -lACE -Wl,-rpath,$(shell pwd)/lib
+
+experimental: $(EXPERIMENTAL)
+$(EXPERIMENTAL): %: src_exec/experimental/%.cpp lib/$(LIBNAME)
+	$(CXX) -o tools/$@ $< $(OPTSLINK) -Llib -lACE -Wl,-rpath,$(shell pwd)/lib
 
 
 .PHONY: clean
 
 clean:
-	rm -rf bin/* tools/* lib/* 
-#include/PCH.hpp.gch
+	rm -rf bin/* tools/* lib/* include/PCH.hpp.gch pybind/*.so
 

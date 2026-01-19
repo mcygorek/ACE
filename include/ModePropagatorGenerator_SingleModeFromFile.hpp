@@ -40,7 +40,7 @@ public:
     }
     return mpp->bath_init;
   }
-  virtual ModePropagatorPtr getModePropagator(int k)const;
+  virtual ModePropagatorPtr get_ModePropagator(int k)const;
 
   ModePropagatorGenerator_SingleModeFromFile(const std::string &file, const std::vector<Eigen::MatrixXcd> &ops){
     setup(file, ops);

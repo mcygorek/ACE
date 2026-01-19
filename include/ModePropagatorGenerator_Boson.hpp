@@ -76,7 +76,7 @@ public:
   */
   Eigen::MatrixXcd get_pos_phase_op(int j)const;
 
-  virtual ModePropagatorPtr getModePropagator(int k)const;
+  virtual ModePropagatorPtr get_ModePropagator(int k)const;
 
   virtual Eigen::MatrixXcd get_bath_init(int k)const;
 

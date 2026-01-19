@@ -52,7 +52,7 @@ std::cout<<"SingleMode: HE: "<<std::endl<<HE<<std::endl;
     setup(ops);
   }
 
-  ModePropagatorPtr ModePropagatorGenerator_SingleMode::getModePropagator(int k)const{
+  ModePropagatorPtr ModePropagatorGenerator_SingleMode::get_ModePropagator(int k)const{
     if(k<0||k>=get_N_modes()){
       std::cerr<<"ModePropagatorGenerator_SingleMode: k<0||k>=get_N_modes()!"<<std::endl; 
       exit(1);

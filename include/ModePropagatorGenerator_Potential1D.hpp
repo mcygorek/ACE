@@ -41,7 +41,7 @@ public:
   
   virtual void setup(Parameters &param);
 
-  virtual ModePropagatorPtr getModePropagator(int k)const;
+  virtual ModePropagatorPtr get_ModePropagator(int k)const;
 
   virtual Eigen::MatrixXcd get_bath_init(int k)const;
 

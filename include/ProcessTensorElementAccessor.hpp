@@ -4,19 +4,25 @@
 #include "MPS_Matrix.hpp"
 #include "Eigen_fwd.hpp"
 #include <vector>
+#include <tuple>
 #include "IF_OD_Dictionary.hpp"
 #include "SelectIndices.hpp"
 #include "HilbertSpaceRotation.hpp"
+#include "CompressionTree.hpp"
 
 namespace ACE{
 
 class ProcessTensorElementAccessor{
 public:
   typedef std::vector<std::vector<std::pair<int, int> > > VVPI;
+  typedef std::vector<std::vector<std::tuple<int, int, int> > > VVTI;
 
   //Note: this may update "dict" and leave "M" inconsistent
   VVPI join_thisfirst_indices(const ProcessTensorElementAccessor &other);  
   VVPI join_thissecond_indices(const ProcessTensorElementAccessor &other);  
+  VVTI join_symmetric_indices(const ProcessTensorElementAccessor &otherL,
+                              const ProcessTensorElementAccessor &otherR);  
+
   void join(const VVPI &i_list, MPS_Matrix & M, const MPS_Matrix & M2);
   void join_select_indices(const VVPI &i_list,
                MPS_Matrix &M1, const MPS_Matrix &M2,
@@ -33,6 +39,9 @@ public:
   //returns system dimension
   inline int get_N()const{
     return dict.get_N();
+  } 
+  inline int get_NL()const{
+    return dict.get_NL();
   } 
   //quit if mismatch in system dimension
   void check_N(int dim)const;
@@ -70,6 +79,13 @@ public:
          const ProcessTensorElementAccessor & acc_L,
          const ProcessTensorElementAccessor & acc_R,
          MPS_Matrix & M, const MPS_Matrix & M_L, const MPS_Matrix & M_R);
+
+  //mupltiply M with "pass_on" before combining with M_L and M_L
+  void pass_on_before_join_symmetric(
+         const ProcessTensorElementAccessor & acc_L,
+         const ProcessTensorElementAccessor & acc_R,
+         MPS_Matrix & M, const MPS_Matrix & M_L, const MPS_Matrix & M_R,
+         PassOn &pass_on);
 
 
   //as above, however, restrict double indices to certain combinations

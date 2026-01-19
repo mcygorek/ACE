@@ -22,6 +22,7 @@ public:
   }
 
   virtual void dict_expand(const ReadPT_struct &readPT) = 0;
+  virtual int get_N_system() = 0;
   virtual const ProcessTensorElement * current() = 0;
   ProcessTensorForward(){
     n=0;

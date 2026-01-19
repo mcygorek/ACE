@@ -75,7 +75,7 @@ print(f'Total Environment Spin S={S}')
 PT = ProcessTensors(param, mode_list)   
 
 
-outfile = "06_random_spins.out"
+outfile = "09_random_spins.out"
 outp  = OutputPrinter( outfile,
                       [sigma_x, sigma_y, sigma_z])
 

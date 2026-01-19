@@ -118,7 +118,7 @@ Eigen::MatrixXcd ModePropagatorGenerator_SingleModes::get_bath_init(int k)const{
   }
   return modes[k]->bath_init;
 }
-ModePropagatorPtr ModePropagatorGenerator_SingleModes::getModePropagator(int k)const{
+ModePropagatorPtr ModePropagatorGenerator_SingleModes::get_ModePropagator(int k)const{
     if(k>=modes.size()){
     std::cerr<<"ModePropagatorGenerator_SingleModes: get_bath_init(k) out of bounds!"<<std::endl;
     throw DummyException();

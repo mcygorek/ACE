@@ -8,8 +8,10 @@
 #include "FreePropagator.hpp"
 #include "ModePropagatorGenerator_SingleModeFromFile.hpp"
 #include "ModePropagatorGenerator_SingleModes.hpp"
+#include "MPG_Selector.hpp"
 #include "ComplexFunction_Interpolate.hpp"
 #include "DynamicalMap.hpp"
+#include "CompressedPropagator.hpp"
 
 namespace py = pybind11;
 
@@ -68,24 +70,47 @@ PYBIND11_MODULE(ACE, m) {
     .def(py::init<ACE::Parameters &, const Eigen::MatrixXcd &>())
     .def(py::init<>())
     .def_readwrite("initial", &ACE::ModePropagator::bath_init)
+    .def("get_N_system", &ACE::ModePropagator::get_N_system)
+    .def("get_N_mode", &ACE::ModePropagator::get_N_mode)
+    .def("get_bath_init", &ACE::ModePropagator::get_bath_init)
+    .def("get_initial", &ACE::ModePropagator::get_initial)
     .def("copy", [](ACE::ModePropagator &prop){
        ACE::ModePropagator prop2=prop; return prop2;})
     ;
 
+  py::class_<ACE::ModePropagatorGenerator, std::shared_ptr<ACE::ModePropagatorGenerator> >
+         (m, "ModePropagatorGenerator")
+    .def("get_N",&ACE::ModePropagatorGenerator::get_N)
+    .def("get_N_modes",&ACE::ModePropagatorGenerator::get_N_modes)
+    .def("get_bath_init",&ACE::ModePropagatorGenerator::get_bath_init)
+    .def("get_mode_dim",&ACE::ModePropagatorGenerator::get_mode_dim)
+    .def("get_ModePropagator",&ACE::ModePropagatorGenerator::get_ModePropagator)
+    ;
+
+  m.def("MPG_Selector", [](ACE::Parameters &param){
+      ACE::MPG_Selector selector(param);
+      return selector.mpgs;
+    });
+ 
   py::class_<ACE::ProcessTensorForwardList>(m, "ProcessTensors")
     .def(py::init<>())
     .def(py::init([](ACE::Parameters & param){
+#ifndef PYBIND_NO_REDIRECT
       py::scoped_ostream_redirect stream(std::cout,py::module_::import("sys").attr("stdout"));
+#endif
       return new ACE::ProcessTensorForwardList(param);}))
-
-    .def(py::init([](ACE::Parameters &param, std::vector<std::shared_ptr<ACE::ModePropagator> > & initial_mpgs){
+      .def(py::init([](ACE::Parameters &param, std::vector<std::shared_ptr<ACE::ModePropagator> > & initial_mpgs){
+#ifndef PYBIND_NO_REDIRECT
       py::scoped_ostream_redirect stream(std::cout,py::module_::import("sys").attr("stdout"));
+#endif
 
       std::vector<std::shared_ptr<ACE::ModePropagatorGenerator> > mpgs_conv;
       mpgs_conv.push_back(std::make_shared<ACE::ModePropagatorGenerator_SingleModes>(initial_mpgs));
 
       return new ACE::ProcessTensorForwardList(param, mpgs_conv);}))
 //    .def(py::init<ACE::Parameters &>())
+
+    .def("add_PT",static_cast<void (ACE::ProcessTensorForwardList::*)(const std::string &, int, int)>(&ACE::ProcessTensorForwardList::add_PT), py::arg("filename"), py::arg("expand_dim_front")=0, py::arg("expand_dim_back")=0)
     ;
    
   py::class_<ACE::InitialState>(m, "InitialState")
@@ -110,6 +135,7 @@ PYBIND11_MODULE(ACE, m) {
     .def_readwrite("n_mem", &ACE::TimeGrid::n_mem)
     .def("get_dt", &ACE::TimeGrid::get_dt)
     .def("get_t", &ACE::TimeGrid::get_t)
+    .def("get_t_tot", &ACE::TimeGrid::get_t_tot)
     .def("get_all", &ACE::TimeGrid::get_all)
     .def("get_closest_n", &ACE::TimeGrid::get_closest_n)
     ;
@@ -150,6 +176,7 @@ PYBIND11_MODULE(ACE, m) {
      }))*/
      .def_readwrite("do_extract",&ACE::OutputPrinter::do_extract)
      .def("clear",&ACE::OutputPrinter::clear)
+     .def("clear_results",&ACE::OutputPrinter::clear_results)
      .def("extract",&ACE::OutputPrinter::extract)
     ;
 
@@ -195,7 +222,9 @@ PYBIND11_MODULE(ACE, m) {
     .def(py::init<>())
     .def("run",[](ACE::Simulation_QUAPI &sim, ACE::FreePropagator &fprop, const ACE::InfluenceFunctional &IF, const Eigen::MatrixXcd &init, const ACE::TimeGrid &tgrid, ACE::OutputPrinter &printer){
 
+#ifndef PYBIND_NO_REDIRECT
       py::scoped_ostream_redirect stream(std::cout,py::module_::import("sys").attr("stdout"));
+#endif
       sim.run(fprop, IF, init, tgrid, printer);
     })
     .def(py::init([](ACE::FreePropagator &prop,
@@ -232,7 +261,9 @@ PYBIND11_MODULE(ACE, m) {
     .def("set_threshold",&ACE::Simulation_TEMPO::set_threshold)
     .def("run",[](ACE::Simulation_TEMPO &sim, ACE::FreePropagator &fprop, const ACE::InfluenceFunctional_Vector &IF, const Eigen::MatrixXcd &init, const ACE::TimeGrid &tgrid, ACE::OutputPrinter &printer, bool use_symmetric_Trotter, bool silent){
 
+#ifndef PYBIND_NO_REDIRECT
       py::scoped_ostream_redirect stream(std::cout,py::module_::import("sys").attr("stdout"));
+#endif
       sim.run(fprop, IF, init, tgrid, printer, use_symmetric_Trotter, silent);
     }, py::arg("fprop"), py::arg("IF"), py::arg("init"), py::arg("tgrid"),py::arg("printer"),py::arg("use_symmetric_Trotter")=true, py::arg("silent")=true)
     .def(py::init([](ACE::FreePropagator &prop,
@@ -271,4 +302,56 @@ PYBIND11_MODULE(ACE, m) {
 //    .def("get_dE", &ACE::DynamicalMap::get_dE, py::arg("i") , py::arg("regularize") = 0., py::arg("os") = (std::ostream*)NULL)
 //    .def("get_dE", static_cast<Eigen::MatrixXcd (ACE::DynamicalMap::*)(int)>(&ACE::DynamicalMap::get_dE))
     ;
+
+  py::class_<ACE::CompressionTree, std::shared_ptr<ACE::CompressionTree> >(m, "CompressionTree")
+    .def(py::init<>())
+    .def(py::init<const std::string &>())
+    .def("read", static_cast<void (ACE::CompressionTree::*)(const std::string &)>(&ACE::CompressionTree::read))
+    .def("write", static_cast<void (ACE::CompressionTree::*)(const std::string &)const>(&ACE::CompressionTree::write))
+    .def_readwrite("first", &ACE::CompressionTree::first)
+    .def_readwrite("second", &ACE::CompressionTree::second)
+    .def("get_T", [](const ACE::CompressionTree& TTree){return TTree.T;})
+    .def("get_S", [](const ACE::CompressionTree& TTree){return TTree.S.list;})
+    .def("get_S_min_dim_first", [](const ACE::CompressionTree& TTree){return TTree.S.min_dim_first();})
+    .def("get_S_min_dim_second", [](const ACE::CompressionTree& TTree){return TTree.S.min_dim_second();})
+    .def("get_S_min_dims", [](const ACE::CompressionTree& TTree){return std::pair<int,int>(TTree.S.min_dim_first(),TTree.S.min_dim_second());})
+    ;
+
+
+  m.def("calculate_CompressedPropagator_ACE", [](
+                  std::shared_ptr<ACE::ModePropagatorGenerator> & mpg,
+                  std::shared_ptr<ACE::CompressionTree> &TTree, 
+                  std::shared_ptr<ACE::CompressionTree> &TTree_inv,
+                  double t, double dt){
+      double dict_zero=-1;
+      if(!mpg){
+        std::cerr<<"calculate_CompressedPropagator_ACE: MPG not set!"<<std::endl;
+        exit(1);
+      }
+      int N_modes=mpg->get_N_modes();
+      std::pair<ACE::ProcessTensorElement, Eigen::VectorXcd> e_rhoE0 = \
+           ACE::CompressedPropagator::calculate_ACE_sequential( \
+                           TTree, TTree_inv, mpg, N_modes-1, t, dt, dict_zero);
+ 
+      e_rhoE0.first.expand_from_dict();
+      int NL=e_rhoE0.first.get_NL();
+      int dim_d=e_rhoE0.first.M.dim_d1;
+      Eigen::MatrixXcd Q(NL*dim_d, NL*dim_d);
+      for(int i2=0; i2<NL; i2++){
+        for(int d2=0; d2<dim_d; d2++){
+          for(int i1=0; i1<NL; i1++){
+            for(int d1=0; d1<dim_d; d1++){
+              Q(i2*dim_d+d2, i1*dim_d+d1) = e_rhoE0.first.M(i2*NL+i1, d1, d2);
+            }
+          }
+        }
+      }
+      std::tuple<Eigen::MatrixXcd, Eigen::VectorXcd, Eigen::VectorXcd> result;
+      std::get<0>(result)=Q;
+      std::get<1>(result)=e_rhoE0.second;
+      std::get<2>(result)=e_rhoE0.first.closure;
+      return result;
+    });
+
+
 }

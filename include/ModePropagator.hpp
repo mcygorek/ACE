@@ -45,8 +45,11 @@ public:
   
   MPS_Matrix get_MPS_Matrix()const;
 
-  inline ModePropagator(int Ns=2, 
-                 const Eigen::MatrixXcd &binit=Eigen::MatrixXcd::Identity(2,2) )
+  inline ModePropagator() : fermion_sign_space(-1){
+    bath_init=Eigen::MatrixXcd::Identity(1,1);   
+    rBasis=std::make_shared<ReducedLiouvilleBasis>();
+  }
+  inline ModePropagator(int Ns, const Eigen::MatrixXcd &binit )
     : FreePropagator(Ns*binit.rows()), bath_init(binit), fermion_sign_space(-1){
     rBasis=std::make_shared<ReducedLiouvilleBasis>();
   }

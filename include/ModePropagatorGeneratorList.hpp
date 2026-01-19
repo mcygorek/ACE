@@ -7,8 +7,6 @@
 #include "ModePropagatorGenerator_Fermion.hpp"
 #include "ModePropagatorGenerator_Boson.hpp"
 #include "ModePropagatorGenerator_Potential1D.hpp"
-#include "ModePropagatorGenerator_MultiSite.hpp"
 #include "ModePropagatorGenerator_RandomSpin.hpp"
-#include "ModePropagatorGenerator_Lasing.hpp"
 
 #endif

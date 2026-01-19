@@ -56,7 +56,7 @@ void ProcessTensor::sweep_backward(const TruncatedSVD &trunc){
   }
 }
 
-void ProcessTensor::join_halfdt(const ProcessTensor &other){
+void ProcessTensor::join_halfdt(ProcessTensor &other){
   if(size()<1){
     std::cerr<<"ProcessTensor::join_halfdt: size()<1!"<<std::endl;
     exit(1);
@@ -70,7 +70,7 @@ void ProcessTensor::join_halfdt(const ProcessTensor &other){
   }
 }
 
-void ProcessTensor::join_and_sweep_halfdt(const ProcessTensor &other,
+void ProcessTensor::join_and_sweep_halfdt(ProcessTensor &other,
                                           const TruncatedSVD &trunc){
   if(size()<1){
     std::cerr<<"ProcessTensor::join_halfdt: size()<1!"<<std::endl;
@@ -202,7 +202,7 @@ void ProcessTensor::add_modes(COMBINE_MODE combine_mode,
       std::cout<<"Mode "<<k<<"/"<<mpg.get_N_modes()<<std::endl;
     }
 
-    ModePropagatorPtr mpp=mpg.getModePropagator(k);
+    ModePropagatorPtr mpp=mpg.get_ModePropagator(k);
 
     if(verbosity>1)std::cout<<"Maxdim: before combination: "<<get_max_dim()<<std::endl;
 

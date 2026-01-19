@@ -6,6 +6,7 @@
 #include <typeinfo>
 #include <stdexcept>
 #include "ReadPT_struct.hpp"
+#include "Timings.hpp"
 
 namespace ACE{
 
@@ -15,49 +16,6 @@ void ProcessTensorElementAccessor::check_N(int dim)const{
     throw DummyException();
   }
 }
-/*
-void ProcessTensorElementAccessor::join_thisfirst_sameinner(ProcessTensorElement &e1, const ProcessTensorElementAccessor &e2){
-  if(*this!=e1.accessor){
-    std::cerr<<"ProcessTensorElementAccessor::join_thisfirst_sameinner: *this!=e1.accessor!"<<std::endl;
-    throw DummyException();
-  }
-  if(e1.M.dim_d2 != e2.M.dim_d1){
-    std::cerr<<"ProcessTensorElementAccessor::join_thisfirst_sameinner: e1.M.dim_d2 != e2.M.dim_d1!"<<std::endl;
-    throw DummyException();
-  }
-  
-  IF_OD_Dictionary dict_first=e1.accessor.dict;
-  IF_OD_Dictionary dict_second=e2.accessor.dict;
-  IF_OD_Dictionary dict_new=dict_first; dict_new.join(dict_second);
-  int NL=dict_new.get_NL();
-  std::vector<std::vector<int> > rev_new=dict_new.get_reverse_beta();
-
-  MPS_Matrix M(dict_new.get_reduced_dim(), e1.M.dim_d1, e2.M.dim_d2);
-  M.set_zero();
-  for(int k=0; k<NL; k++){
-    for(int j=0; j<NL; j++){
-      int i_ind=dict_first.beta[j*NL+k]; if(i_ind<0)continue;
-      for(int i=0; i<NL; i++){
-        int i_ind2=dict_second.beta[i*NL+j]; if(i_ind2<0)continue;
-        int i_ind3=dict_new.beta[i*NL+k]; if(i_ind3<0)continue;
-        if(rev_new[i_ind3][0]!=i*NL+k)continue; //only modify first occurance
-        for(int d1=0; d1<e1.M.dim_d1; d1++){
-          for(int d2=0; d2<e1.M.dim_d2; d2++){
-            for(int d3=0; d3<e2.M.dim_d2; d3++){
-              M(i_ind3, d1, d3)+= e1.M(i_ind, d1, d2)*e2.M(i_ind2, d2, d3);
-            }
-          }
-        }
-      }
-    }
-  }
-  e1.M.swap(M);
-  e1.accessor.dict=dict_new;
-  e1.closure=e.closure;
-  e1.env_ops=e.env_ops;
-  e1.forwardNF=e.forwardNF;
-}
-*/
 
 void ProcessTensorElementAccessor::propagate(
           Eigen::MatrixXcd &state, const MPS_Matrix &M, int dim1_front, 
@@ -250,12 +208,16 @@ ProcessTensorElementAccessor::VVPI ProcessTensorElementAccessor::
 ProcessTensorElementAccessor::VVPI ProcessTensorElementAccessor::
     join_thissecond_indices(const ProcessTensorElementAccessor &other){
 
+  constexpr bool debug=false;
+  if(debug){std::cout<<"join_thissecond_indices: Mark1"<<std::endl;}
   int NL=dict.get_NL();
   IF_OD_Dictionary ndict=dict; ndict.join(other.dict);
   std::vector<std::vector<int> > newrev=ndict.get_reverse_beta();
 
+  if(debug){std::cout<<"join_thissecond_indices: Mark2"<<std::endl;}
   VVPI i_list(ndict.get_reduced_dim());
 
+  if(debug){std::cout<<"join_thissecond_indices: Mark3"<<std::endl;}
   for(int i=0; i<NL; i++){
     for(int j=0; j<NL; j++){
       int i_ind=dict.beta[i*NL+j];         if(i_ind<0)continue;
@@ -269,14 +231,44 @@ ProcessTensorElementAccessor::VVPI ProcessTensorElementAccessor::
       }
     } 
   }
+  if(debug){std::cout<<"join_thissecond_indices: Mark4"<<std::endl;}
+  dict=ndict;
+  if(debug){std::cout<<"join_thissecond_indices: Mark5"<<std::endl;}
+  return i_list;
+} 
+
+ProcessTensorElementAccessor::VVTI ProcessTensorElementAccessor::join_symmetric_indices(
+                              const ProcessTensorElementAccessor &otherL,
+                              const ProcessTensorElementAccessor &otherR){
+
+  int NL=dict.get_NL();
+  IF_OD_Dictionary idict=dict; idict.join(otherL.dict);
+  IF_OD_Dictionary ndict=otherR.dict; ndict.join(idict);
+  std::vector<std::vector<int> > newrev=ndict.get_reverse_beta();
+
+  VVTI i_list(ndict.get_reduced_dim());
+
+  for(int i=0; i<NL; i++){
+    for(int l=0; l<NL; l++){
+      int i_ind_new=ndict.beta[i*NL+l];  if(i_ind_new<0)continue;
+      if(newrev[i_ind_new][0]!=i*NL+l)continue;
+      for(int j=0; j<NL; j++){
+        int i_ind_R=otherR.dict.beta[i*NL+j];    if(i_ind_R<0)continue;
+        for(int k=0; k<NL; k++){
+          int i_ind=dict.beta[j*NL+k];  if(i_ind<0)continue;
+          int i_ind_L=otherL.dict.beta[k*NL+l];    if(i_ind_L<0)continue;
+  i_list[i_ind_new].push_back(std::tuple<int,int,int>(i_ind_R, i_ind, i_ind_L));
+        }
+      }
+    } 
+  }
   dict=ndict;
   return i_list;
 }
 
-
 void ProcessTensorElementAccessor::join(const VVPI &i_list,  
                                    MPS_Matrix & M, const MPS_Matrix & M2){
-
+//  time_point time1=now();
   MPS_Matrix tmp(i_list.size(), M.dim_d1*M2.dim_d1, M.dim_d2*M2.dim_d2);
   tmp.fill(0.);
   for(int i=0; i<(int)i_list.size(); i++){
@@ -289,11 +281,20 @@ void ProcessTensorElementAccessor::join(const VVPI &i_list,
                 M(i_list[i][j].first,d1,d2) * M2(i_list[i][j].second,od1,od2);
             }
           }
+          //BLAS works but happens to be slower:
+//          Eigen::Map<Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>, 0, Eigen::OuterStride<> >(      \
+   tmp.mem+(d1*M2.dim_d1*tmp.dim_i+i)*tmp.dim_d2+d2*M2.dim_d2,M2.dim_d1,M2.dim_d2,Eigen::OuterStride<>(tmp.dim_i*tmp.dim_d2)).noalias()  +=  \
+            M(i_list[i][j].first,d1,d2) *                    \
+            Eigen::Map<Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>, 0, Eigen::OuterStride<> >(      \
+   M2.mem+i_list[i][j].second*M2.dim_d2,M2.dim_d1,M2.dim_d2,Eigen::OuterStride<>(M2.dim_i*M2.dim_d2)); 
         }
       }
     }
   } 
+//  time_point time2=now();
+//  std::cout<<"runtime for join: "<<time_diff(time2-time1)<<"ms"<<std::endl;
   M.swap(tmp);   
+
 }
 
 /*
@@ -352,13 +353,47 @@ void ProcessTensorElementAccessor::join_symmetric(
   int dim_d1_orig=M.dim_d1;
   int dim_d2_orig=M.dim_d2;
 
+  //contract B-A-B by first contracting C = B- -B:
+  MPS_Matrix C(M_R.dim_i*M_L.dim_i, M_L.dim_d1, M_R.dim_d2);
+  C.set_zero();
+  for(int iR=0; iR<M_R.dim_i; iR++){
+    for(int iL=0; iL<M_L.dim_i; iL++){
+      for(int d1=0; d1<M_L.dim_d1; d1++){
+        for(int d=0; d<M_L.dim_d2; d++){
+          for(int d2=0; d2<M_R.dim_d2; d2++){
+            C(iR*M_L.dim_i+iL, d1, d2)+=M_L(iL, d1, d)*M_R(iR, d, d2);
+          }
+        }
+      }
+    }
+  }   
+
+  VVTI i_list=join_symmetric_indices(acc_L, acc_R);
+
+  MPS_Matrix tmp(i_list.size(), dim_d1_orig*M_L.dim_d1, dim_d2_orig*M_R.dim_d2);
+  tmp.set_zero();
+  for(int i=0; i<(int)i_list.size(); i++){
+    for(int j=0; j<(int)i_list[i].size(); j++){
+      for(int d1=0; d1<dim_d1_orig; d1++){
+        for(int d2=0; d2<dim_d2_orig; d2++){
+          for(int od1=0; od1<M_L.dim_d1; od1++){
+            for(int od2=0; od2<M_R.dim_d2; od2++){
+              tmp(i, d1*M_L.dim_d1 + od1, d2*M_R.dim_d2 + od2) +=
+                M(std::get<1>(i_list[i][j]), d1, d2) * 
+                C(std::get<0>(i_list[i][j])*M_L.dim_i+std::get<2>(i_list[i][j]), od1, od2);
+            }
+          }
+        }
+      }
+    }
+  }
+      
+  M.swap(tmp);   
+/*
   VVPI i_list=join_thissecond_indices(acc_L);
   join(i_list, M, M_L);  
 
   VVPI i_list2=join_thisfirst_indices(acc_R);
-//  join(i_list2, M, M_R);  
-
-
   MPS_Matrix tmp2(i_list2.size(), dim_d1_orig*M_L.dim_d1, dim_d2_orig*M_R.dim_d2);
   tmp2.fill(0.);
   for(int i=0; i<(int)i_list2.size(); i++){
@@ -379,6 +414,100 @@ void ProcessTensorElementAccessor::join_symmetric(
     }
   }
   M.swap(tmp2);   
+*/
+} 
+
+void ProcessTensorElementAccessor::pass_on_before_join_symmetric(
+         const ProcessTensorElementAccessor & acc_L,
+         const ProcessTensorElementAccessor & acc_R,
+         MPS_Matrix & M, const MPS_Matrix & M_L, const MPS_Matrix & M_R,
+         PassOn &pass_on){
+ 
+//  std::cout<<"TEST: P: "<<pass_on.P.rows()<<","<<pass_on.P.cols()<<std::endl; 
+
+  if(pass_on.P.cols()!=M_L.dim_d1*M.dim_d1){
+    std::cerr<<"PTEA::pass_on_before_join_symmetric : pass_on.P.cols()=!M_L.dim_d1*M.dim_d1!"<<std::endl;
+    throw DummyException();
+  }
+
+  int dim_d1_orig=M.dim_d1;
+  int dim_d2_orig=M.dim_d2;
+
+  //contract B-A-B-P by first contracting C = B- -B and X = A-P-
+  MPS_Matrix C(M_R.dim_i*M_L.dim_i, M_L.dim_d1, M_R.dim_d2);
+  C.set_zero();
+  for(int iR=0; iR<M_R.dim_i; iR++){
+    for(int iL=0; iL<M_L.dim_i; iL++){
+      for(int d1=0; d1<M_L.dim_d1; d1++){
+        for(int d=0; d<M_L.dim_d2; d++){
+          for(int d2=0; d2<M_R.dim_d2; d2++){
+            C(iR*M_L.dim_i+iL, d1, d2)+=M_L(iL, d1, d)*M_R(iR, d, d2);
+          }
+        }
+      }
+    }
+  }  
+
+  MPS_Matrix X(M.dim_i*M_L.dim_d1, pass_on.P.rows(), M.dim_d2);
+  X.set_zero();
+  for(int i=0; i<M.dim_i; i++){
+    for(int od1=0; od1<M_L.dim_d1; od1++){
+      for(int d1=0; d1<M.dim_d1; d1++){
+        for(int d2=0; d2<M.dim_d2; d2++){
+          for(int k=0; k<pass_on.P.rows(); k++){ 
+            X(i*M_L.dim_d1+od1, k, d2) += pass_on.P(k, d1*M_L.dim_d1+od1) \
+                                        * M(i, d1, d2);
+          }
+        }
+      }
+    }
+  }
+
+  VVTI i_list=join_symmetric_indices(acc_L, acc_R);
+
+  MPS_Matrix tmp(i_list.size(), pass_on.P.rows(), dim_d2_orig*M_R.dim_d2);
+  tmp.set_zero();
+  for(int i=0; i<(int)i_list.size(); i++){
+    for(int j=0; j<(int)i_list[i].size(); j++){
+      for(int k=0; k<pass_on.P.rows(); k++){
+        for(int d2=0; d2<dim_d2_orig; d2++){
+          for(int od1=0; od1<M_L.dim_d1; od1++){
+            for(int od2=0; od2<M_R.dim_d2; od2++){
+              tmp(i, k, d2*M_R.dim_d2 + od2) +=
+                  X(std::get<1>(i_list[i][j])*M_L.dim_d1+od1, k, d2) * 
+                  C(std::get<0>(i_list[i][j])*M_L.dim_i+std::get<2>(i_list[i][j]), od1, od2);
+            }
+          }
+        }
+      }
+    }
+  }
+  M.swap(tmp);  
+
+/*
+  VVTI i_list=join_symmetric_indices(acc_L, acc_R);
+
+  MPS_Matrix tmp(i_list.size(), dim_d1_orig*M_L.dim_d1, dim_d2_orig*M_R.dim_d2);
+  tmp.set_zero();
+  for(int i=0; i<(int)i_list.size(); i++){
+    for(int j=0; j<(int)i_list[i].size(); j++){
+      for(int d1=0; d1<dim_d1_orig; d1++){
+        for(int d2=0; d2<dim_d2_orig; d2++){
+          for(int od1=0; od1<M_L.dim_d1; od1++){
+            for(int od2=0; od2<M_R.dim_d2; od2++){
+              tmp(i, d1*M_L.dim_d1 + od1, d2*M_R.dim_d2 + od2) +=
+                M(std::get<1>(i_list[i][j]), d1, d2) *
+                C(std::get<0>(i_list[i][j])*M_L.dim_i+std::get<2>(i_list[i][j]), od1, od2);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  M.swap(tmp);
+  M.inner_multiply_left(pass_on.P);
+*/
 }
 
 
@@ -387,7 +516,8 @@ void ProcessTensorElementAccessor::join_select_indices(
                const ProcessTensorElementAccessor & acc_other,
                const SelectIndices & k_left, const SelectIndices & k_right){
 
-//std::cout<<"i_list.size()="<<i_list.size()<<" k_left.size()="<<k_left.size()<<" k_right.size()="<<k_right.size()<<std::endl;
+  constexpr bool debug=false;
+  if(debug){std::cout<<"join_select_indices: i_list.size()="<<i_list.size()<<" k_left.size()="<<k_left.size()<<" k_right.size()="<<k_right.size()<<std::endl;}
 
   MPS_Matrix tmp;
   try{
@@ -417,12 +547,16 @@ void ProcessTensorElementAccessor::join_select_indices(
     }
   } 
   M1.swap(tmp);   
-//std::cout<<"accessor: TEST2"<<std::endl;
+  if(debug){std::cout<<"join_select_indices: done."<<std::endl;}
 }
 void ProcessTensorElementAccessor::join_select_indices_alternate(
                int n, MPS_Matrix &M1, const MPS_Matrix &M2,
                const ProcessTensorElementAccessor & acc_other,
                const SelectIndices & k_left, const SelectIndices & k_right){
+
+  constexpr bool debug=false;
+  if(debug){std::cout<<"join_select_alternate: k_left.size()="<<k_left.size()<<" k_right.size()="<<k_right.size()<<std::endl;}
+
   VVPI i_list;
   if(n%2==0){
     i_list=join_thissecond_indices(acc_other);
@@ -430,6 +564,7 @@ void ProcessTensorElementAccessor::join_select_indices_alternate(
     i_list=join_thisfirst_indices(acc_other);
   }
   join_select_indices(i_list, M1, M2, acc_other, k_left, k_right);
+  if(debug){std::cout<<"join_select_alternate: done."<<std::endl;}
 }
 
 
@@ -441,4 +576,4 @@ void ProcessTensorElementAccessor::write_binary(std::ostream &ofs)const{
 }
 
 
-}//namspace
+}//namespace

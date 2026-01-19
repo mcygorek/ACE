@@ -32,6 +32,7 @@ public:
 
 
   virtual void clear();
+  virtual void clear_results();
   virtual void setup(Parameters & param, int setdim=-1);
   virtual void set_stream(const std::string &outfile, int precision=-1);
 

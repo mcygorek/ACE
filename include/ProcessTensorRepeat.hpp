@@ -28,6 +28,7 @@ public:
   ProcessTensorElement & get(int n_, PreloadHint hint=NoPreload);
   const ProcessTensorElement & get_ro(int n_, PreloadHint hint=NoPreload);
 
+  virtual int get_N_system();
   virtual const ProcessTensorElement * current(){return &get_ro(n, ForwardPreload);}
 
   static int get_n_mem(const TimeGrid &tgrid);

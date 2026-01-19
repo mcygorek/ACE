@@ -64,7 +64,7 @@ namespace ACE{
     } 
   }
 
-  ModePropagatorPtr ModePropagatorGenerator_Fermion::getModePropagator(int k)const{
+  ModePropagatorPtr ModePropagatorGenerator_Fermion::get_ModePropagator(int k)const{
     if(k<0||k>=get_N_modes()){
       std::cerr<<"ModePropagatorGenerator_Fermion: k<0||k>=get_N_modes()!"<<std::endl; 
       exit(1);
