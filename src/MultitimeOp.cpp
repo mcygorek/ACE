@@ -1,5 +1,6 @@
 #include "MultitimeOp.hpp"
 #include "otimes.hpp"
+#include "DummyException.hpp"
 #include <iostream>
 
 namespace ACE{
@@ -21,15 +22,22 @@ namespace ACE{
   }
 
   void MultitimeOp::apply(Eigen::MatrixXcd &M){
-    if( op.rows() != op.cols() ){
-      std::cerr<<"Applying Multitime Operator: op.rows() != op.cols() !"<<std::endl; 
-      exit(1);
+    if( op_fw.rows() != op_fw.cols() ){
+      std::cerr<<"Applying Multitime Operator: op_fw.rows() != op_fw.cols() !"<<std::endl; 
+      throw DummyException();
     } 
-    if( M.cols() != op.rows() ){
+    if( op_bw.rows() != op_bw.cols() ){
+      std::cerr<<"Applying Multitime Operator: op_bw.rows() != op_bw.cols() !"<<std::endl; 
+      throw DummyException();
+    } 
+    if( M.cols() != op_fw.rows()*op_bw.rows() ){
       std::cerr<<"Applying Multitime Operator: M.cols() != op.rows() !"<<std::endl; 
-      std::cerr<<"M.cols(): "<<M.cols()<<" op.rows(): "<<op.rows()<<std::endl;
-      exit(1);
+      std::cerr<<"M.cols(): "<<M.cols()<<" op.rows(): "<<op_fw.rows()*op_bw.rows()<<std::endl;
+      throw DummyException();
     } 
+
+    Eigen::MatrixXcd op=otimes(op_fw, op_bw.transpose() );
+
     if(apply_before){ 
       M=op*M;
     }else{
@@ -46,13 +54,23 @@ namespace ACE{
   void MultitimeOp::set(double t_, Eigen::MatrixXcd mat_fw, Eigen::MatrixXcd mat_bw, bool before){
     t=t_;
 
-    int dim=mat_fw.rows();
-    Eigen::MatrixXcd id=Eigen::MatrixXcd::Identity(dim,dim);
-
-    op=otimes(mat_fw, id) * otimes(id,mat_bw.transpose() );
-
+    op_fw=mat_fw; 
+    op_bw=mat_bw; 
     apply_before=before;
-//std::cout<<"Test: Multitime: op: "<<std::endl<<op<<std::endl;
+
+    if( op_fw.rows() != op_fw.cols() ){
+      std::cerr<<"Setting Multitime Operator: op_fw.rows() != op_fw.cols() !"<<std::endl; 
+      throw DummyException();
+    } 
+    if( op_bw.rows() != op_bw.cols() ){
+      std::cerr<<"Setting Multitime Operator: op_bw.rows() != op_bw.cols() !"<<std::endl; 
+      throw DummyException();
+    } 
+    if( op_fw.rows() != op_bw.rows() ){
+      std::cerr<<"Settining Multitime Operator: op_fw.rows() != op_bw.rows() !"<<std::endl; 
+      std::cerr<<"op_fw.rows(): "<<op_fw.rows()<<" op_bw.rows(): "<<op_bw.rows()*op_bw.rows()<<std::endl;
+      throw DummyException();
+    } 
   } 
    
 }//namespace

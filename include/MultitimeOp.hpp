@@ -8,7 +8,7 @@ namespace ACE{
 class MultitimeOp{
 public:
   double t;
-  Eigen::MatrixXcd op;
+  Eigen::MatrixXcd op_fw, op_bw;
   bool apply_before; //apply als last action of previous time step
 
   bool is_now(double t_, double dt)const;
@@ -19,20 +19,20 @@ public:
 
   void set(double t_, Eigen::MatrixXcd mat_fw, Eigen::MatrixXcd mat_bw, bool before=false);
    
-  inline void set(double t_, Eigen::MatrixXcd mat, bool before=false){
-    t=t_;
-    op=mat;
-    apply_before=before;
-  } 
+//  inline void set(double t_, Eigen::MatrixXcd mat, bool before=false){
+//    t=t_;
+//    op=mat;
+//    apply_before=before;
+//  } 
   
   inline MultitimeOp(){
   }
   inline MultitimeOp(double t_, Eigen::MatrixXcd mat_fw, Eigen::MatrixXcd mat_bw, bool before=false){ 
     set(t_, mat_fw, mat_bw, before);
   }
-  inline MultitimeOp(double t_=0., Eigen::MatrixXcd mat=Eigen::MatrixXcd::Identity(2,2), bool before=false){
-    set(t_, mat, before);
-  }
+//  inline MultitimeOp(double t_=0., Eigen::MatrixXcd mat=Eigen::MatrixXcd::Identity(2,2), bool before=false){
+//    set(t_, mat, before);
+//  }
 };
 
 }//namespace

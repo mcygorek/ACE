@@ -18,7 +18,19 @@ void Simulation_PT::propagate_system(
       throw DummyException();
     }
 
-
+    //apply Operator after:
+    for(int o=(int)fprop->multitime_op.size()-1; o>=0; o--){
+      if((!fprop->multitime_op[o].apply_before) && fprop->multitime_op[o].is_now(t,dt)){
+        for(int c=0; c<state.cols(); c++){ 
+          Eigen::MatrixXcd tmp = L_Vector_to_H_Matrix(state.col(c));
+          Eigen::MatrixXcd tmp2 = fprop->multitime_op[o].op_fw * tmp;
+          tmp = tmp2 * fprop->multitime_op[o].op_bw;
+          state.col(c) = H_Matrix_to_L_Vector(tmp);
+        }
+      }
+    }
+   
+    //propagate:
     double dt2=dt/(fprop->Nintermediate+1);
     for(int interm=0; interm<fprop->Nintermediate+1; interm++){
       double t2=t+interm*dt2;
@@ -104,6 +116,19 @@ void Simulation_PT::propagate_system(
      }
     }
 
+
+    //apply Operator before:
+    for(size_t o=0; o<fprop->multitime_op.size(); o++){
+      if(fprop->multitime_op[o].apply_before && fprop->multitime_op[o].is_now(t,dt)){
+        for(int c=0; c<state.cols(); c++){ 
+          Eigen::MatrixXcd tmp = L_Vector_to_H_Matrix(state.col(c));
+          Eigen::MatrixXcd tmp2 = fprop->multitime_op[o].op_fw * tmp;
+          tmp = tmp2 * fprop->multitime_op[o].op_bw;
+          state.col(c) = H_Matrix_to_L_Vector(tmp);
+        }
+      }
+    }
+ 
   }else if(fprop && fprop->propagate_system_threshold>0){
     prop.update(t, dt);
     if(prop.M.rows()!=prop.M.cols() || prop.M.rows()!=state.rows()){

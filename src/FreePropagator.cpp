@@ -60,8 +60,8 @@ namespace ACE{
     } 
 
     for(size_t i=0; i<multitime_op.size(); i++){
-      if(multitime_op[i].op.rows()!=const_H.rows()*const_H.rows()){
-        std::cerr<<"Hamiltonian::check_dimensions: multitime_op[i].op.rows()!=const_H.rows()*const_H.rows() for i="<<i<<"!"<<std::endl;
+      if(multitime_op[i].op_fw.rows()!=const_H.rows()){
+        std::cerr<<"Hamiltonian::check_dimensions: multitime_op[i].op_fw.rows()!=const_H.rows() for i="<<i<<"!"<<std::endl;
         throw DummyException();
       }
     }
@@ -320,10 +320,9 @@ std::cout<<"DEBUG: skipping calculation (precalculated)"<<t<<std::endl;
    
     size_t dim=set_dim(L, "FreePropagator::add_Lindblad: L.rows()!=H.get_dim()");
 
-    if(propagate_Taylor>0){ //only set explicit vector "Lindbladians"; don't work on full Liouville space
-      Lindbladians.push_back(LindbladTerm(gamma, L, Ldag));
+    Lindbladians.push_back(LindbladTerm(gamma, L, Ldag));
 
-    }else{ 
+    if(propagate_Taylor<1){ 
       double g=gamma;
       Eigen::MatrixXcd L2=Ldag*L;
 

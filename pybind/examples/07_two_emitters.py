@@ -3,7 +3,7 @@
 
 
 import sys
-sys.path.append('/home/.../ACE/pybind/') #<---plug in your directory
+sys.path.append('/.../ACE/pybind/') #<---plug in your directory
 from ACEutils import *
 
 # This example demonstrate the (subtle) effects of phonons on superradiance of two QDs.
@@ -36,13 +36,13 @@ initial = InitialState(np.kron(KetBra(0,0,2),KetBra(0,0,2)))
 fprop = FreePropagator()
 fprop.add_Lindblad(0.002, np.kron(KetBra(1,0,2),np.eye(2,2)))
 fprop.add_Lindblad(0.002, np.kron(np.eye(2,2),KetBra(1,0,2)))
-fprop.add_Lindblad(0.002, np.kron(KetBra(0,1,2),np.eye(2,2))                         +np.kron(np.eye(2,2),KetBra(0,1,2)))
-fprop.apply_Operator_left(0, np.kron(KetBra(0,1,2),np.eye(2,2))                         +np.kron(np.eye(2,2),KetBra(0,1,2)))
-fprop.apply_Operator_right(0, np.kron(KetBra(1,0,2),np.eye(2,2))                         +np.kron(np.eye(2,2),KetBra(1,0,2)))
+fprop.add_Lindblad(0.002, np.kron(KetBra(0,1,2),np.eye(2,2))+np.kron(np.eye(2,2),KetBra(0,1,2)))
+fprop.apply_Operator_left(0, np.kron(KetBra(0,1,2),np.eye(2,2))+np.kron(np.eye(2,2),KetBra(0,1,2)))
+fprop.apply_Operator_right(0, np.kron(KetBra(1,0,2),np.eye(2,2))+np.kron(np.eye(2,2),KetBra(1,0,2)))
 
 PT    = ProcessTensors()
 
-outp  = OutputPrinter([(np.kron(KetBra(1,0,2),np.eye(2))+np.kron(np.eye(2),KetBra(1,0,2)))                      @(np.kron(KetBra(0,1,2),np.eye(2))+np.kron(np.eye(2),KetBra(0,1,2)))])
+outp  = OutputPrinter([(np.kron(KetBra(1,0,2),np.eye(2))+np.kron(np.eye(2),KetBra(1,0,2)))@(np.kron(KetBra(0,1,2),np.eye(2))+np.kron(np.eye(2),KetBra(0,1,2)))])
 
 # First: calculate without phonons:
 Simulation(fprop, PT, initial, tgrid, outp)
