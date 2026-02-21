@@ -60,6 +60,8 @@ PYBIND11_MODULE(ACE, m) {
       py::arg("time"), py::arg("Op"), py::arg("apply_before")=false)
     .def("get_Htot",&ACE::FreePropagator::get_Htot)
     .def("update",&ACE::FreePropagator::update)
+    .def_readwrite("propagate_Taylor",&ACE::FreePropagator::propagate_Taylor)
+    .def_readwrite("propagate_system_threshold",&ACE::FreePropagator::propagate_system_threshold)
     .def_readwrite("const_H",&ACE::FreePropagator::const_H)
     .def_readwrite("M",&ACE::FreePropagator::M)
     ;

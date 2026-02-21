@@ -10,22 +10,189 @@ namespace ACE{
 void Simulation_PT::propagate_system(
          Eigen::MatrixXcd & state, Propagator &prop, double t, double dt){
 
-  prop.update(t, dt);
-  if(prop.M.rows()!=prop.M.cols() || prop.M.rows()!=state.rows()){
-    std::cerr<<"Simulation_PT::propagate_system: prop.M.rows()!=prop.M.cols() || prop.M.rows()!=state.rows()!"<<std::endl;
-    exit(1);
-  }
+  FreePropagator *fprop=dynamic_cast<FreePropagator*>(&prop);
+  if(fprop && fprop->propagate_Taylor>0){
+    int N=fprop->get_dim();
+    if(state.rows()!=N*N){
+      std::cerr<<"Simulation_PT::propagate_system: state.rows()!=N*N!"<<std::endl;
+      throw DummyException();
+    }
 
-//  Eigen::MatrixXcd state2=Eigen::MatrixXcd::Zero(state.rows(),state.cols());
-//  for(int d1=0; d1<state.cols(); d1++){
-//    for(int j=0; j<state.rows(); j++){
-//      for(int k=0; k<state.rows(); k++){
-//        state2(j,d1)+=prop.M(j,k)*state(k,d1);
+
+    double dt2=dt/(fprop->Nintermediate+1);
+    for(int interm=0; interm<fprop->Nintermediate+1; interm++){
+      double t2=t+interm*dt2;
+ 
+      Eigen::MatrixXcd mih_Hfw =  \
+          std::complex<double>(0,-1/hbar_in_meV_ps) * fprop->get_Htot(t2);
+      Eigen::MatrixXcd mih_Hbw=mih_Hfw;
+
+      for(size_t j=0; j<fprop->Lindbladians.size(); j++){
+        Eigen::MatrixXcd gLdagL=std::get<0>(fprop->Lindbladians[j]) * \
+                                std::get<2>(fprop->Lindbladians[j]) * \
+                                std::get<1>(fprop->Lindbladians[j]);
+        mih_Hfw += -0.5*gLdagL;
+        mih_Hbw += 0.5*gLdagL;
+      }
+
+     if(true){ //if(state.cols()<=1)
+      for(int c=0; c<state.cols(); c++){   //propagate seperately for different environment state indices
+        //Eigen::MatrixXcd tmp=state.col(c).reshaped<Eigen::RowMajor>(N,N);
+        Eigen::MatrixXcd tmp=L_Vector_to_H_Matrix(state.col(c));
+
+        for(int k=1; k<=fprop->propagate_Taylor; k++){
+          Eigen::MatrixXcd tmp2 = mih_Hfw * tmp - tmp * mih_Hbw;  //Commutator
+          for(size_t j=0; j<fprop->Lindbladians.size(); j++){
+            //gamma*L*rho*Ldagger
+            Eigen::MatrixXcd tmp3 = std::get<0>(fprop->Lindbladians[j]) * \
+                                    std::get<1>(fprop->Lindbladians[j]) * tmp;
+            tmp2 += tmp3 * std::get<2>(fprop->Lindbladians[j]);
+          }
+          tmp.swap(tmp2);
+          tmp*=dt/((double) k);
+          //state.col(c)+=tmp.reshaped<Eigen::RowMajor>();
+          state.col(c)+=H_Matrix_to_L_Vector(tmp);
+        }
+      }
+     }else{  //Try the BLAS way for potential speedup: turns out to be slower
+        int cols=state.cols();
+        Eigen::MatrixXcd tmp=state;
+
+        for(int k=1; k<=fprop->propagate_Taylor; k++){
+          //Commutator
+          Eigen::MatrixXcd tmp2=Eigen::MatrixXcd::Zero(N*N,cols); 
+//          for(int i=0; i<N; i++){ for(int j=0; j<N; j++){
+//              for(int k=0; k<N; k++){ for(int c=0; c<cols; c++){
+//                  tmp2(i*N+k,c) += mih_Hfw(i,j) * tmp(j*N+k,c);
+//          } } } }    
+          for(int k=0; k<N; k++){
+            Eigen::Map<Eigen::MatrixXcd, 0, Eigen::InnerStride<> >
+            (tmp2.data()+k, N, cols, Eigen::InnerStride<>(N)) +=
+                mih_Hfw * Eigen::Map<Eigen::MatrixXcd, 0, Eigen::InnerStride<> >
+                        (tmp.data()+k, N, cols, Eigen::InnerStride<>(N));
+          }
+
+//          for(int i=0; i<N; i++){ for(int j=0; j<N; j++){
+//              for(int k=0; k<N; k++){ for(int c=0; c<cols; c++){
+//                  tmp2(i*N+k,c) -= tmp(i*N+j,c) * mih_Hbw(j,k);
+//          } } } }    
+            Eigen::Map<Eigen::MatrixXcd>(tmp2.data(), N, N*cols)-=
+   mih_Hbw.transpose() * Eigen::Map<Eigen::MatrixXcd>(tmp.data(), N, N*cols);
+
+          for(size_t j=0; j<fprop->Lindbladians.size(); j++){
+            //gamma*L*rho*Ldagger
+//            Eigen::MatrixXcd tmp3 = std::get<0>(fprop->Lindbladians[j]) * \
+                                    std::get<1>(fprop->Lindbladians[j]) * tmp;
+//            tmp2 += tmp3 * std::get<2>(fprop->Lindbladians[j]);
+            Eigen::MatrixXcd tmp3=Eigen::MatrixXcd::Zero(N*N,cols); 
+            for(int k=0; k<N; k++){
+              Eigen::Map<Eigen::MatrixXcd, 0, Eigen::InnerStride<> >
+              (tmp3.data()+k, N, cols, Eigen::InnerStride<>(N)) +=
+                std::get<0>(fprop->Lindbladians[j]) *
+                std::get<1>(fprop->Lindbladians[j]) * 
+                Eigen::Map<Eigen::MatrixXcd, 0, Eigen::InnerStride<> >
+                        (tmp.data()+k, N, cols, Eigen::InnerStride<>(N));
+            }           
+            Eigen::Map<Eigen::MatrixXcd>(tmp2.data(), N, N*cols)+=
+                std::get<2>(fprop->Lindbladians[j]).transpose() * 
+                Eigen::Map<Eigen::MatrixXcd>(tmp3.data(), N, N*cols);
+          }
+          tmp.swap(tmp2);
+          tmp*=dt/((double) k);
+          state+=tmp;
+        }
+     }
+    }
+
+  }else if(fprop && fprop->propagate_system_threshold>0){
+    prop.update(t, dt);
+    if(prop.M.rows()!=prop.M.cols() || prop.M.rows()!=state.rows()){
+      std::cerr<<"Simulation_PT::propagate_system: prop.M.rows()!=prop.M.cols() || prop.M.rows()!=state.rows()!"<<std::endl;
+      throw DummyException();
+    }
+    int N=sqrt(prop.M.rows());
+    if(prop.M.rows()!=N*N){
+      std::cerr<<"Simulation_PT::propagate_system: prop.M.rows()!=N*N!"<<std::endl;
+      throw DummyException();
+    }
+
+    Eigen::MatrixXcd Mflipped(N*N,N*N);
+    for(int i=0; i<N; i++){
+      for(int j=0; j<N; j++){
+        for(int k=0; k<N; k++){
+          for(int l=0; l<N; l++){
+            Mflipped(i*N+j,k*N+l)=prop.M(i*N+k, j*N+l);
+//            Mflipped(j*N+i,l*N+k)=prop.M(i*N+k, j*N+l); //make it row-major
+          }
+        } 
+      }
+    }
+    Eigen::JacobiSVD<Eigen::MatrixXcd> svd;
+    svd.compute(Mflipped, Eigen::ComputeThinU|Eigen::ComputeThinV);
+//    Eigen::JacobiSVD<Eigen::MatrixXcd> svd(Mflipped);
+
+    Eigen::VectorXd svals=svd.singularValues();
+//    std::cout<<"svd: "<<svals.transpose()<<std::endl;
+    int Ni=1;
+    for(int i=1; i<svals.rows(); i++){
+      if(svals(i)>svals(0)*fprop->propagate_system_threshold){
+        Ni++;
+      }else{
+        break;
+      }
+    }
+//    std::cout<<"Ni="<<Ni<<std::endl;
+
+    std::vector<Eigen::MatrixXcd> u(Ni, Eigen::MatrixXcd(N,N));
+    for(int i=0; i<Ni; i++){
+//      Eigen::VectorXcd col=svd.matrixU().col(i);
+//      u[i]=Eigen::Map<Eigen::MatrixXcd>(col.data(),N,N);
+      for(int j=0; j<N; j++){
+        for(int k=0; k<N; k++){
+          u[i](j,k)=svd.matrixU()(j*N+k,i);
+        }
+      }
+    }
+    std::vector<Eigen::MatrixXcd> v(Ni, Eigen::MatrixXcd(N,N));
+    for(int i=0; i<Ni; i++){
+//      Eigen::VectorXcd col=svd.matrixV().col(i).adjoint();
+//      v[i]=Eigen::Map<Eigen::MatrixXcd>(col.data(),N,N);
+      for(int j=0; j<N; j++){
+        for(int k=0; k<N; k++){
+          v[i](k,j)=std::conj(svd.matrixV()(j*N+k,i));
+        }
+      }
+    }
+
+    for(int c=0; c<state.cols(); c++){  
+      Eigen::MatrixXcd sum=Eigen::MatrixXcd::Zero(N,N);
+      Eigen::MatrixXcd tmp=L_Vector_to_H_Matrix(state.col(c));
+      for(int i=0; i<Ni; i++){
+        Eigen::MatrixXcd tmp2 = u[i] * tmp; 
+        sum += svals(i) * tmp2 * v[i];
+//        sum += svals(i) * u[i] * tmp * v[i];
+      }
+      state.col(c)=H_Matrix_to_L_Vector(sum);
+    }
+
+  }else{
+    prop.update(t, dt);
+    if(prop.M.rows()!=prop.M.cols() || prop.M.rows()!=state.rows()){
+      std::cerr<<"Simulation_PT::propagate_system: prop.M.rows()!=prop.M.cols() || prop.M.rows()!=state.rows()!"<<std::endl;
+      throw DummyException();
+    }
+
+//    Eigen::MatrixXcd state2=Eigen::MatrixXcd::Zero(state.rows(),state.cols());
+//    for(int d1=0; d1<state.cols(); d1++){
+//      for(int j=0; j<state.rows(); j++){
+//        for(int k=0; k<state.rows(); k++){
+//          state2(j,d1)+=prop.M(j,k)*state(k,d1);
+//        }
 //      }
 //    }
-//  }
-//  state.swap(state2);
-  state=prop.M*state;
+//    state.swap(state2);
+    state=prop.M*state;
+  }
 }
 
 void Simulation_PT::propagate_state(Eigen::MatrixXcd &state, int n, const TimeGrid &tgrid, Propagator &prop, ProcessTensorForwardList &PT)const{

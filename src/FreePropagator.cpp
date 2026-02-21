@@ -319,30 +319,35 @@ std::cout<<"DEBUG: skipping calculation (precalculated)"<<t<<std::endl;
     }
    
     size_t dim=set_dim(L, "FreePropagator::add_Lindblad: L.rows()!=H.get_dim()");
-    
-    double g=gamma;
-    Eigen::MatrixXcd L2=Ldag*L;
 
-    for(size_t i0=0; i0<dim; i0++){
-      for(size_t i1=0; i1<dim; i1++){
-        for(size_t i2=0; i2<dim; i2++){
-          for(size_t i3=0; i3<dim; i3++){
-            nonH(i0*dim+i1, i2*dim+i3) += g*L(i0,i2)*Ldag(i3,i1);
+    if(propagate_Taylor>0){ //only set explicit vector "Lindbladians"; don't work on full Liouville space
+      Lindbladians.push_back(LindbladTerm(gamma, L, Ldag));
+
+    }else{ 
+      double g=gamma;
+      Eigen::MatrixXcd L2=Ldag*L;
+
+      for(size_t i0=0; i0<dim; i0++){
+        for(size_t i1=0; i1<dim; i1++){
+          for(size_t i2=0; i2<dim; i2++){
+            for(size_t i3=0; i3<dim; i3++){
+              nonH(i0*dim+i1, i2*dim+i3) += g*L(i0,i2)*Ldag(i3,i1);
+            }
           }
         }
       }
-    }
-    for(size_t i0=0; i0<dim; i0++){
-      for(size_t i1=0; i1<dim; i1++){
-        for(size_t i2=0; i2<dim; i2++){
-          nonH(i0*dim+i1, i2*dim+i1) += -0.5*g*L2(i0,i2);
+      for(size_t i0=0; i0<dim; i0++){
+        for(size_t i1=0; i1<dim; i1++){
+          for(size_t i2=0; i2<dim; i2++){
+            nonH(i0*dim+i1, i2*dim+i1) += -0.5*g*L2(i0,i2);
+          }
         }
       }
-    }
-    for(size_t i0=0; i0<dim; i0++){
-      for(size_t i1=0; i1<dim; i1++){
-        for(size_t i3=0; i3<dim; i3++){
-          nonH(i0*dim+i1, i0*dim+i3) += -0.5*g*L2(i3,i1);
+      for(size_t i0=0; i0<dim; i0++){
+        for(size_t i1=0; i1<dim; i1++){
+          for(size_t i3=0; i3<dim; i3++){
+            nonH(i0*dim+i1, i0*dim+i3) += -0.5*g*L2(i3,i1);
+          }
         }
       }
     }
@@ -436,6 +441,10 @@ std::cout<<"DEBUG: skipping calculation (precalculated)"<<t<<std::endl;
     initialize();
     if(setdim>=0)set_dim(setdim);
     Nintermediate=param.get_as_size_t("Nintermediate", 0);
+   
+    propagate_Taylor=param.get_as_size_t("propagate_Taylor",0);
+
+    propagate_system_threshold=param.get_as_double("propagate_system_threshold",0);
 
     //Special case: magnetic field of spin 1/2
     if(param.is_specified("TLS_B_eff")){

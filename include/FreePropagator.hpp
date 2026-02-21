@@ -23,6 +23,14 @@ public:
   ///time-independent part of Hamiltonian ( NxN matrix )
   Eigen::MatrixXcd const_H;
 
+  //explicitly store Lindblad terms:
+  typedef std::tuple<double, Eigen::MatrixXcd, Eigen::MatrixXcd> LindbladTerm;
+  std::vector<LindbladTerm> Lindbladians;
+  int propagate_Taylor;  //explicit Lindbladian propagation with given order
+
+  //for propagation using SVD of M:
+  double propagate_system_threshold;
+
   ///time-dependent parts of Hamiltonian
   std::vector<TimedepMatrixPtr> timedep_H;
   std::vector<TimedepMatrixPtr> timedep_H_forward;
@@ -118,6 +126,8 @@ public:
   inline void initialize(){
     dim_fixed=false;
     Nintermediate=0;
+    propagate_Taylor=0;
+    propagate_system_threshold=0.;
     precalculated=false;
     never_update=false;
     nonH=Eigen::MatrixXcd();
