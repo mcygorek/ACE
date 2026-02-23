@@ -48,6 +48,7 @@ void Simulation_PT::propagate_system(
       }
 
      if(true){ //if(state.cols()<=1)
+      #pragma omp parallel for
       for(int c=0; c<state.cols(); c++){   //propagate seperately for different environment state indices
         //Eigen::MatrixXcd tmp=state.col(c).reshaped<Eigen::RowMajor>(N,N);
         Eigen::MatrixXcd tmp=L_Vector_to_H_Matrix(state.col(c));
