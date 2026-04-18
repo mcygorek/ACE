@@ -179,6 +179,9 @@ if(BUILD_PYTHON_BINDINGS)
   set_target_properties(ACE_nb PROPERTIES OUTPUT_NAME _ACE)
   target_include_directories(ACE_nb PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
   target_link_libraries(ACE_nb PRIVATE Eigen3::Eigen Threads::Threads)
+  target_compile_definitions(ACE_nb PRIVATE
+    $<$<BOOL:${WIN32}>:_USE_MATH_DEFINES>
+    $<$<BOOL:${WIN32}>:NOMINMAX>)
 
   if(SKBUILD)
     # Install the extension into the ACE/ sub-directory of the wheel.
