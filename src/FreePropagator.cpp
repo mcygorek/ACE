@@ -460,11 +460,14 @@ std::cout<<"DEBUG: skipping calculation (precalculated)"<<t<<std::endl;
     if(param.is_specified("add_Hamiltonian")){
       for(int i=0; i<param.get_nr_rows("add_Hamiltonian"); i++){
         std::string str=param.get_as_single_string("add_Hamiltonian", i);
-std::cout<<"add_Hamiltonian: "<<str<<std::endl;
+    #ifdef DEBUG
+        std::cout<<"add_Hamiltonian: "<<str<<std::endl;
+    #endif
         add_Hamiltonian(ReadExpression(str));
       }
-
+    #ifdef DEBUG
       std::cout<<"Hamiltonian: "<<std::endl<<const_H<<std::endl;
+    #endif
     }
 
     if(param.is_specified("add_Lindblad")){

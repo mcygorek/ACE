@@ -59,13 +59,17 @@ std::shared_ptr<ProcessTensorForward> ProcessTensorForwardList::PTptr_from_file(
   std::shared_ptr<ProcessTensorForward> ret;
 
   if(ProcessTensorRepeat::can_read(fname)){
+    #ifdef DEBUG
     std::cout<<"read as ProcessTensorRepeat"<<std::endl;
+    #endif
     ret=std::shared_ptr<ProcessTensorForward>(new ProcessTensorRepeat(fname));
     if(read_only){
       dynamic_cast<ProcessTensorRepeat*>(ret.get())->set_read_only(read_only);
     }
   }else{
+    #ifdef DEBUG
     std::cout<<"read as ProcessTensorBuffer"<<std::endl;
+    #endif
     ret=std::shared_ptr<ProcessTensorForward>(new ProcessTensorBuffer(fname));
     if(read_only){
       dynamic_cast<ProcessTensorBuffer*>(ret.get())->read_only=read_only;
@@ -75,11 +79,12 @@ std::shared_ptr<ProcessTensorForward> ProcessTensorForwardList::PTptr_from_file(
 }
 
 void ProcessTensorForwardList::add_PT(const ReadPT_struct &expand){
+  #ifdef DEBUG
     std::cout<<"add_PT: '"<<expand.fname<<"'";
     if(expand.expand_front>1){std::cout<<" expand_front="<<expand.expand_front;}
     if(expand.expand_back>1){std::cout<<" expand_back="<<expand.expand_back;}
     std::cout<<std::endl;
-
+  #endif
     list.push_back(PTptr_from_file(expand.fname,true));
     for(size_t j=temp_expand.size(); j<list.size(); j++){
       temp_expand.push_back(ReadPT_struct());
@@ -199,7 +204,9 @@ void ProcessTensorForwardList::setup2(Parameters &param, std::vector<std::shared
     add_PT(param);
 
     time_point time2=now();
+    #ifdef DEBUG
     std::cout<<"runtime for setting up PT: "<<time_diff(time2-time1)<<"ms"<<std::endl;
+    #endif
     return;
   }
 
@@ -224,7 +231,9 @@ void ProcessTensorForwardList::setup2(Parameters &param, std::vector<std::shared
     add_PT(param);
 
     time_point time2=now();
+    #ifdef DEBUG
     std::cout<<"runtime for setting up PT: "<<time_diff(time2-time1)<<"ms"<<std::endl;
+    #endif
     return; 
   }
  }catch(DummyException &e){
@@ -253,7 +262,9 @@ void ProcessTensorForwardList::setup2(Parameters &param, std::vector<std::shared
     list.push_back(PT_infinite(param, diagBB));
 
   }else if(use_Gaussian_repeat){ 
+    #ifdef DEBUG
     std::cout<<"use_Gaussian_repeat=true"<<std::endl;
+    #endif
     list.push_back(std::shared_ptr<ProcessTensorForward>(new ProcessTensorRepeat()));
     ProcessTensorRepeat *PTR = dynamic_cast<ProcessTensorRepeat*>(list.back().get()); 
     PTR->set_specs(write_PT, buffer_blocksize);
@@ -380,7 +391,9 @@ std::cout<<"using: add_modes_tree"<<std::endl;
    throw e;
  }
   time_point time2=now();
+  #ifdef DEBUG
   std::cout<<"runtime for setting up PT: "<<time_diff(time2-time1)<<"ms"<<std::endl;
+  #endif
 }
 
 void ProcessTensorForwardList::read(const std::string &fname){
