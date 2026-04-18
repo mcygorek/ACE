@@ -37,3 +37,7 @@ archs = ["x86_64"]
 [tool.cibuildwheel.macos]
 before-all = "brew install eigen || true"
 archs = ["x86_64", "arm64"]
+
+[tool.cibuildwheel.windows]
+# Eigen is fetched automatically by FetchContent if not found via find_package.
+archs = ["AMD64"]

@@ -26,15 +26,23 @@ if(NOT Eigen3_FOUND)
   if("${_eigen_home}" STREQUAL "")
     set(_eigen_home "/usr/include/eigen3")
   endif()
-  if(NOT EXISTS "${_eigen_home}/Eigen/Eigen")
-    message(FATAL_ERROR
-      "Eigen3 not found. Either install libeigen3-dev or set the EIGEN_HOME "
-      "environment variable to the directory containing Eigen/Eigen.")
+  if(EXISTS "${_eigen_home}/Eigen/Eigen")
+    add_library(Eigen3::Eigen INTERFACE IMPORTED)
+    set_target_properties(Eigen3::Eigen PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "${_eigen_home}")
+    message(STATUS "Using Eigen3 from: ${_eigen_home}")
+  else()
+    # No local Eigen, download it
+    message(STATUS "Eigen3 not found locally – fetching via FetchContent")
+    include(FetchContent)
+    FetchContent_Declare(eigen3
+      GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+      GIT_TAG        3.4.0
+      GIT_SHALLOW    TRUE)
+    set(EIGEN_BUILD_TESTING OFF CACHE BOOL "" FORCE)
+    set(EIGEN_BUILD_DOC     OFF CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(eigen3)
   endif()
-  add_library(Eigen3::Eigen INTERFACE IMPORTED)
-  set_target_properties(Eigen3::Eigen PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${_eigen_home}")
-  message(STATUS "Using Eigen3 from: ${_eigen_home}")
 endif()
 
 # ── Library ───────────────────────────────────────────────────────────────────
@@ -53,13 +61,22 @@ target_include_directories(ACE_objects
 target_link_libraries(ACE_objects PUBLIC Eigen3::Eigen Threads::Threads)
 
 target_compile_options(ACE_objects PRIVATE
-  -fno-math-errno
-  $<$<NOT:$<CXX_COMPILER_ID:Intel>>:-Wno-ignored-attributes>)
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fno-math-errno>
+  $<$<NOT:$<OR:$<CXX_COMPILER_ID:Intel>,$<CXX_COMPILER_ID:MSVC>>>:-Wno-ignored-attributes>
+  $<$<CXX_COMPILER_ID:MSVC>:/EHsc /utf-8>)
+
+target_compile_definitions(ACE_objects PRIVATE
+  # M_PI and friends; needed on MSVC and MinGW (MSYS2) where they are
+  # not exposed without this define.
+  $<$<BOOL:${WIN32}>:_USE_MATH_DEFINES>
+  # Prevent windows.h from defining min/max macros that clash with Eigen.
+  $<$<BOOL:${WIN32}>:NOMINMAX>)
 
 target_precompile_headers(ACE_objects PRIVATE include/PCH.hpp)
 
 # Shared library – thin wrapper for C++ consumers.
 add_library(ACE SHARED $<TARGET_OBJECTS:ACE_objects>)
+set_target_properties(ACE PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 target_include_directories(ACE
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
