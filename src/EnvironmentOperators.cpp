@@ -180,8 +180,9 @@ void EnvironmentOperators::set_ill_defined(){
   if(ops.size()>0){
     ops[0]=Eigen::VectorXcd::Ones(1);
   }
+  constexpr double inf = std::numeric_limits<double>::infinity();
   for(int i=1; i<(int)ops.size(); i++){
-    ops[i]=Eigen::VectorXcd::Ones(1)*(1./0.);
+    ops[i]=Eigen::VectorXcd::Ones(1)*(inf);
   }
 }
 
