@@ -20,9 +20,6 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.21
         # All cibuildwheel settings live in pyproject.toml [tool.cibuildwheel].
-        env:
-          # Allow pre-release CPython (needed while 3.14 is still a beta).
-          CIBW_ENABLE: cpython-prerelease
       - uses: actions/upload-artifact@v4
         with:
           name: wheels-${{ matrix.os }}
