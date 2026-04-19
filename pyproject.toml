@@ -29,8 +29,6 @@ cmake.targets = ["ACE_nb"]
 build = "cp314-*"
 # Skip musl-libc (Alpine) wheels; Eigen + musl needs extra care.
 skip = "*-musllinux_*"
-# Allow pre-release Python versions (needed for 3.14 while it is still a beta).
-enable = ["cpython-prerelease"]
 
 [tool.cibuildwheel.linux]
 # Try the system package manager first; FetchContent in CMake is the fallback.
