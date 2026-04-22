@@ -1,4 +1,5 @@
 #include "ProcessTensorBuffer.hpp"
+#include "RandomizedCompression.hpp"
 #include "TempFileName.hpp"
 #include "Parameters.hpp"
 #include "GenericSimulation.hpp"
@@ -28,6 +29,7 @@ int main(int args, char** argv){
  
   bool only_join = param.get_as_bool("only_join", false);
   bool use_select = param.get_as_bool("use_select", true);
+  bool use_randomized = param.get_as_bool("use_randomized", false);
   bool force_NF = param.get_as_bool("force_NF", false);
 
   TruncationLayout trunc(param);
@@ -46,7 +48,7 @@ int main(int args, char** argv){
 
   if(PTB.get_n_tot()<1){
     std::cerr<<"PTB.get_n_tot()="<<PTB.get_n_tot()<<"<1!"<<std::endl;
-    exit(1);
+    throw DummyException();
   }
   for(int i=0; i<(int)multi_PT.size(); i++){
     const std::string & mPT = multi_PT[i];
@@ -55,7 +57,7 @@ int main(int args, char** argv){
       std::cerr<<"'"<<mPT<<"': PTB1.get_n_tot()="<<PTB1.get_n_tot()<<"<1!"<<std::endl;
       throw DummyException();
     }
-    if(!PTB1.get(0).is_forwardNF()){
+    if(use_select && !only_join && !use_randomized && !PTB1.get(0).is_forwardNF()){
       std::cerr<<"'"<<mPT<<"': not in forward normal form. Please run 'PTB_sweep_forward' before running PTB_join!"<<std::endl;
       throw DummyException();
     }
@@ -68,7 +70,7 @@ int main(int args, char** argv){
 
 //    TruncatedSVD trunc_first=trunc.get_forward(i,multi_PT.size());
     TruncatedSVD trunc_first;
-    if(!PTB.get(0).is_forwardNF() || force_NF){
+    if(use_select && !only_join && !use_randomized &&!PTB.get(0).is_forwardNF() || force_NF){
       std::cout<<"Sweeping forward first PT"<<std::endl; // '"<<write_PT<<"'"<<std::endl;
       trunc_first.print_info(); std::cout<<std::endl;
       PTB.sweep_forward(trunc_first, verbosity);
@@ -80,6 +82,7 @@ int main(int args, char** argv){
     trunc_select.print_info(); std::cout<<std::endl;
 
     if(only_join){
+      std::cout<<"Method: only_join"<<std::endl;
       for(int n=PTB.get_n_tot()-1; n>=0; n--){
         std::cout<<"n="<<n<<"/"<<PTB.get_n_tot()<<std::endl;
         if(n>0&&n==param.get_as_int("n_break"))break;
@@ -113,9 +116,16 @@ int main(int args, char** argv){
 */
         std::cout<<std::endl;
       }
+    }else if(use_randomized){
+      std::cout<<"Method: use_randomized"<<std::endl;
+      int maxk = param.get_as_int_check("compress_maxk");
+      Randomized_Combine(PTB, PTB1, maxk, trunc_select);
+
     }else if(use_select){
+      std::cout<<"Method: use_select"<<std::endl;
       PTB.join_select_and_sweep_backward(PTB1, trunc_select, trunc_bw, verbosity);
     }else{ 
+      std::cout<<"Method: standard"<<std::endl;
       PTB.join_and_sweep_backward(PTB1, trunc_bw, verbosity);
     }
 

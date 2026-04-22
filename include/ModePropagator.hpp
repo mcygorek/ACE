@@ -63,11 +63,11 @@ public:
                  EnvironmentOperators env_mat=EnvironmentOperators());
   
   ModePropagator(const std::string & filename, const Eigen::MatrixXcd &initial)
-    : FreePropagator(filename), bath_init(initial), fermion_sign_space(-1) {
+    : FreePropagator(filename), fermion_sign_space(-1), bath_init(initial) {
     rBasis=std::make_shared<ReducedLiouvilleBasis>();
   }
   ModePropagator(Parameters & param, const Eigen::MatrixXcd &initial)
-    : FreePropagator(param), bath_init(initial), fermion_sign_space(-1) {
+    : FreePropagator(param), fermion_sign_space(-1), bath_init(initial) {
     rBasis=std::make_shared<ReducedLiouvilleBasis>();
   }
 

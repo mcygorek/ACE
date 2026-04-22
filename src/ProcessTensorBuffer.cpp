@@ -285,11 +285,11 @@ if(false)std::cout<<"found preloaded block: "<<bl<<std::endl;
   if(blocksize<0){
     n_tot=buffer.size();
   }else{
-    if(buffer.size()>blocksize){
+    if((int)buffer.size()>blocksize){
       std::cerr<<"ProcessTensorBuffer::read_block("<<bl<<"): file '"<<fname<<"': buffer.size()>blocksize() ("<<buffer.size()<<" vs. "<<blocksize<<")!"<<std::endl;
       throw DummyException();
     }
-    if(bl*blocksize+buffer.size()>n_tot && !read_only){ //check for read_only: inequality broken if ro copy is read after rw copy is modified!
+    if(bl*blocksize+(int)buffer.size()>n_tot && !read_only){ //check for read_only: inequality broken if ro copy is read after rw copy is modified!
       std::cerr<<"ProcessTensorBuffer::read_block("<<bl<<"): file '"<<fname<<"': bl*blocksize+buffer.size()>n_tot ("<<bl*blocksize+buffer.size()<<" vs. "<<n_tot<<")!"<<std::endl;
       throw DummyException();
     }
@@ -310,11 +310,11 @@ if(false)std::cout<<"preload block: "<<bl<<std::endl;
   if(blocksize<0){
     return;
   }else{
-    if(preload.size()>blocksize){
+    if((int)preload.size()>blocksize){
       std::cerr<<"ProcessTensorBuffer::read_block_preload("<<bl<<"): file '"<<fname<<"': preload.size()>blocksize() ("<<preload.size()<<" vs. "<<blocksize<<")!"<<std::endl;
       throw DummyException();
     }
-    if(bl*blocksize+preload.size()>n_tot){
+    if(bl*blocksize+(int)preload.size()>n_tot){
       std::cerr<<"ProcessTensorBuffer::read_block_preload("<<bl<<"): file '"<<fname<<"': bl*blocksize+preload.size()>n_tot ("<<bl*blocksize+preload.size()<<" vs. "<<n_tot<<")!"<<std::endl;
       throw DummyException();
     }
@@ -585,7 +585,7 @@ void ProcessTensorBuffer::distribute_weights(){
         e.forwardNF*=lastr/r;
         lastr=r;
         e.closure*=r;
-        for(int i=0; i<e.env_ops.ops.size(); i++){
+        for(size_t i=0; i<e.env_ops.ops.size(); i++){
           e.env_ops.ops[i]*=r;
         }
       }
@@ -613,7 +613,7 @@ void ProcessTensorBuffer::distribute_weights(){
         e.backwardNF*=lastr/r;
         lastr=r;
         e.closure*=r;
-        for(int i=0; i<e.env_ops.ops.size(); i++){
+        for(size_t i=0; i<e.env_ops.ops.size(); i++){
           e.env_ops.ops[i]*=r;
         }
       }
@@ -1185,13 +1185,12 @@ try{
       next_element1=peek(n-1);
       next_element2=PTB2.peek(n-1-shift_extend.shift_second);
       k_list_left=next_element1.get_forwardNF_selected_indices(next_element2, trunc_select);
-//      k_list_left.set_full(next_element1.forwardNF.size(), \
-                           next_element2.forwardNF.size());
+//      k_list_left.set_full(next_element1.forwardNF.size(), next_element2.forwardNF.size());
 
     }
 
 // before actual selection:
-    if(maxdim_pre_select<k_list_left.size())maxdim_pre_select=k_list_left.size();
+    if(maxdim_pre_select<(int)k_list_left.size())maxdim_pre_select=k_list_left.size();
     if(element1.M.dim_d1>maxdim_in1)maxdim_in1=element1.M.dim_d1;
     if(element2.M.dim_d1>maxdim_in2)maxdim_in2=element2.M.dim_d1;
 
@@ -1227,7 +1226,7 @@ std::cout<<"pass_on.P.rows()="<<pass_on.P.rows()<<" pass_on.P.cols()="<<pass_on.
       PassOn p2=pass_on;
       pass_on.P=Eigen::MatrixXcd::Zero(k_list_right.size(), p2.P.cols());
       pass_on.Pinv=Eigen::MatrixXcd::Zero(p2.Pinv.rows(),k_list_right.size());
-      for(int i=0; i<k_list_right.size(); i++){
+      for(int i=0; i<(int)k_list_right.size(); i++){
         for(int c=0; c<p2.P.cols(); c++){
           pass_on.P(i, c)=p2.P(k_list_right[i].second, c);
           pass_on.Pinv(c, i)=p2.Pinv(c, k_list_right[i].second);
@@ -2492,7 +2491,7 @@ void ProcessTensorBuffer::set_from_coarse_grain(ProcessTensorBuffer &PTB, int co
   }
 
 
-  int n_tot_old=PTB.get_n_tot();
+//  int n_tot_old=PTB.get_n_tot();
   int n_tot_new=PTB.get_n_tot()/coarse_grain;
   resize(n_tot_new);
 

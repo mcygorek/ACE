@@ -66,7 +66,7 @@ struct CompressionTree{
     return ((bool)first && (bool)second);
   }
   inline bool is_consistent_TS()const{
-    return (T.cols()==S.size());
+    return (T.cols()==(int)S.size());
   }
   inline int get_dim()const{
     return T.rows();
