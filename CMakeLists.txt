@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 project(ACE VERSION 1.0 LANGUAGES CXX)
 
 # ── C++ standard ──────────────────────────────────────────────────────────────
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -20,7 +20,10 @@ endif()
 find_package(Threads REQUIRED)
 
 # Eigen3: try cmake config/module first, then fall back to EIGEN_HOME
-find_package(Eigen3 3.3 QUIET)
+find_package(Eigen3 3.4 QUIET)
+if (Eigen3_FOUND)
+  message(STATUS "Found Eigen3: ${Eigen3_DIR}")
+endif()
 if(NOT Eigen3_FOUND)
   set(_eigen_home "$ENV{EIGEN_HOME}")
   if("${_eigen_home}" STREQUAL "")
