@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: testpypi
-      url: https:/test.pypi.org/p/ACE-OQS
+      url: https://test.pypi.org/p/ACE-OQS
     permissions:
       id-token: write
     steps:
