@@ -29,21 +29,18 @@ jobs:
   # ── Upload to PyPI on tagged releases ──────────────────────────────────────
   # Disabled. To enable: remove `if: false` and configure a Trusted Publisher
   # for this repo on https://pypi.org.
-  # upload_pypi:
-  #   needs: build_wheels
-  #   runs-on: ubuntu-latest
-  #   if: false
-  #   environment:
-  #     name: pypi
-  #     url: https://pypi.org/p/ACE
-  #   permissions:
-  #     id-token: write   # required for OIDC trusted publishing (no API token needed)
-
-  #   steps:
-  #     - uses: actions/download-artifact@v4
-  #       with:
-  #         pattern: wheels-*
-  #         merge-multiple: true
-  #         path: dist/
-
-  #     - uses: pypa/gh-action-pypi-publish@release/v1
+  upload_pypi:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://test.pypi.org/p/ACE-OQS-mcygorek
+    permissions:
+      id-token: write   # required for OIDC trusted publishing (no API token needed)
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          merge-multiple: true
+          path: dist/ 
+     - uses: pypa/gh-action-pypi-publish@release/v1
