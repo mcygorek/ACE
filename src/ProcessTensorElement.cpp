@@ -679,7 +679,8 @@ void ProcessTensorElement::close_off(){
 
   M.inner_multiply_right(closure);
   closure=Eigen::VectorXcd::Ones(1);
-  env_ops.ops=std::vector<Eigen::VectorXcd>(env_ops.ops.size(), Eigen::VectorXcd::Ones(1)*1./0.);
+  constexpr double inf = std::numeric_limits<double>::infinity();
+  env_ops.ops=std::vector<Eigen::VectorXcd>(env_ops.ops.size(), Eigen::VectorXcd::Ones(1)*inf);
 //  env_ops.ops=std::vector<Eigen::VectorXcd>(env_ops.ops.size(), Eigen::VectorXcd::Zero(1));
 
   if(forwardNF.size()>0){

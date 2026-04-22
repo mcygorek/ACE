@@ -15,9 +15,10 @@ in turn accesses more basic functions. These are define here.
 namespace ACE{
 
 
-///returns true is string can be interpreted as double
+///returns true if string can be interpreted as double
 bool canReadDouble_strict(const std::string &str, double &d){
-  if(str=="inf"){d=1./0.; return true;}
+  constexpr double inf = std::numeric_limits<double>::infinity();
+  if(str=="inf"){d=inf; return true;}
   std::stringstream ss(str);
   ss>>d;
   if(ss.fail()) return false;

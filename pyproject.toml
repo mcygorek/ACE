@@ -1,0 +1,44 @@
+[build-system]
+# scikit-build-core drives CMake and packages the result.
+# nanobind is listed here so it is available to CMake during the build
+# (SKBUILD=ON → CMakeLists.txt calls find_package(nanobind) directly).
+requires = ["scikit-build-core>=0.9", "nanobind>=2.0"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "ACE"
+version = "1.0.0"
+requires-python = ">=3.8"
+description = "ACE: process tensor approach to open quantum systems"
+# Uncomment and fill in as needed:
+# license = { text = "MIT" }
+# authors = [{ name = "Your Name", email = "you@example.com" }]
+# readme = "README.md"
+
+[tool.scikit-build]
+cmake.build-type = "Release"
+# Only compile the Python extension; skip the ACE binary and tools.
+cmake.targets = ["ACE_nb"]
+# The ACE/ package directory (with __init__.py, utils.py, _ACE.so) is
+# installed by the CMake install() rules above, so no extra wheel.packages
+# entry is needed here.
+
+[tool.cibuildwheel]
+# Python versions to build for.
+build = "cp310-* cp311-* cp312-* cp313-*"
+# Skip musl-libc (Alpine) wheels; Eigen + musl needs extra care.
+skip = "*-musllinux_*"
+
+[tool.cibuildwheel.linux]
+# Try the system package manager first; FetchContent in CMake is the fallback.
+before-all = "yum install -y eigen3-devel 2>/dev/null || (apt-get update -q && apt-get install -y libeigen3-dev) || true"
+archs = ["x86_64"]
+
+[tool.cibuildwheel.macos]
+before-all = "brew install eigen || true"
+archs = ["x86_64", "arm64"]
+environment = { MACOSX_DEPLOYMENT_TARGET = "10.13" }
+
+[tool.cibuildwheel.windows]
+# Eigen is fetched automatically by FetchContent if not found via find_package.
+archs = ["AMD64"]

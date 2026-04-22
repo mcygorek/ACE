@@ -139,7 +139,8 @@ namespace ACE{
       throw DummyException();
     }
     for(int i=0; i<how_many; i++){
-      list[step].second.push_back(std::complex<double>(1./0., 1./0.));
+      constexpr double inf = std::numeric_limits<double>::infinity();
+      list[step].second.push_back(std::complex<double>(inf, inf));
     }
   }
 
