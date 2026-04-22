@@ -1,0 +1,66 @@
+name: Build wheels
+
+on:
+  push:
+    tags: ["v*"]        # run on version tags: git tag v1.0.0 && git push --tags
+  workflow_dispatch:    # allow manual trigger from the GitHub UI
+
+jobs:
+  build_wheels:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.21
+        # All cibuildwheel settings live in pyproject.toml [tool.cibuildwheel].
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: ./wheelhouse/*.whl
+
+  # ── Upload to PyPI on tagged releases ──────────────────────────────────────
+  # Disabled. To enable: remove `if: false` and configure a Trusted Publisher
+  # for this repo on https://pypi.org.
+  upload_pypi:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/ACE-OQS
+    permissions:
+      id-token: write
+    steps:
+    - name: Prepare package distribution in dist/
+      uses: actions/download-artifact@v4
+      with:
+        pattern: wheels-*
+        merge-multiple: true
+        path: dist/
+    - name: Publish package distributions to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+          
+#  upload_pypi:
+#    needs: build_wheels
+#    runs-on: ubuntu-latest
+#    environment:
+#      name: pypi
+#      url: https://test.pypi.org/p/ACE-OQS
+#    permissions:
+#      id-token: write   # required for OIDC trusted publishing (no API token needed)
+#    steps:
+#      - uses: actions/download-artifact@v4
+#        with:
+#          pattern: wheels-*
+#          merge-multiple: true
+#          path: dist/
+#      - uses: pypa/gh-action-pypi-publish@release/v1
