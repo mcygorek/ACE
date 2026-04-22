@@ -29,25 +29,25 @@ jobs:
   # ── Upload to PyPI on tagged releases ──────────────────────────────────────
   # Disabled. To enable: remove `if: false` and configure a Trusted Publisher
   # for this repo on https://pypi.org.
-    upload_pypi:
-      needs: build_wheels
-      runs-on: ubuntu-latest
-      environment:
-        name: testpypi
-        url: https:/test.pypi.org/p/ACE-OQS
-      permissions:
-        id-token: write
-      steps:
-      - name: Prepare package distribution in dist/
-        uses: actions/download-artifact@v4
-        with:
-          pattern: wheels-*
-          merge-multiple: true
-          path: dist/
-      - name: Publish package distributions to TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
+  upload_pypi:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https:/test.pypi.org/p/ACE-OQS
+    permissions:
+      id-token: write
+    steps:
+    - name: Prepare package distribution in dist/
+      uses: actions/download-artifact@v4
+      with:
+        pattern: wheels-*
+        merge-multiple: true
+        path: dist/
+    - name: Publish package distributions to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
           
 #  upload_pypi:
 #    needs: build_wheels
