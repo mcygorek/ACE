@@ -153,8 +153,13 @@ void Simulation_PT::propagate_system(
         } 
       }
     }
+#if EIGEN_MAJOR_VERSION < 5
     Eigen::JacobiSVD<Eigen::MatrixXcd> svd;
     svd.compute(Mflipped, Eigen::ComputeThinU|Eigen::ComputeThinV);
+#else
+    Eigen::JacobiSVD<Eigen::MatrixXcd, Eigen::ComputeThinU|Eigen::ComputeThinV> svd;
+    svd.compute(Mflipped);
+#endif
 //    Eigen::JacobiSVD<Eigen::MatrixXcd> svd(Mflipped);
 
     Eigen::VectorXd svals=svd.singularValues();

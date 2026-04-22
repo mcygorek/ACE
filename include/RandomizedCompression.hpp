@@ -9,10 +9,6 @@ void Randomized_Combine(ProcessTensorBuffer & PTB, \
                         ProcessTensorBuffer & PTB2, \
                         int chi_new, const TruncatedSVD &trunc);
 
-//void Randomized_test(ProcessTensorBuffer & PTB, \
-                        ProcessTensorBuffer & PTB2, \
-                        int chi_new, const TruncatedSVD &trunc);
-
 
 }//namespace
 #endif

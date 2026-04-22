@@ -97,3 +97,27 @@ def write_outfile(filename, data):
           writer.writerow(string)
 
 
+def MatrixToString(mat, precision=5):
+  threshold=10**(-precision)/10.*0.999
+  if mat.shape[0] != mat.shape[1]:
+    raise ValueError(f'mat.shape[0] != mat.shape[1]')   
+  d = mat.shape[0]
+  str = ''
+  for i in range(d):
+    for j in range(d):
+      if np.abs(mat[i,j])>threshold:
+        if str != '':
+          str += '+'
+        if mat[i,j].imag>threshold:
+          str += f'({mat[i,j].real:.{precision}f}+{mat[i,j].imag:.{precision}f}*i)'
+        elif mat[i,j].imag<-threshold:
+          str += f'({mat[i,j].real:.{precision}f}{mat[i,j].imag:.{precision}f}*i)'
+        else:
+          str += f'({mat[i,j].real:.{precision}f})'
+        str += f'*|{i}><{j}|_{d}'
+  if str == '':
+    str = f'0*|0><0|_{d}'
+  return str
+
+
+

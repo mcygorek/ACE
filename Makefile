@@ -32,7 +32,7 @@ ifeq ($(shell uname -o),Msys)
   LIBNAME=libACE.dll
 endif
 
-OPTS += -O$(OPTIM) -fno-math-errno -g -m64 --std=c++11
+OPTS += -O$(OPTIM) -fno-math-errno -g -m64 --std=c++14
 ifneq ($(CXX),icpc)
   OPTS += -Wno-ignored-attributes
 endif
@@ -61,8 +61,8 @@ $(EXECOBJS): %: src_exec/%.cpp  lib/$(LIBNAME)
 pybind: pybind/ACE$(PYBINDSUF)
 
 pybind/ACE$(PYBINDSUF): pybind/pybind.cpp lib/$(LIBNAME)
-	$(CXX) -O3 -shared -std=c++11 -fPIC  -Iinclude -I$(EIGEN_HOME) $(MKL_INCL) $(PYBINDINC) pybind/pybind.cpp -o pybind/ACE$(PYBINDSUF) $(OPTSLINK) -Llib -lACE -Wl,-rpath,$(LIBSTRING)
-#	$(CXX) -O3 -Wall -shared -std=c++11 -fPIC $(PYBINDINC) pybind/pybind.cpp -o pybind/ACE$(PYBINDSUF) $(OPTSLINK) -Llib -lACE -Wl,-rpath,$(LIBSTRING) -Iinclude -I$(EIGEN_HOME) $(MKL_INCL)
+	$(CXX) -O3 -shared -std=c++14 -fPIC  -Iinclude -I$(EIGEN_HOME) $(MKL_INCL) $(PYBINDINC) pybind/pybind.cpp -o pybind/ACE$(PYBINDSUF) $(OPTSLINK) -Llib -lACE -Wl,-rpath,$(LIBSTRING)
+#	$(CXX) -O3 -Wall -shared -std=c++14 -fPIC $(PYBINDINC) pybind/pybind.cpp -o pybind/ACE$(PYBINDSUF) $(OPTSLINK) -Llib -lACE -Wl,-rpath,$(LIBSTRING) -Iinclude -I$(EIGEN_HOME) $(MKL_INCL)
 
 lib: lib/$(LIBNAME)
 lib/$(LIBNAME): $(LIBOBJS) 

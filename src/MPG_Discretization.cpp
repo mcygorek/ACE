@@ -1,3 +1,4 @@
+#include <random>
 #include "MPG_Discretization.hpp"
 #include "Parameters.hpp"
 #include "EnergyRange.hpp"
@@ -328,7 +329,10 @@ std::cout<<"E="<<E.back()<<" g="<<g.back()<<std::endl;
       for(size_t i=0; i<sorter.size(); i++){
         sorter[i]=std::make_pair(E[i], i);
       }
-      std::random_shuffle(sorter.begin(), sorter.end());
+
+      std::random_device rd;
+      std::mt19937 g(rd());
+      std::shuffle(sorter.begin(), sorter.end(), g);
 
     }else if(sort_mode=="none"||sort_mode==""){
 
