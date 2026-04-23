@@ -7,7 +7,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "ACE-OQS"
-version = "1.0.1"
+version = "1.0.2"
 requires-python = ">=3.10"
 dependencies = [ "numpy" ]
 description = "ACE: Open Quantum System simulator based primarily on process tensors, path integrals, and tensor networks"
