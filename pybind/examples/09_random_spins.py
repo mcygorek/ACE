@@ -1,10 +1,7 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-import sys
-sys.path.append('/.../ACE/pybind/') #<---plug in your directory
-
-from ACEutils import *
+# if not installed via pip, comment out the following and plug in the correct path
+# import sys
+# sys.path.append('.../ACE/pybind/') #<---plug in correct path
+from ACE import *
 
 
 # Parameters
