@@ -1,8 +1,9 @@
-import sys
-sys.path.append('.../ACE/pybind/') #<---plug in your directory
-from ACEutils import *
-from time import perf_counter
+# if not installed via pip, comment out the following and plug in the correct path
+# import sys
+# sys.path.append('.../ACE/pybind/') #<---plug in correct path
+from ACE import *
 
+from time import perf_counter
 
 # Parameters
 te = 200    # end time 
