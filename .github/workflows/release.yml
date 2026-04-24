@@ -1,0 +1,119 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v1.2.3) – only needed for manual runs'
+        required: true
+        default: 'v0.0.0-test'
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  # ── Build native ACE binary ─────────────────────────────────────────────────
+  build_binary:
+    name: Binary – ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: ACE-linux-x86_64
+            binary: build/ACE
+          - os: macos-latest
+            artifact: ACE-macos
+            binary: build/ACE
+          - os: windows-latest
+            artifact: ACE-windows-x86_64
+            binary: build/ACE.exe
+
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Set up MSYS2 UCRT64 (Windows)
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: false
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-eigen3
+
+      - name: Install Eigen (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -q && sudo apt-get install -y libeigen3-dev
+
+      - name: Install Eigen (macOS)
+        if: runner.os == 'macOS'
+        run: brew install eigen || true
+
+      - name: Configure (Linux / macOS)
+        if: runner.os != 'Windows'
+        run: >
+          cmake -B build
+          -DCMAKE_BUILD_TYPE=Release
+          -DBUILD_PYTHON_BINDINGS=OFF
+
+      - name: Configure (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: >
+          cmake -B build
+          -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_C_COMPILER=/ucrt64/bin/gcc.exe
+          -DCMAKE_CXX_COMPILER=/ucrt64/bin/g++.exe
+          -DCMAKE_MAKE_PROGRAM=/ucrt64/bin/ninja.exe
+          -DBUILD_PYTHON_BINDINGS=OFF
+
+      - name: Build (Linux / macOS)
+        if: runner.os != 'Windows'
+        run: cmake --build build --target ACE_bin -j$(nproc 2>/dev/null || sysctl -n hw.logicalcpu)
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: cmake --build build --target ACE_bin -j$(nproc)
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.binary }}
+
+  # ── Publish to GitHub Releases ──────────────────────────────────────────────
+  github_release:
+    needs: [build_binary]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # required to create/update releases and upload assets
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4.2.1
+        with:
+          path: artifacts/
+
+      - name: Rename binaries to include platform
+        run: |
+          mv artifacts/ACE-linux-x86_64/ACE  artifacts/ACE-linux-x86_64/ACE-linux-x86_64
+          mv artifacts/ACE-macos/ACE         artifacts/ACE-macos/ACE-macos
+          mv artifacts/ACE-windows-x86_64/ACE.exe artifacts/ACE-windows-x86_64/ACE-windows-x86_64.exe
+
+      - name: Create GitHub Release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+          generate_release_notes: true
+          files: |
+            artifacts/ACE-linux-x86_64/ACE-linux-x86_64
+            artifacts/ACE-macos/ACE-macos
+            artifacts/ACE-windows-x86_64/ACE-windows-x86_64.exe
