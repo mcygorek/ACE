@@ -106,7 +106,7 @@ jobs:
         run: |
           mv artifacts/ACE-linux-x86_64/ACE  artifacts/ACE-linux-x86_64/ACE-linux-x86_64
           mv artifacts/ACE-macos/ACE         artifacts/ACE-macos/ACE-macos
-          mv artifacts/ACE-windows-x86_64/ACE.exe artifacts/ACE-windows-x86_64/ACE-windows-x86_64.exe
+#          mv artifacts/ACE-windows-x86_64/ACE.exe artifacts/ACE-windows-x86_64/ACE-windows-x86_64.exe
 
       - name: Create GitHub Release and upload assets
         uses: softprops/action-gh-release@v2
@@ -116,4 +116,4 @@ jobs:
           files: |
             artifacts/ACE-linux-x86_64/ACE-linux-x86_64
             artifacts/ACE-macos/ACE-macos
-            artifacts/ACE-windows-x86_64/ACE-windows-x86_64.exe
+            artifacts/ACE-windows-x86_64/ACE.exe
