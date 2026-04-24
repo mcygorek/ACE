@@ -2,9 +2,9 @@
 # import sys
 # sys.path.append('.../ACE/pybind/') #<---plug in correct path
 from ACE import *
+import numpy as np
 
 # This example considers phonon-assisted state preparation of a QD strongly coupled to a microcavity
-
 
 # Parameters
 te = 100    # end time 
