@@ -2,6 +2,7 @@
 # import sys
 # sys.path.append('.../ACE/pybind/') #<---plug in correct path
 from ACE import *
+import numpy as np
 
 # The example calculates emission spectra from a strongly driven quantum dot coupled to phonons 
 # by Fourier transforming the first-order coherence <sigma^+(t_op+tau) sigma^-(t_op)> 
