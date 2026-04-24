@@ -2,6 +2,7 @@
 # import sys
 # sys.path.append('.../ACE/pybind/') #<---plug in correct path
 from ACE import *
+import numpy as np
 
 # This example demonstrate the (subtle) effects of phonons on superradiance of two QDs.
 # Both QDs are coupled to phonons. We precompute the PT-MPO for a single QD first.
