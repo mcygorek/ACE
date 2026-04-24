@@ -11,13 +11,11 @@ dt = 0.01
 te = 100
 Omega = 0.1
 
-sigma_x = np.array([[0,1],[1,0]], dtype=complex)
-
 
 # We need the free system propagator, a set of PT-MPOs, an initial state, a time grid 
 # and an "OutputPrinter", which handles what observables are extracted and how they are written/returned
 fprop   = FreePropagator()
-fprop.add_Hamiltonian(hbar/2*Omega*sigma_x)
+fprop.add_Hamiltonian(hbar/2*Omega*ACE_sigma_x)
 
 PT      = ProcessTensors() # Empty PT-MPO for now
 initial = KetBra(0,0,2)    # <- KetBra(i,j,k) yields a numpy array representing {|i><j|_k}
