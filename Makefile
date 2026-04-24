@@ -59,8 +59,8 @@ $(EXECOBJS): %: src_exec/%.cpp  lib/$(LIBNAME)
 
 pybind: pybind/ACE$(PYBINDSUF)
 
-pybind/ACE$(PYBINDSUF): pybind/pybind.cpp lib/$(LIBNAME)
-	$(CXX) -O3 -shared -std=c++14 -fPIC  -Iinclude -I$(EIGEN_HOME) $(MKL_INCL) $(PYBINDINC) pybind/pybind.cpp -o pybind/ACE$(PYBINDSUF) $(OPTSLINK) -Llib -lACE -Wl,-rpath,$(LIBSTRING)
+pybind/ACE/_ACE$(PYBINDSUF): pybind/pybind.cpp lib/$(LIBNAME)
+	$(CXX) -O3 -shared -std=c++14 -fPIC  -Iinclude -I$(EIGEN_HOME) $(MKL_INCL) $(PYBINDINC) pybind/pybind.cpp -o pybind/ACE/_ACE$(PYBINDSUF) $(OPTSLINK) -Llib -lACE -Wl,-rpath,$(LIBSTRING)
 #	$(CXX) -O3 -Wall -shared -std=c++14 -fPIC $(PYBINDINC) pybind/pybind.cpp -o pybind/ACE$(PYBINDSUF) $(OPTSLINK) -Llib -lACE -Wl,-rpath,$(LIBSTRING) -Iinclude -I$(EIGEN_HOME) $(MKL_INCL)
 
 lib: lib/$(LIBNAME)
@@ -109,5 +109,5 @@ $(EXPERIMENTAL): %: src_exec/experimental/%.cpp lib/$(LIBNAME)
 .PHONY: clean
 
 clean:
-	rm -rf bin/* tools/* lib/* include/PCH.hpp.gch pybind/*.so
+	rm -rf bin/* tools/* lib/* include/PCH.hpp.gch pybind/ACE/*.so
 
