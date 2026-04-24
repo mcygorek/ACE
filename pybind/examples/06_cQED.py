@@ -1,6 +1,7 @@
-import sys
-sys.path.append('.../ACE/pybind/') #<---plug in your directory
-from ACEutils import *
+# if not installed via pip, comment out the following and plug in the correct path
+# import sys
+# sys.path.append('.../ACE/pybind/') #<---plug in correct path
+from ACE import *
 
 # This example considers phonon-assisted state preparation of a QD strongly coupled to a microcavity
 
