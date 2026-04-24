@@ -2,6 +2,7 @@
 # import sys
 # sys.path.append('.../ACE/pybind/') #<---plug in correct path
 from ACE import *
+import numpy as np
 
 from time import perf_counter
 
