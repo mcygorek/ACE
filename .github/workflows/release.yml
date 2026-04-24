@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag (e.g. v1.2.3) – only needed for manual runs'
+        description: 'ACE code with Python bindings'
         required: true
-        default: 'v0.0.0-test'
+        default: 'v1.3.0'  #'v0.0.0-test'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
