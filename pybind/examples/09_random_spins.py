@@ -16,16 +16,6 @@ N = 10       # number of spins
 
 np.random.seed(12345)
 
-sigma_x = np.array([[0,1],[1,0]], dtype=complex)
-sigma_y = np.array([[0,1j],[-1j,0]], dtype=complex)
-sigma_z = np.array([[-1,0],[0,1]], dtype=complex)
-Id2 = np.array([[1,0],[0,1]], dtype=complex)
-
-#check commutation relations
-print(sigma_x@sigma_y-sigma_y@sigma_x -2j*sigma_z)
-print(sigma_y@sigma_z-sigma_z@sigma_y -2j*sigma_x)
-print(sigma_z@sigma_x-sigma_x@sigma_z -2j*sigma_y)
-
 
 rho0 = np.array([[0.5,0.5],[0.5,0.5]], dtype=complex)
 initial = InitialState( rho0 )
@@ -48,7 +38,7 @@ def sample_sin(x):
     return np.arccos(x)
 
 
-Heisenberg = hbar/4*( np.kron(sigma_x, sigma_x)+np.kron(sigma_y, sigma_y)+np.kron(sigma_z, sigma_z)) 
+Heisenberg = hbar/4*( np.kron(ACE_sigma_x, ACE_sigma_x)+np.kron(ACE_sigma_y, ACE_sigma_y)+np.kron(ACE_sigma_z, ACE_sigma_z)) 
 
 
 mode_list = []
@@ -64,7 +54,7 @@ for i in range(N):
 #            theta = sample_sin(np.random.uniform(0,1))
     b=np.array([np.sin(theta)*np.cos(phi),np.sin(theta)*np.sin(phi),np.cos(theta)])
     S=S+b
-    m.initial=1/2*(Id2 + b[0]*sigma_x + b[1]*sigma_y + b[2]*sigma_z)
+    m.initial=1/2*(np.eye(2,2) + b[0]*ACE_sigma_x + b[1]*ACE_sigma_y + b[2]*ACE_sigma_z)
     mode_list.append(m)
     print(f'J={J} b={b}')
    
@@ -75,7 +65,7 @@ PT = ProcessTensors(param, mode_list)
 
 outfile = "09_random_spins.out"
 outp  = OutputPrinter( outfile,
-                      [sigma_x, sigma_y, sigma_z])
+                      [ACE_sigma_x, ACE_sigma_y, ACE_sigma_z])
 
 tgrid = TimeGrid(ta, te, dt)
 
