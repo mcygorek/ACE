@@ -16,7 +16,7 @@
 namespace py = pybind11;
 
 
-PYBIND11_MODULE(ACE, m) {
+PYBIND11_MODULE(_ACE, m) {
   m.doc() = "pybind11 ACE plugin"; // optional module docstring
   m.attr("hbar") = ACE::hbar_in_meV_ps;
   m.def("StringToMatrix", [](const std::string &str){
