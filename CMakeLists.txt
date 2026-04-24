@@ -19,6 +19,15 @@ endif()
 # ── Dependencies ──────────────────────────────────────────────────────────────
 find_package(Threads REQUIRED)
 
+# On Windows (MSVC and MinGW) M_PI is not defined without this. Apply globally so every
+# target (library, executables, tools, Python module) sees them.
+if(WIN32)
+  add_compile_definitions(_USE_MATH_DEFINES NOMINMAX)
+endif()
+
+# Disable Eigen's internal multithreading
+# add_compile_definitions(EIGEN_DONT_PARALLELIZE)
+
 # Eigen3: try cmake config/module first, then fall back to EIGEN_HOME
 find_package(Eigen3 3.4 QUIET)
 if (Eigen3_FOUND)
@@ -68,13 +77,6 @@ target_compile_options(ACE_objects PRIVATE
   $<$<NOT:$<OR:$<CXX_COMPILER_ID:Intel>,$<CXX_COMPILER_ID:MSVC>>>:-Wno-ignored-attributes>
   $<$<CXX_COMPILER_ID:MSVC>:/EHsc /utf-8>)
 
-target_compile_definitions(ACE_objects PRIVATE
-  # M_PI and friends; needed on MSVC and MinGW (MSYS2) where they are
-  # not exposed without this define.
-  $<$<BOOL:${WIN32}>:_USE_MATH_DEFINES>
-  # Prevent windows.h from defining min/max macros that clash with Eigen.
-  $<$<BOOL:${WIN32}>:NOMINMAX>)
-
 target_precompile_headers(ACE_objects PRIVATE include/PCH.hpp)
 
 # Shared library – thin wrapper for C++ consumers.
@@ -87,9 +89,15 @@ target_include_directories(ACE
 target_link_libraries(ACE PUBLIC Eigen3::Eigen Threads::Threads)
 
 # ── Main executable ───────────────────────────────────────────────────────────
-add_executable(ACE_bin src_exec/ACE.cpp)
+add_executable(ACE_bin src_exec/ACE.cpp $<TARGET_OBJECTS:ACE_objects>)
 set_target_properties(ACE_bin PROPERTIES OUTPUT_NAME ACE)
-target_link_libraries(ACE_bin PRIVATE ACE)
+target_include_directories(ACE_bin PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(ACE_bin PRIVATE Eigen3::Eigen Threads::Threads)
+
+# On MinGW statically link everything so the .exe needs no external DLLs, same as Makefile_static
+if(WIN32 AND NOT MSVC)
+  target_link_options(ACE_bin PRIVATE -static -s)
+endif()
 
 # ── Tool executables ──────────────────────────────────────────────────────────
 option(BUILD_TOOLS "Build tool executables (src_exec/tools/)" OFF)
