@@ -49,7 +49,6 @@ BINEXEC = $(patsubst %, bin/%, $(EXECOBJS))
 
 PYBINDSUF = $(shell python3 -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))")
 PYBINDINC = $(shell python3 -m pybind11 --includes)
-#PYBINDSUF = $(shell python3 -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))" )
 
 #$(info $(PYBINDSUF) $(PYBINDINC) )
 
