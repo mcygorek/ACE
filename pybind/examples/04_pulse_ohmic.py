@@ -1,6 +1,7 @@
-import sys
-sys.path.append('.../ACE/pybind/') #<---plug in your directory
-from ACEutils import *
+# if not installed via pip, comment out the following and plug in the correct path
+# import sys
+# sys.path.append('.../ACE/pybind/') #<---plug in correct path
+from ACE import *
 
 
 # This time, we additionally couple the TLS to a spin-boson environment with Ohmic spectral density
