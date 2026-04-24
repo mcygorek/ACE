@@ -33,8 +33,10 @@ jobs:
     needs: build_wheels
     runs-on: ubuntu-latest
     environment:
-      name: testpypi
-      url: https://test.pypi.org/p/ACE-OQS
+      name: pypi
+      url: https://pypi.org/p/ACE-OQS
+    #  name: testpypi
+    #  url: https://test.pypi.org/p/ACE-OQS
     permissions:
       id-token: write
     steps:
@@ -45,10 +47,10 @@ jobs:
         merge-multiple: true
         path: dist/
         
-    - name: Publish package distributions to TestPyPI
+    - name: Publish package distributions to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        repository-url: https://test.pypi.org/legacy/
+  #    with:
+  #      repository-url: https://test.pypi.org/legacy/
           
 #  upload_pypi:
 #    needs: build_wheels
