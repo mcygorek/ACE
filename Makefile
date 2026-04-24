@@ -110,5 +110,5 @@ $(EXPERIMENTAL): %: src_exec/experimental/%.cpp lib/$(LIBNAME)
 .PHONY: clean
 
 clean:
-	rm -rf bin/* tools/* lib/* include/PCH.hpp.gch pybind/ACE/*.so
+	rm -rf bin/* tools/* lib/* include/PCH.hpp.gch pybind/ACE/*.so pybind/build pybind/ACE.egg-info pybind/__pycache__ pybind/*whl
 
