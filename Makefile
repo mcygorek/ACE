@@ -62,6 +62,7 @@ pybind: pybind/ACE/_ACE$(PYBINDSUF)
 pybind/ACE/_ACE$(PYBINDSUF): pybind/pybind.cpp lib/$(LIBNAME)
 	$(CXX) -O3 -shared -std=c++14 -fPIC  -Iinclude -I$(EIGEN_HOME) $(MKL_INCL) $(PYBINDINC) pybind/pybind.cpp -o pybind/ACE/_ACE$(PYBINDSUF) $(OPTSLINK) -Llib -lACE -Wl,-rpath,$(LIBSTRING)
 #	$(CXX) -O3 -Wall -shared -std=c++14 -fPIC $(PYBINDINC) pybind/pybind.cpp -o pybind/ACE$(PYBINDSUF) $(OPTSLINK) -Llib -lACE -Wl,-rpath,$(LIBSTRING) -Iinclude -I$(EIGEN_HOME) $(MKL_INCL)
+	cd pybind && python3 -m build --wheel -o . ;  cd .. 
 
 lib: lib/$(LIBNAME)
 lib/$(LIBNAME): $(LIBOBJS) 
