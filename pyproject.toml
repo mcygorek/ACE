@@ -30,7 +30,7 @@ cmake.targets = ["ACE_nb"]
 [tool.cibuildwheel]
 # Python versions to build for.
 # build = "cp310-* cp311-* cp312-* cp313-*"
-build = "cp314-* cp315-*"
+build = "cp314-*"
 # Skip musl-libc (Alpine) wheels; Eigen + musl needs extra care.
 skip = "*-musllinux_*"
 
