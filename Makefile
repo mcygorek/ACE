@@ -57,7 +57,7 @@ code: PCH $(EXECOBJS)
 $(EXECOBJS): %: src_exec/%.cpp  lib/$(LIBNAME) 
 	$(CXX) -o bin/$@ $< $(OPTSLINK) -Llib -lACE -Wl,-rpath,$(LIBSTRING)
 
-pybind: pybind/ACE$(PYBINDSUF)
+pybind: pybind/ACE/_ACE$(PYBINDSUF)
 
 pybind/ACE/_ACE$(PYBINDSUF): pybind/pybind.cpp lib/$(LIBNAME)
 	$(CXX) -O3 -shared -std=c++14 -fPIC  -Iinclude -I$(EIGEN_HOME) $(MKL_INCL) $(PYBINDINC) pybind/pybind.cpp -o pybind/ACE/_ACE$(PYBINDSUF) $(OPTSLINK) -Llib -lACE -Wl,-rpath,$(LIBSTRING)
