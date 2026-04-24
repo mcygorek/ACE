@@ -2,6 +2,7 @@
 # import sys
 # sys.path.append('.../ACE/pybind/') #<---plug in correct path
 from ACE import *
+import numpy as np
 
 # We now drive the TLS using a laser with a pulse shape defined using Python
 
