@@ -2,7 +2,7 @@
 # import sys
 # sys.path.append('.../ACE/pybind/') #<---plug in correct path
 from ACE import *
-
+import numpy as np
 
 # This time, we additionally couple the TLS to a spin-boson environment with Ohmic spectral density
 
