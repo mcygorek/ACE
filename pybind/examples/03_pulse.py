@@ -1,6 +1,7 @@
-import sys
-sys.path.append('.../ACE/pybind/') #<---plug in your directory
-from ACEutils import *
+# if not installed via pip, comment out the following and plug in the correct path
+# import sys
+# sys.path.append('.../ACE/pybind/') #<---plug in correct path
+from ACE import *
 
 # We now drive the TLS using a laser with a pulse shape defined using Python
 
