@@ -3,6 +3,27 @@
 
 namespace ACE{
 
+int ReadPT_struct::get_reduced_index_H(int I, int Nsub)const{
+  if(expand_back>1) I = I/expand_back;
+  return I%Nsub;
+}
+int ReadPT_struct::get_reduced_index_L(int I, int Nsub)const{
+  int Ntot=get_total_dim(Nsub);
+  return get_reduced_index_H(I/Ntot,Nsub)*Nsub+get_reduced_index_H(I%Ntot,Nsub);
+}
+int ReadPT_struct::replace_subsystem_index_H(int I, int j, int Nsub)const{
+  int i=get_reduced_index_H(I, Nsub);
+  if(expand_back>1){
+    return I+(j-i)*expand_back;
+  }else{
+    return I+(j-i);
+  }
+}
+int ReadPT_struct::replace_subsystem_index_L(int I, int j, int Nsub)const{
+  int Ntot=get_total_dim(Nsub);
+  return replace_subsystem_index_H(I/Ntot, j/Nsub, Nsub)*Ntot+replace_subsystem_index_H(I%Ntot, j%Nsub, Nsub);
+}
+
 void ReadPT_struct::setup(Parameters &param, const std::string &par_name, const std::string & expand_name){
   if(par_name=="" || expand_name==""){ 
     std::cerr<<"ReadPT_struct::setup: par_name==\"\" || expand_name==\"\" !"<<std::endl;

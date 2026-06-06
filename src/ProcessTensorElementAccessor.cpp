@@ -27,12 +27,14 @@ void ProcessTensorElementAccessor::propagate(
     throw DummyException();
   }
 
-  IF_OD_Dictionary thisdict=dict;
-  if(expand.have_to_expand()){
-    thisdict.expand(expand,false);
-  }
+//  IF_OD_Dictionary thisdict=dict;
+//  if(expand.have_to_expand()){
+//    thisdict.expand(expand,false);
+//  }
 
-  int NL=thisdict.get_NL();
+//  int NL=thisdict.get_NL();
+  int Nsub=dict.get_N();
+  int NL=Nsub*Nsub*expand.get_front_dim()*expand.get_front_dim()*expand.get_back_dim()*expand.get_back_dim();
   if(state.rows()!=NL){
     std::cerr<<"ProcessTensorElementAccessor::propagate: state.rows()!=NL ("<<state.rows()<<" vs. "<<NL<<")!"<<std::endl; 
     throw DummyException();
@@ -42,10 +44,101 @@ void ProcessTensorElementAccessor::propagate(
 
 //  typedef Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> MatriXcdRM;
 
+  class dict_nonzeros{
+    public:
+    std::vector< std::vector< std::pair<int, int> > > list;
+    
+    std::vector< std::pair<int, int> > & operator[] (int i){return list[i];}
+    void clear(){ 
+      list.clear();
+    }
+    inline size_t size()const{return list.size();}
+    void set_from_dict(const IF_OD_Dictionary & dict){
+      clear();
+      list.resize(dict.get_NL());
+      for(int i=0; i<dict.get_NL(); i++){
+        for(int j=0; j<dict.get_NL(); j++){
+          if(dict.beta[i*dict.get_NL()+j]>=0){
+            list[i].push_back(std::make_pair(j, dict.beta[i*dict.get_NL()+j])); 
+          }
+        }
+      }
+    }
+    void expand_back(int Nback){
+      if(Nback<=1)return;
+      int N = sqrt((int)list.size());
+      std::vector< std::vector< std::pair<int, int> > > new_list( N*N*Nback*Nback );
+      for(int nu=0; nu<Nback; nu++){
+        for(int mu=0; mu<Nback; mu++){
+          for(int nu1=0; nu1<N; nu1++){
+            for(int mu1=0; mu1<N; mu1++){
+              int i_old=nu1*N+mu1;
+              int i_new=((nu1*Nback+nu)*N+mu1)*Nback+mu;
+              for(int r=0; r<list[i_old].size(); r++){ 
+                int nu2=list[i_old][r].first/N;
+                int mu2=list[i_old][r].first%N;
+                int j_new=((nu2*Nback+nu)*N+mu2)*Nback+mu;
+                new_list[i_new].push_back(std::make_pair(j_new,list[i_old][r].second));
+              }
+            } 
+          }
+        }
+      }
+      list.swap(new_list);
+    }
+    void expand_front(int Nfront){
+      if(Nfront<=1)return;
+      int N = sqrt((int)list.size());
+      std::vector< std::vector< std::pair<int, int> > > new_list( N*N*Nfront*Nfront );
+      for(int nu=0; nu<Nfront; nu++){
+        for(int mu=0; mu<Nfront; mu++){
+          for(int nu1=0; nu1<N; nu1++){
+            for(int mu1=0; mu1<N; mu1++){
+              int i_old=nu1*N+mu1;
+              int i_new=((nu*N+nu1)*Nfront+mu)*N+mu1;
+              for(int r=0; r<list[i_old].size(); r++){ 
+                int nu2=list[i_old][r].first/N;
+                int mu2=list[i_old][r].first%N;
+                int j_new=((nu*N+nu2)*Nfront+mu)*N+mu2;
+                new_list[i_new].push_back(std::make_pair(j_new,list[i_old][r].second));
+              }
+            } 
+          }
+        }
+      }
+      list.swap(new_list);
+    }
+    dict_nonzeros(){
+    }
+    dict_nonzeros(const IF_OD_Dictionary & dict){
+      set_from_dict(dict);
+    }
+  };
+  //dict_nonzeros nz(thisdict);  
+  dict_nonzeros nz(dict);
+//  nz.expand_front(expand.get_front_dim()); 
+//  nz.expand_back(expand.get_back_dim()); 
+ 
+  int Nfront=expand.get_front_dim();
+  int Nback=expand.get_back_dim();
   if(dim1_front==1 && dim1_back==1){
-    for(int i=0; i<NL; i++){
-      for(int j=0; j<NL; j++){
-        int i_ind=thisdict.beta[i*NL+j]; if(i_ind<0)continue;
+    for(int nu1=0; nu1<Nsub; nu1++){
+      for(int mu1=0; mu1<Nsub; mu1++){
+        int i_=nu1*Nsub+mu1;
+        for(int nub=0; nub<Nback; nub++){
+          for(int mub=0; mub<Nback; mub++){
+            for(int nuf=0; nuf<Nfront; nuf++){
+              for(int muf=0; muf<Nfront; muf++){
+                int i=((((nuf*Nsub+nu1)*Nback+nub)*Nfront+muf)*Nsub+mu1)*Nback+mub;
+                for(int r=0; r<nz[i_].size(); r++){
+                  int nu2=nz[i_][r].first/Nsub;
+                  int mu2=nz[i_][r].first%Nsub;
+                  int j=((((nuf*Nsub+nu2)*Nback+nub)*Nfront+muf)*Nsub+mu2)*Nback+mub;
+ 
+//    for(int i=0; i<NL; i++){
+////      for(int j=0; j<NL; j++){
+////        int i_ind=thisdict.beta[i*NL+j]; if(i_ind<0)continue;
+//      for(int r=0; r<nz[i].size(); r++){
 //        for(int d1=0; d1<M.dim_d1; d1++){
 //          for(int d2=0; d2<M.dim_d2; d2++){
 ////              state2(i, d2) += M(i_ind, d1, d2) * state(j, d1);
@@ -53,8 +146,8 @@ void ProcessTensorElementAccessor::propagate(
 //          }
 //        }
           state2.row(i).noalias() += state.row(j) * 
-Eigen::Map<Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>, 0, Eigen::OuterStride<> >(M.mem+i_ind*M.dim_d2,M.dim_d1,M.dim_d2,Eigen::OuterStride<>(M.dim_i*M.dim_d2));
-      }
+Eigen::Map<Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>, 0, Eigen::OuterStride<> >(M.mem+nz[i_][r].second*M.dim_d2,M.dim_d1,M.dim_d2,Eigen::OuterStride<>(M.dim_i*M.dim_d2));
+      }}}}}}
     }
     state.swap(state2);
     return;
@@ -88,9 +181,25 @@ Eigen::Map<Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic, E
     for(int db=0; db<dim1_back; db++){
       Eigen::Map<Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>, 0 , Eigen::OuterStride<> > mp(&state(0,df*M.dim_d1*dim1_back+db), NL, M.dim_d1, Eigen::OuterStride<>(dim1_back*NL));
       Eigen::Map<Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>, 0 , Eigen::OuterStride<> > mp2(&state2(0,df*M.dim_d2*dim1_back+db), NL, M.dim_d2, Eigen::OuterStride<>(dim1_back*NL));
-      for(int i=0; i<NL; i++){
-        for(int j=0; j<NL; j++){
-          int i_ind=thisdict.beta[i*NL+j]; if(i_ind<0)continue;
+
+    for(int nu1=0; nu1<Nsub; nu1++){
+      for(int mu1=0; mu1<Nsub; mu1++){
+        int i_=nu1*Nsub+mu1;
+        for(int nub=0; nub<Nback; nub++){
+          for(int mub=0; mub<Nback; mub++){
+            for(int nuf=0; nuf<Nfront; nuf++){
+              for(int muf=0; muf<Nfront; muf++){
+                int i=((((nuf*Nsub+nu1)*Nback+nub)*Nfront+muf)*Nsub+mu1)*Nback+mub;
+                for(int r=0; r<nz[i_].size(); r++){
+                  int nu2=nz[i_][r].first/Nsub;
+                  int mu2=nz[i_][r].first%Nsub;
+                  int j=((((nuf*Nsub+nu2)*Nback+nub)*Nfront+muf)*Nsub+mu2)*Nback+mub;
+ 
+//      for(int i=0; i<NL; i++){
+////        for(int j=0; j<NL; j++){
+////          int i_ind=thisdict.beta[i*NL+j]; if(i_ind<0)continue;
+//        for(int r=0; r<nz[i].size(); r++){
+
 //          for(int d1=0; d1<M.dim_d1; d1++){
 //            for(int d2=0; d2<M.dim_d2; d2++){
 //              state2(i, (df*M.dim_d2+d2)*dim1_back+db) +=  \
@@ -98,8 +207,8 @@ Eigen::Map<Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic, E
 //            }
 //          }
           mp2.row(i).noalias() += mp.row(j) * \
-Eigen::Map<Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>, 0, Eigen::OuterStride<> >(M.mem+i_ind*M.dim_d2,M.dim_d1,M.dim_d2,Eigen::OuterStride<>(M.dim_i*M.dim_d2));
-        }
+Eigen::Map<Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>, 0, Eigen::OuterStride<> >(M.mem+nz[i_][r].second*M.dim_d2,M.dim_d1,M.dim_d2,Eigen::OuterStride<>(M.dim_i*M.dim_d2));
+        }}}}}}
       }
     }
   }

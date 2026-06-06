@@ -224,8 +224,10 @@ void ProcessTensorForwardList::setup2(Parameters &param, std::vector<std::shared
 
     }else{ //neither calculating any PT nor reading initial_PT
       int Nsys = InitialState(param).rho.rows();
-      list.push_back(std::shared_ptr<ProcessTensorForward>(new ProcessTensorRepeat(Nsys)));
-      temp_expand.push_back(ReadPT_struct());
+//      list.push_back(std::shared_ptr<ProcessTensorForward>(new ProcessTensorRepeat(Nsys)));
+//      temp_expand.push_back(ReadPT_struct());
+      list.push_back(std::shared_ptr<ProcessTensorForward>(new ProcessTensorRepeat(1)));
+      temp_expand.push_back(ReadPT_struct("",1,Nsys));
     }
 
     add_PT(param);

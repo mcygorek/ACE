@@ -79,7 +79,7 @@ def run(parameter_list):
 def read_outfile(outfile, ncol=0):
     """Read an ACE output file, returning (times, values) as numpy arrays."""
     if ncol < 1:
-        with open(outfile, 'r') as f:
+        with open(outfile, 'r', encoding='latin-1') as f:
             nreal = 0
             for line in csv.reader(f, delimiter=' '):
                 for item in line:
@@ -91,7 +91,7 @@ def read_outfile(outfile, ncol=0):
         ncol = int((nreal - 1) / 2)
 
     times, values = [], []
-    with open(outfile, 'r') as f:
+    with open(outfile, 'r', encoding='latin-1') as f:
         for line in csv.reader(f, delimiter=' '):
             if not line or line[0].startswith('#') or not line[0]:
                 continue
