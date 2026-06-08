@@ -296,9 +296,6 @@ std::cout<<"DEBUG: skipping calculation (precalculated)"<<t<<std::endl;
   }
 
   void FreePropagator::add_Lindblad(double gamma, const Eigen::MatrixXcd & L, const Eigen::MatrixXcd & Ldag_){
-    if(nonH.rows()==0){
-      nonH=Eigen::MatrixXcd::Zero(L.rows()*L.rows(), L.cols()*L.cols());
-    }
     if(L.rows()!=L.cols()){
       std::cerr<<"FreePropagator::add_Lindblad: L.rows()!=L.cols()"<<std::endl;
       throw DummyException();
@@ -323,6 +320,9 @@ std::cout<<"DEBUG: skipping calculation (precalculated)"<<t<<std::endl;
     Lindbladians.push_back(LindbladTerm(gamma, L, Ldag));
 
     if(propagate_Taylor<1){ 
+      if(nonH.rows()==0){
+        nonH=Eigen::MatrixXcd::Zero(L.rows()*L.rows(), L.cols()*L.cols());
+      }
       double g=gamma;
       Eigen::MatrixXcd L2=Ldag*L;
 
