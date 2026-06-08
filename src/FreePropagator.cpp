@@ -352,21 +352,6 @@ std::cout<<"DEBUG: skipping calculation (precalculated)"<<t<<std::endl;
     }
     precalculated=false;
   }
-
-  void FreePropagator::add_diagonal_loss(double gamma, int index){
-    int dim=get_dim();
-    if(index<0||index>=dim){
-      std::cerr<<"FreePropagator_nonHamiltonian::add_diagonal_loss: index<0||index>=dim"<<std::endl;
-      throw DummyException();
-    }
-    for(int k=0; k<dim; k++){
-      nonH( index*dim+k , index*dim+k) -= gamma/2.;
-    }
-    for(int k=0; k<dim; k++){
-      nonH( k*dim+index , k*dim+index) -= gamma/2.;
-    }
-    precalculated=false;
-  }
   
   void FreePropagator::add_MultitimeOp(double t, Eigen::MatrixXcd m1, Eigen::MatrixXcd m2, bool apply_before){
     set_dim(m1); set_dim(m2); 

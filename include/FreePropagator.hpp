@@ -113,12 +113,6 @@ public:
 
   void add_Lindblad(double gamma, const Eigen::MatrixXcd & L, const Eigen::MatrixXcd & Ldag=Eigen::MatrixXcd());
   
-  void add_diagonal_loss(double gamma, int index);
-  
-  inline void add_diagonal_loss(const std::pair<double, int> & dloss){
-    add_diagonal_loss(dloss.first, dloss.second);
-  }
-
   void add_MultitimeOp(double t, Eigen::MatrixXcd m1, Eigen::MatrixXcd m2, bool apply_before=false);
 
   void print_pulses(Parameters &param);
