@@ -426,9 +426,11 @@ std::cout<<"DEBUG: skipping calculation (precalculated)"<<t<<std::endl;
     if(setdim>=0)set_dim(setdim);
     Nintermediate=param.get_as_size_t("Nintermediate", 0);
    
-    propagate_Taylor=param.get_as_size_t("propagate_Taylor",0);
+    propagate_Taylor_threshold=param.get_as_double("propagate_Taylor_threshold",0);
+    propagate_Taylor=param.get_as_size_t("propagate_Taylor",
+		                         propagate_Taylor_threshold>0?14:0);
 
-    propagate_system_threshold=param.get_as_double("propagate_system_threshold",0);
+    //propagate_system_threshold=param.get_as_double("propagate_system_threshold",0);
 
     //Special case: magnetic field of spin 1/2
     if(param.is_specified("TLS_B_eff")){

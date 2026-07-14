@@ -31,6 +31,7 @@ void Simulation_PT::propagate_system(
     }
    
     //propagate:
+    double pTthr=fprop->propagate_Taylor_threshold;
     double dt2=dt/(fprop->Nintermediate+1);
     for(int interm=0; interm<fprop->Nintermediate+1; interm++){
       double t2=t+interm*dt2;
@@ -65,6 +66,10 @@ void Simulation_PT::propagate_system(
           tmp*=dt/((double) k);
           //state.col(c)+=tmp.reshaped<Eigen::RowMajor>();
           state.col(c)+=H_Matrix_to_L_Vector(tmp);
+
+	  if(pTthr>0 && tmp.squaredNorm()<pTthr*pTthr){
+            break;
+          }
         }
       }
      }else{  //Try the BLAS way for potential speedup: turns out to be slower
@@ -130,7 +135,7 @@ void Simulation_PT::propagate_system(
       }
     }
  
-  }else if(fprop && fprop->propagate_system_threshold>0){
+/*  }else if(fprop && fprop->propagate_system_threshold>0){
     prop.update(t, dt);
     if(prop.M.rows()!=prop.M.cols() || prop.M.rows()!=state.rows()){
       std::cerr<<"Simulation_PT::propagate_system: prop.M.rows()!=prop.M.cols() || prop.M.rows()!=state.rows()!"<<std::endl;
@@ -205,7 +210,7 @@ void Simulation_PT::propagate_system(
       }
       state.col(c)=H_Matrix_to_L_Vector(sum);
     }
-
+*/
   }else{
     prop.update(t, dt);
     if(prop.M.rows()!=prop.M.cols() || prop.M.rows()!=state.rows()){

@@ -27,9 +27,10 @@ public:
   typedef std::tuple<double, Eigen::MatrixXcd, Eigen::MatrixXcd> LindbladTerm;
   std::vector<LindbladTerm> Lindbladians;
   int propagate_Taylor;  //explicit Lindbladian propagation with given order
+  double propagate_Taylor_threshold;  
 
   //for propagation using SVD of M:
-  double propagate_system_threshold;
+  //double propagate_system_threshold;
 
   ///time-dependent parts of Hamiltonian
   std::vector<TimedepMatrixPtr> timedep_H;
@@ -121,7 +122,8 @@ public:
     dim_fixed=false;
     Nintermediate=0;
     propagate_Taylor=0;
-    propagate_system_threshold=0.;
+    propagate_Taylor_threshold=0.;
+    //propagate_system_threshold=0.;
     precalculated=false;
     never_update=false;
     nonH=Eigen::MatrixXcd();
