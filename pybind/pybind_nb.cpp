@@ -6,14 +6,16 @@
  *   ProcessTensors (ProcessTensorForwardList),
  *   InitialState, TimeGrid, OutputPrinter,
  *   Simulation  (Simulation_PT),
+ *   InfluenceFunctional_QUAPI, Simulation_QUAPI,
+ *   InfluenceFunctional_TEMPO, Simulation_TEMPO,
  *   DynamicalMap
  *
  * GIL notes
  * ─────────
- * Heavy constructors and all run/calculate calls release the GIL so that
+ * Heavy constructors and all run/calculate calls could release the GIL so that
  * multiple threads can drive independent simulations simultaneously.
- * Constructors that accept Python-managed shared_ptr<ModePropagator> objects
- * intentionally keep the GIL to ensure safe reference-count manipulation.
+ * However, we do not do this here as this could lead to unexpected behaviour 
+ * for users that do not know about this.
  */
 
 #include <nanobind/nanobind.h>
@@ -27,6 +29,7 @@
 #include <memory>
 
 #include "Simulation_PT.hpp"
+#include "Simulation_QUAPI.hpp"
 #include "FreePropagator.hpp"
 #include "ModePropagatorGenerator_SingleModes.hpp"
 #include "DynamicalMap.hpp"
@@ -248,6 +251,110 @@ NB_MODULE(_ACE, m) {
             ACE::OutputPrinter& printer) {
            new (self) ACE::Simulation_PT();
            self->run(prop, PT, rho, tgrid, printer);
+         })
+    ;
+
+  // ── InfluenceFunctional_QUAPI ───────────────────────────────────────────────
+  nb::class_<ACE::InfluenceFunctional>(m, "InfluenceFunctional_QUAPI")
+    .def(nb::init<>())
+    .def("__init__",
+         [](ACE::InfluenceFunctional* self, ACE::Parameters param) {
+           ACE::DiagBB diagBB(param, param.get_as_string("Gaussian_prefix", "Boson"));
+           ACE::TimeGrid tgrid(param);
+           int n_mem = tgrid.n_mem;
+           if (n_mem <= 0) n_mem = tgrid.n_tot;
+           new (self) ACE::InfluenceFunctional(n_mem, tgrid.dt, diagBB);
+         })
+    ;
+
+  // ── Simulation_QUAPI ────────────────────────────────────────────────────────
+  nb::class_<ACE::Simulation_QUAPI>(m, "Simulation_QUAPI")
+    .def(nb::init<>(), nb::call_guard<nb::gil_scoped_release>())
+    .def("run",
+         [](ACE::Simulation_QUAPI& sim,
+            ACE::FreePropagator& fprop,
+            const ACE::InfluenceFunctional& IF,
+            const Eigen::MatrixXcd& init,
+            const ACE::TimeGrid& tgrid,
+            ACE::OutputPrinter& printer) {
+           sim.run(fprop, IF, init, tgrid, printer);
+         })
+    .def("__init__",
+         [](ACE::Simulation_QUAPI* self,
+            ACE::FreePropagator& prop,
+            const ACE::InfluenceFunctional& IF,
+            const ACE::InitialState& initial,
+            const ACE::TimeGrid& tgrid,
+            ACE::OutputPrinter& printer) {
+           new (self) ACE::Simulation_QUAPI();
+           self->run(prop, IF, initial.rho, tgrid, printer);
+         })
+    .def("__init__",
+         [](ACE::Simulation_QUAPI* self,
+            ACE::FreePropagator& prop,
+            const ACE::InfluenceFunctional& IF,
+            const Eigen::MatrixXcd& initial,
+            const ACE::TimeGrid& tgrid,
+            ACE::OutputPrinter& printer) {
+           new (self) ACE::Simulation_QUAPI();
+           self->run(prop, IF, initial, tgrid, printer);
+         })
+    ;
+
+  // ── InfluenceFunctional_TEMPO ────────────────────────────────────────────────
+  nb::class_<ACE::InfluenceFunctional_Vector>(m, "InfluenceFunctional_TEMPO")
+    .def(nb::init<>())
+    .def("__init__",
+         [](ACE::InfluenceFunctional_Vector* self, ACE::Parameters param) {
+           ACE::DiagBB diagBB(param, param.get_as_string("Gaussian_prefix", "Boson"));
+           ACE::TimeGrid tgrid(param);
+           int n_mem = tgrid.n_mem;
+           if (n_mem <= 0) n_mem = tgrid.n_tot;
+           new (self) ACE::InfluenceFunctional_Vector(n_mem, tgrid.dt, diagBB);
+         })
+    ;
+
+  // ── Simulation_TEMPO ─────────────────────────────────────────────────────────
+  nb::class_<ACE::Simulation_TEMPO>(m, "Simulation_TEMPO")
+    .def(nb::init<>(), nb::call_guard<nb::gil_scoped_release>())
+    .def("set_threshold", &ACE::Simulation_TEMPO::set_threshold)
+    .def("run",
+         [](ACE::Simulation_TEMPO& sim,
+            ACE::FreePropagator& fprop,
+            const ACE::InfluenceFunctional_Vector& IF,
+            const Eigen::MatrixXcd& init,
+            const ACE::TimeGrid& tgrid,
+            ACE::OutputPrinter& printer,
+            bool use_symmetric_Trotter,
+            bool silent) {
+           sim.run(fprop, IF, init, tgrid, printer, use_symmetric_Trotter, silent);
+         },
+         nb::arg("fprop"), nb::arg("IF"), nb::arg("init"), nb::arg("tgrid"),
+         nb::arg("printer"), nb::arg("use_symmetric_Trotter") = true,
+         nb::arg("silent") = true)
+    .def("__init__",
+         [](ACE::Simulation_TEMPO* self,
+            ACE::FreePropagator& prop,
+            const ACE::InfluenceFunctional_Vector& IF,
+            const ACE::InitialState& initial,
+            const ACE::TimeGrid& tgrid,
+            ACE::OutputPrinter& printer,
+            double threshold) {
+           new (self) ACE::Simulation_TEMPO();
+           self->set_threshold(threshold);
+           self->run(prop, IF, initial.rho, tgrid, printer, true, false);
+         })
+    .def("__init__",
+         [](ACE::Simulation_TEMPO* self,
+            ACE::FreePropagator& prop,
+            const ACE::InfluenceFunctional_Vector& IF,
+            const Eigen::MatrixXcd& initial,
+            const ACE::TimeGrid& tgrid,
+            ACE::OutputPrinter& printer,
+            double threshold) {
+           new (self) ACE::Simulation_TEMPO();
+           self->set_threshold(threshold);
+           self->run(prop, IF, initial, tgrid, printer, true, false);
          })
     ;
 
