@@ -200,6 +200,7 @@ NB_MODULE(_ACE, m) {
   nb::class_<ACE::OutputPrinter>(m, "OutputPrinter")
     .def(nb::init<ACE::Parameters&>())
     .def(nb::init<const std::string&, const std::vector<Eigen::MatrixXcd>&>())
+    .def(nb::init<const std::string&>())
     // OutputPrinter(op)  – extract a single observable
     .def("__init__", [](ACE::OutputPrinter* self,
                         const Eigen::MatrixXcd& op) {
