@@ -220,6 +220,7 @@ NB_MODULE(_ACE, m) {
     })
     .def_rw("do_extract", &ACE::OutputPrinter::do_extract)
     .def("clear",   &ACE::OutputPrinter::clear)
+    .def("clear_results",   &ACE::OutputPrinter::clear_results)
     .def("extract", &ACE::OutputPrinter::extract)
     ;
 
