@@ -173,7 +173,7 @@ std::cout<<"DiagBB::read_K_int called with '"<<fname<<"', "<<n_max<<", "<<dt<<st
           }
         }
         //test break criterion:
-        if(below_thr>0 && n>below_thr+2*first_below_thr>0){
+        if(below_thr>0 && n>below_thr+2*first_below_thr){
           n_break=n;
           break;
         }
