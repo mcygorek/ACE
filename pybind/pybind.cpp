@@ -150,6 +150,7 @@ PYBIND11_MODULE(_ACE, m) {
 //    .def(py::init<>())
     .def(py::init<ACE::Parameters &>())
     .def(py::init<const std::string &, const std::vector<Eigen::MatrixXcd>&>())
+    .def(py::init<const std::string &>())
     .def(py::init([](const Eigen::MatrixXcd & op){
        std::string str="";
        std::vector<Eigen::MatrixXcd> list(1, op);
