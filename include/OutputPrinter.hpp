@@ -53,6 +53,11 @@ public:
     clear();
     set_stream(outfile);
     output_Op=Output_Ops(list);
+  }  
+  OutputPrinter(const std::string &outfile){
+    clear();
+    set_stream(outfile);
+    full_densmat=true;
   }
   OutputPrinter(Parameters & param, int setdim=-1){
     setup(param, setdim);
