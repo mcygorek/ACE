@@ -3,6 +3,7 @@
 #include "ProcessTensorStream.hpp"
 #include "ProcessTensorBuffer.hpp"
 #include "ProcessTensorRepeat.hpp"
+#include "PT_uniACE.hpp"
 #include "PT_infinite.hpp"
 #include <iostream>
 #include "otimes.hpp"
@@ -168,8 +169,9 @@ void ProcessTensorForwardList::setup2(Parameters &param, std::vector<std::shared
   bool use_Gaussian_select = param.get_as_bool("use_Gaussian_select",false);
   bool use_Gaussian = param.get_as_bool("use_Gaussian",use_Gaussian_fw|use_Gaussian_log|use_Gaussian_select|use_Gaussian_repeat|use_Gaussian_infinite);
 
-  int intermediate_sweep_n = param.get_as_size_t("intermediate_sweep_n", 0);
+  bool use_uniACE = param.get_as_bool("use_uniACE");
 
+  int intermediate_sweep_n = param.get_as_size_t("intermediate_sweep_n", 0);
   int final_sweep_n = param.get_as_size_t("final_sweep_n", 0);
 
   if(initial_PT!="" && use_Gaussian){
@@ -258,6 +260,12 @@ void ProcessTensorForwardList::setup2(Parameters &param, std::vector<std::shared
       int n_mem_est=diagBB.estimate_memory_length(tgrid.n_mem, tgrid.dt, mem_threshold, true);
       tgrid.n_mem=n_mem_est;
     }
+    int n_shift=param.get_as_int("DiagBB_n_shift",-1); 
+    if(n_shift>=0){
+      diagBB.shift_precalc(n_shift);
+      tgrid.n_mem-=n_shift;
+      std::cout<<"DiagBB_n_shift="<<n_shift<<" tgrid.n_mem="<<tgrid.n_mem<<std::endl;
+    }
   }
 
   if(use_Gaussian_infinite){
@@ -271,6 +279,12 @@ void ProcessTensorForwardList::setup2(Parameters &param, std::vector<std::shared
     ProcessTensorRepeat *PTR = dynamic_cast<ProcessTensorRepeat*>(list.back().get()); 
     PTR->set_specs(write_PT, buffer_blocksize);
     PTR->calculate(diagBB, tgrid, trunc, dict_zero, verbosity, !use_Gaussian_repeat_JP);
+
+  }else if(use_uniACE){
+    std::cout<<"using: uni_ACE"<<std::endl;
+    PT_uniACE uniACE(mpgs, tgrid, trunc, dict_zero);
+    list.push_back(uniACE.get_PTR(write_PT));
+  //  ProcessTensorRepeat *PTR = dynamic_cast<ProcessTensorRepeat*>(list.back().get());
   }else{  // use blockwise processing of PT elements, i.e. ProcessTensorBuffer:
 
     //need temporary files when blocksize finite:
@@ -304,7 +318,7 @@ void ProcessTensorForwardList::setup2(Parameters &param, std::vector<std::shared
       }else{
         PTB->set_from_DiagBB(diagBB, tgrid, trunc, dict_zero, verbosity);
       }
-    }else{
+    }else{ //finite-size ACE-like methods:
       //read/set initial PT:
       bool use_combine_tree = param.get_as_bool("use_combine_tree");
       bool use_combine_tree_randomized = param.get_as_bool("use_combine_tree_randomized");

@@ -49,6 +49,10 @@ public:
   void read_K_int(const std::string &fname, int n_max, double dt);
  
   void precalc_FFT(int n_max, double dt);
+  
+  //Let tensor network start with node b[n_shift] instead b[0];
+  //First element shall yield an identity (because it must be diagonal) 
+  void shift_precalc(int n_shift);
 
     // Find memory time: relative to maximal (max) value around K(t=0).
     // K can be oscillatory. So, after finding first |K| < threshold * max, go at least 2 twice as long to see if values larger than that are found

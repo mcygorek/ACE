@@ -23,11 +23,13 @@ public:
   void check_dimensions()const;
   
   virtual void print_status(std::ostream &os=std::cout)const;
+  virtual void print_dims(const std::string &fname)const;
 
   void update_rho(int step);
 
   void propagate(Propagator &prop, const InfluenceFunctional &IF, 
-            double t, double dt, int step, RankCompressor *compressor,
+            double t, double dt, int step, 
+            std::shared_ptr<RankCompressor> &compressor,
             bool use_symmetric_Trotter);
 
   AugmentedDensityMatrix(int n_max, int Ngrps, const Eigen::MatrixXcd &rho_);

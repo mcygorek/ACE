@@ -21,6 +21,12 @@ namespace ACE{
   void AugmentedDensityMatrix_MPS::print_status(std::ostream &os)const{
     os<<"ADM MPS max_dim: "<<ten.get_max_dim()<<std::endl;
   }
+  void AugmentedDensityMatrix_MPS::print_dims(const std::string &fname)const{
+    std::ofstream ofs(fname);
+    for(size_t l=0; l<ten.size(); l++){
+      ofs<<ten.a[l].dim_d1<<" "<<ten.a[l].dim_d2<<std::endl;
+    }
+  }
 
   void AugmentedDensityMatrix_MPS::update_rho(int step){
     int n_mem_eff=ten.get_rank();
@@ -80,7 +86,8 @@ namespace ACE{
 
   void AugmentedDensityMatrix_MPS::propagate(Propagator &prop, 
            const InfluenceFunctional_Vector &IF, double t, double dt, 
-           int step, RankCompressor *compressor, bool use_symmetric_Trotter){
+           int step, std::shared_ptr<RankCompressor> &compressor, 
+           bool use_symmetric_Trotter){
 
     check_dimensions();
     int n_max=get_n_max();

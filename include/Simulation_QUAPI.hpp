@@ -13,7 +13,7 @@
 #include "SpectralDensity_Selector.hpp"
 #include "RankCompressor_Selector.hpp"
 #include "RankCompressor_SVD.hpp"
-#include "Smart_Ptr.h"
+#include  <memory>
 #include "TimeGrid.hpp"
 #include "OutputPrinter.hpp"
 
@@ -31,7 +31,7 @@ public:
   Output_Ops output_Op;
   FT_Output FTO;
 
-  Smart_Ptr<RankCompressor> compressor;
+  std::shared_ptr<RankCompressor> compressor;
 
   inline void add_output_Op(const Eigen::MatrixXcd &op){
     output_Op.add(op);
@@ -47,36 +47,39 @@ public:
   inline void set_results(int step, double t, const Eigen::MatrixXcd &rho, const Eigen::MatrixXcd *H=NULL){
     results.set(step, t, output_Op, rho, H);
   }
-  inline void set_compressor(Smart_Ptr<RankCompressor>  &compr_ptr){
+  inline void set_compressor(std::shared_ptr<RankCompressor>  &compr_ptr){
     compressor=compr_ptr;
   }
   inline void set_threshold(double threshold){
-    compressor=Smart_Ptr<RankCompressor>(new RankCompressor_SVD(threshold));
+    compressor=std::shared_ptr<RankCompressor>(new RankCompressor_SVD(threshold));
   }
-  inline void set_compressor(RankCompressor *compr_ptr){
-    compressor=compr_ptr;
-  }
+  //inline void set_compressor(RankCompressor *compr_ptr){
+  //  compressor=compr_ptr;
+  //}
 
   void run_return(Propagator &prop, const INFLUENCE &IF, 
            double ta, double dt, double te, Eigen::MatrixXcd &rho, 
-           bool silent, bool use_symmetric_Trotter);
+           bool silent, bool use_symmetric_Trotter,
+           const std::string & print_dims_file="", int print_dims_step=-1);
   
   inline void run(Propagator &prop, const INFLUENCE &IF, 
            double ta, double dt, double te, Eigen::MatrixXcd rho, 
-           bool silent, bool use_symmetric_Trotter){
-     run_return(prop, IF, ta, dt, te, rho, silent, use_symmetric_Trotter);
+           bool silent, bool use_symmetric_Trotter,
+           const std::string & print_dims_file="", int print_dims_step=-1){
+     run_return(prop, IF, ta, dt, te, rho, silent, use_symmetric_Trotter, print_dims_file, print_dims_step);
   }
   inline void run_silent(Propagator &prop, const INFLUENCE &IF, 
-                  double ta, double dt, double te, const Eigen::MatrixXcd &rho,
-                  bool use_symmetric_Trotter){
-    run(prop, IF, ta, dt, te, rho, true, use_symmetric_Trotter);
+           double ta, double dt, double te, const Eigen::MatrixXcd &rho,
+           bool use_symmetric_Trotter,
+           const std::string & print_dims_file="", int print_dims_step=-1){
+    run(prop, IF, ta, dt, te, rho, true, use_symmetric_Trotter, print_dims_file, print_dims_step);
   }
   void run_nobath(Propagator &prop, 
            double ta, double dt, double te, Eigen::MatrixXcd rho, 
            bool silent=false);
 
   //More "modern" version in line with Simulation_PT
-  void run(Propagator &prop, const INFLUENCE &IF, const Eigen::MatrixXcd &rho, const TimeGrid &tgrid, OutputPrinter &printer, bool use_symmetric_Trotter=true, bool silent=true);  
+  void run(Propagator &prop, const INFLUENCE &IF, const Eigen::MatrixXcd &rho, const TimeGrid &tgrid, OutputPrinter &printer, bool use_symmetric_Trotter=true, bool silent=true, const std::string & print_dims_file="", int print_dims_step=-1);  
 
   inline void print_results(const std::string &fname)const{
     results.print(fname);

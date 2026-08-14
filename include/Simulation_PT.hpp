@@ -14,6 +14,8 @@ class Simulation_PT{
 public:
   bool print_timesteps;
   bool print_final_maxdim;
+  std::string print_dims_file;
+  int print_dims_step;
   bool propagate_alternate;
   bool use_symmetric_Trotter;
 

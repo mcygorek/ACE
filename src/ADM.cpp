@@ -22,6 +22,10 @@ namespace ACE{
   
   void AugmentedDensityMatrix::print_status(std::ostream &os)const{
   }
+  void AugmentedDensityMatrix::print_dims(const std::string &fname)const{
+    std::ofstream ofs(fname);
+    ofs<<ten.get_total_size()<<std::endl;
+  }
 
   void AugmentedDensityMatrix::update_rho(int step){
     //Note: initialization (step 0): n_mem_eff=1
@@ -50,7 +54,8 @@ namespace ACE{
 
   void AugmentedDensityMatrix::propagate(
                  Propagator &prop, const InfluenceFunctional &IF, 
-                 double t, double dt, int step, RankCompressor *compressor,
+                 double t, double dt, int step, 
+                 std::shared_ptr<RankCompressor> &compressor,
                  bool use_symmetric_Trotter){
     
 //It's not completely straightforward to define a QUAPI algorithm with symmetric Trotter splitting. This is because we have to connect to past points between time steps. We solve this by applying only a half-step M only in the first time step and use full steps for all other steps. The missing half-steps are added after update_rho(..). This implies that one should never call update_rho(..) from any other function than this one.

@@ -41,6 +41,8 @@ int main(int args, char** argv){
   bool silent=param.get_as_bool("silent",false);
   bool use_bath=param.get_as_bool("use_bath", true);
   bool use_symmetric_Trotter=param.get_as_bool("use_symmetric_Trotter", true);
+  std::string print_dims_file=param.get_as_string("print_dims_file","");
+  int  print_dims_step=param.get_as_int("print_dims_step",-1);
   
   std::cout<<"use_symmetric_Trotter=";
   if(use_symmetric_Trotter){std::cout<<"true";}else{std::cout<<"false";}
@@ -114,7 +116,7 @@ int main(int args, char** argv){
   if(use_bath==false){
     sim.run_nobath(fprop, tgrid.ta, tgrid.dt, tgrid.get_t_tot(), initial_rho, silent);
   }else{
-    sim.run(fprop, IF, tgrid.ta, tgrid.dt, tgrid.get_t_tot(), initial_rho, silent, use_symmetric_Trotter);
+    sim.run(fprop, IF, tgrid.ta, tgrid.dt, tgrid.get_t_tot(), initial_rho, silent, use_symmetric_Trotter, print_dims_file, print_dims_step);
   }
 
   sim.print_results(outfile);

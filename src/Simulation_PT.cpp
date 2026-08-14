@@ -270,6 +270,18 @@ Eigen::MatrixXcd Simulation_PT::run_std(
       exit(1);
     }
   }
+  // print inner bonds of last PT-MPO:
+  if(PT.size()>0 && print_dims_file!=""){
+    std::ofstream ofs(print_dims_file);
+    PT.list.back()->reset();
+    for(int l=0; l<tgrid.n_tot; l++){
+       ofs<<PT.list.back()->current()->M.dim_d1<<" " \
+          <<PT.list.back()->current()->M.dim_d2<<std::endl;
+       if(l<=tgrid.n_tot)PT.list.back()->load_next();
+    }
+    PT.list.back()->reset();
+  }
+
 
   Eigen::MatrixXcd state(NL, 1);
   state.col(0)=H_Matrix_to_L_Vector(initial_rho);
@@ -459,10 +471,12 @@ std::cout<<"t="<<tgrid.get_t(l)<<": |Liou-reconstructed|="<<(Liou-LME.construct_
 
 void Simulation_PT::setup(Parameters & param){
   print_timesteps=param.get_as_bool("print_timesteps",false);
-  propagate_alternate=param.get_as_bool("propagate_alternate",false);
   print_final_maxdim=param.get_as_bool("print_final_maxdim",false);
-  use_symmetric_Trotter=param.get_as_bool("use_symmetric_Trotter",true);
+  print_dims_file=param.get_as_string("print_dims_file","");
+  print_dims_step=param.get_as_int("print_dims_step",-1);
 
+  propagate_alternate=param.get_as_bool("propagate_alternate",false);
+  use_symmetric_Trotter=param.get_as_bool("use_symmetric_Trotter",true);
 
   //control use of Transfer Tensors
   TimeGrid tgrid(param);

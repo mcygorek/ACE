@@ -20,7 +20,8 @@ template <typename STATE, typename INFLUENCE>
   void Simulation_Template<STATE, INFLUENCE>::
     run_return(Propagator &prop, const INFLUENCE &IF, 
            double ta, double dt, double te, Eigen::MatrixXcd &rho, 
-           bool silent, bool use_symmetric_Trotter){
+           bool silent, bool use_symmetric_Trotter, 
+           const std::string & print_dims_file, int print_dims_step){
 
     prop.check_dimensions();
     if(rho.cols()!=rho.rows()){
@@ -48,7 +49,10 @@ template <typename STATE, typename INFLUENCE>
       double t_in=ta+(step-1)*dt;
       ADM.propagate(prop, IF, t_in, dt, step, compressor, use_symmetric_Trotter);
       if(!silent)ADM.print_status(std::cout);
-   
+      if(print_dims_file!="" && step-1==print_dims_step){
+        ADM.print_dims(print_dims_file);
+      }
+
       Hamil=prop.get_Htot(t_in);
       set_results(step, t_in+dt, ADM.rho, &Hamil);
 
@@ -61,7 +65,8 @@ template <typename STATE, typename INFLUENCE>
   void Simulation_Template<STATE, INFLUENCE>::
     run(Propagator &prop, const INFLUENCE &IF, const Eigen::MatrixXcd &rho, 
         const TimeGrid &tgrid, OutputPrinter &printer, 
-        bool use_symmetric_Trotter, bool silent){
+        bool use_symmetric_Trotter, bool silent,
+        const std::string & print_dims_file, int print_dims_step){
 
     prop.check_dimensions();
     if(rho.cols()!=rho.rows()){
@@ -102,6 +107,9 @@ std::cout<<"printer.output_Op.size()="<<printer.output_Op.size()<<std::endl;
       double t_in=tgrid.ta+(step-1)*tgrid.dt;
       ADM.propagate(prop, IF, t_in, tgrid.dt, step, compressor, use_symmetric_Trotter);
       if(!silent)ADM.print_status(std::cout);
+      if(print_dims_file!="" && step-1==print_dims_step){
+        ADM.print_dims(print_dims_file);
+      }
    
       printer.print(step, t_in+tgrid.dt, H_Matrix_to_L_Vector(ADM.rho));
       printer.print_eigenstate_occupations(t_in+tgrid.dt, prop.get_Htot(t_in+tgrid.dt), ADM.rho);

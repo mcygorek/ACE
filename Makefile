@@ -94,7 +94,7 @@ EXPERIMENTAL += TC_overlap TC_PT TC_join TC_TinvTcombine test_CompressionTree
 EXPERIMENTAL += test_FFT estimate_memory test_split
 EXPERIMENTAL += test_buffer test_GaussNewton fit_K_single_mode 
 EXPERIMENTAL += test_MeierTannor test_DrudeLorentz
-EXPERIMENTAL += extract_effective_propagator DynamicalMap PT_traceout
+EXPERIMENTAL += extract_effective_propagator DynamicalMap PT_traceout CTEMPO
 EXPERIMENTAL += test_HermitianLiouvilleBasis test_Largest_EV test_Largest_EV2
 EXPERIMENTAL += test_QUAPI_vs_PT test_RandomizedCompression
 

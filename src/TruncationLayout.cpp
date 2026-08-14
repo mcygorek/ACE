@@ -11,9 +11,9 @@ template <typename T> void TruncationLayout_T<T>::print_info(std::ostream &ofs)c
   ofs<<" base_maxk="<<base_maxk;
   ofs<<" base_mink="<<base_mink;
   ofs<<" keep="<<keep;
-  ofs<<" forward_threshold_ratios="<<forward_threshold_ratio;
-  ofs<<" backward_threshold_ratios="<<backward_threshold_ratio;
-  ofs<<" select_threshold_ratios="<<select_threshold_ratio;
+  ofs<<" forward_threshold_ratio="<<forward_threshold_ratio;
+  ofs<<" backward_threshold_ratio="<<backward_threshold_ratio;
+  ofs<<" select_threshold_ratio="<<select_threshold_ratio;
   ofs<<" threshold_range_factor="<<threshold_range_factor;
   ofs<<" QR_after_combine=";if(use_QR)ofs<<"true";else ofs<<"false";
   if(base_Tikhonov>0.)ofs<<" Tikhonov="<<base_Tikhonov;

@@ -343,6 +343,13 @@ std::cout<<"DiagBB::read_K_int called with '"<<fname<<"', "<<n_max<<", "<<dt<<st
         if(Ndiscr<1e6)Ndiscr=1e6;
       }
       precalc_FFT(n_mem, tgrid.dt);
+// The following is moved to the calling fuction because n_mem need adjusting
+/*      int n_shift=param.get_as_int("DiagBB_n_shift",-1); 
+      if(n_shift>=0){
+        std::cout<<"DiagBB_n_shift="<<n_shift<<std::endl;
+        shift_precalc(n_shift);
+      }
+*/
     }
    }
 
@@ -516,4 +523,22 @@ std::complex<double>(DiagBB::get_coth(beta,E_shift,w)*cos(w*tau) , -sin(w*tau) )
     delete[] out2_array;
   }
 
+  void DiagBB::shift_precalc(int n_shift){
+    if(n_shift<0){
+      std::cerr<<"DiagBB::shift_precalc: n_shift<0!"<<std::endl;
+      throw DummyException();
+    }
+    if(n_shift>=K_precalc.size()){
+      std::cerr<<"DiagBB::shift_precalc: n_shift>=K_recalc.size()!"<<std::endl;
+      throw DummyException();
+    }
+    //replace K[0] by 0:
+    K_precalc[0]=0;
+    //shift others:
+    for(int l=1; l<K_precalc.size()-n_shift; l++){
+      K_precalc[l]=K_precalc[l+n_shift];
+    }
+    //resize:
+    K_precalc.resize(K_precalc.size()-n_shift);
+  }
 }//namespace

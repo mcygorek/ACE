@@ -1,5 +1,5 @@
 #include "RankCompressor_Selector.hpp"
-#include "Smart_Ptr.h"
+#include <memory>
 #include "RankCompressorList.hpp"
 #include "Parameters.hpp"
 
