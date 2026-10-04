@@ -3,7 +3,6 @@
 #include "Simulation_PT.hpp"
 #include "LiouvilleTools.hpp"
 #include "DummyException.hpp"
-#include <memory>
 
 
 namespace ACE {

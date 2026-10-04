@@ -7,7 +7,7 @@
 #include "ReducedLiouvilleBasis.hpp"
 #include "MPS_Matrix.hpp"
 #include "EnvironmentOperators.hpp"
-#include <memory>
+#include "PCH.hpp"
 
 namespace ACE{
 

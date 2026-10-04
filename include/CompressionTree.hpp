@@ -1,13 +1,11 @@
 #ifndef ACE_COMPRESSIONTREE_DEFINED_H
 #define ACE_COMPRESSIONTREE_DEFINED_H
 
-#include <Eigen/Dense>
+#include "PCH.hpp"
 #include "SelectIndices.hpp"
 #include "DummyException.hpp"
 #include "BinaryReader.hpp"
 #include "PassOn.hpp"
-#include <iostream>
-#include <memory>
 
 
 namespace ACE{

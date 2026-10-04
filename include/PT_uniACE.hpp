@@ -1,7 +1,6 @@
 #ifndef ACE_PT_UNIACE_DEFINED_H
 #define ACE_PT_UNIACE_DEFINED_H
 
-#include <memory>
 #include "ProcessTensorForward.hpp"
 #include "ProcessTensorRepeat.hpp"
 #include "ModePropagatorGenerator.hpp"

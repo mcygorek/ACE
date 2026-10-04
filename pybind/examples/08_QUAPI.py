@@ -74,7 +74,7 @@ comptime_QUAPI = perf_stop-perf_start
 # TEMPO simulation
 perf_start = perf_counter()
 
-thr = 1e-7
+thr = 1e-6
 plist_TEMPO =  [f'dt {dt}']
 plist_TEMPO += [f'te {te}']
 plist_TEMPO += [f't_mem {t_memQ}']
@@ -85,14 +85,38 @@ plist_TEMPO += [f'Boson_omega_max 10']
 plist_TEMPO += [f'Boson_temperature 4.2']
 param_TEMPO =Parameters(plist_TEMPO)
 
-IFQ = InfluenceFunctional_TEMPO(param_TEMPO)
+diagBB = DiagBB(param_TEMPO)
 
 outpT  = OutputPrinter(KetBra(1,1,2))
-Simulation_TEMPO(fprop, IFQ, KetBra(0,0,2), TimeGrid(0, te, dt), outpT, thr)
+Simulation_TEMPO(fprop, diagBB, KetBra(0,0,2), TimeGrid(param_TEMPO), outpT, thr)
 (times_TEMPO, data_TEMPO) = outpT.extract()
 
 perf_stop = perf_counter()
 comptime_TEMPO = perf_stop-perf_start
+
+
+# CTEMPO simulation
+perf_start = perf_counter()
+
+thr = 1e-6
+plist_CTEMPO =  [f'dt {dt}']
+plist_CTEMPO += [f'te {te}']
+plist_CTEMPO += [f't_mem {t_memQ}']
+plist_CTEMPO += [f'threshold {thr}']
+plist_CTEMPO += [f'use_Gaussian true']
+plist_CTEMPO += [f'Boson_J_type QDPhonon']
+plist_CTEMPO += [f'Boson_omega_max 10']
+plist_CTEMPO += [f'Boson_temperature 4.2']
+param_CTEMPO =Parameters(plist_CTEMPO)
+
+diagBB = DiagBB(param_CTEMPO)
+
+outpT  = OutputPrinter(KetBra(1,1,2))
+Simulation_CTEMPO(fprop, diagBB, KetBra(0,0,2), TimeGrid(param_CTEMPO), outpT, thr)
+(times_CTEMPO, data_CTEMPO) = outpT.extract()
+
+perf_stop = perf_counter()
+comptime_CTEMPO = perf_stop-perf_start
 
 # Now, plot the results:
 import matplotlib.pyplot as plt
@@ -101,12 +125,16 @@ ax.set(xlabel="Time (ps)")
 ax.set(ylabel="Occupations")
 ax.plot(times_PT, data_PT[:,0].real, 'x', label='PT')
 ax.plot(times_QUAPI, data_QUAPI[:,0].real, '+', label='QUAPI')
-ax.plot(times_TEMPO, data_TEMPO[:,0].real, label='TEMPO')
+ax.plot(times_TEMPO, data_TEMPO[:,0].real, 'o', mfc='None', label='TEMPO')
+ax.plot(times_CTEMPO, data_CTEMPO[:,0].real, label='CTEMPO')
 ax.legend(loc="upper right")
 plt.show()
 
-
-
-print(f'Time for PT-MPO simulation: {comptime_PT}s')
-print(f'Time for QUAPI simulation: {comptime_QUAPI}s')
-print(f'Time for TEMPO simulation: {comptime_TEMPO}s')
+PTerror=np.max(np.abs(data_PT[:,0].real-data_QUAPI[:,0].real))
+QUAPIerror=np.max(np.abs(data_QUAPI[:,0].real-data_QUAPI[:,0].real))
+TEMPOerror=np.max(np.abs(data_TEMPO[:,0].real-data_QUAPI[:,0].real))
+CTEMPOerror=np.max(np.abs(data_CTEMPO[:,0].real-data_QUAPI[:,0].real))
+print(f'PT-MPO:  computation time: {comptime_PT}s, error: {PTerror}')
+print(f'QUAPI:   computation time: {comptime_QUAPI}s, error: {QUAPIerror}')
+print(f'TEMPO:   computation time: {comptime_TEMPO}s, error: {TEMPOerror}')
+print(f'CTEMPO:  computation time: {comptime_CTEMPO}s, error: {CTEMPOerror}')

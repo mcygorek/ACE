@@ -1,7 +1,7 @@
 #ifndef ABSTRACT_PROPAGATOR_DEFINED_H
 #define ABSTRACT_PROPAGATOR_DEFINED_H
 
-#include <Eigen/Dense>
+#include "PCH.hpp"
 
 namespace ACE{
 

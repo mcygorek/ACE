@@ -1,9 +1,6 @@
 #ifndef FREE_PROPAGATOR_DEFINED_H
 #define FREE_PROPAGATOR_DEFINED_H
 
-#include <vector>
-#include <iosfwd>
-#include "Eigen_fwd.hpp"
 #include "Propagator.hpp"
 #include "Parameters.hpp"
 #include "TimedepMatrix.hpp"
@@ -71,6 +68,8 @@ public:
 
   //get Dimension of Hamiltonian
   virtual int get_dim()const;
+  // true if L_S has to be 0
+  virtual bool does_nothing()const;
   
   //Either set dimension with a corresponding (zero) Hamiltonian matrix, or make sure adding a new term is consistent with existing dimension
   int set_dim(int dim, const std::string &error_comment="");

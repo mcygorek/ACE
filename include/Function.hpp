@@ -2,9 +2,7 @@
 #ifndef FUNCTION_DEFINED_H_
 #define FUNCTION_DEFINED_H_
 
-#include <complex>
-#include <memory>
-#include <fstream>
+#include "PCH.hpp"
 
 namespace ACE{
 

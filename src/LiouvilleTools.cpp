@@ -1,8 +1,5 @@
 #include "PCH.hpp"
 #include "LiouvilleTools.hpp"
-#include <Eigen/Core>
-#include <vector>
-#include <iostream>
 #include "otimes.hpp"
 #include "CheckMatrix.hpp"
 #include "ProductSpaceIndex.h"

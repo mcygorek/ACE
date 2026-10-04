@@ -1,9 +1,8 @@
 #ifndef ACE_EDM_FILTER_DEFINED_H
 #define ACE_EDM_FILTER_DEFINED_H
 
-#include <complex>
+#include "PCH.hpp"
 #include "Parameters.hpp"
-#include <iostream>
 
 namespace ACE{
 

@@ -1,7 +1,6 @@
 #ifndef RANK_COMPRESSOR_SELECTOR_DEFINED_H
 #define RANK_COMPRESSOR_SELECTOR_DEFINED_H
 
-#include  <memory>
 #include "RankCompressor.hpp"
 
 namespace ACE{

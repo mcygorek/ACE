@@ -1,8 +1,7 @@
 #ifndef MODE_PROPAGATOR_GENERATOR_DEFINED_H
 #define MODE_PROPAGATOR_GENERATOR_DEFINED_H
 
-#include <vector>
-#include "Eigen_fwd.hpp"
+#include "PCH.hpp"
 #include "ModePropagator.hpp"
 #include "Potential1D.hpp"
 #include "Parameters.hpp"

@@ -3,9 +3,6 @@
 #include "Operators_Boson.hpp"
 #include "ReducedLiouvilleBasis.hpp"
 #include "LiouvilleTools.hpp"
-#include <vector>
-#include <Eigen/Dense>
-#include <iostream>
 
 /**  Reduce to the following basis:
      - start with initial state vector (initial mode density matrix)

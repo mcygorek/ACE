@@ -1,8 +1,7 @@
 #ifndef MPG_DISCRETIZATION_DEFINED_H
 #define MPG_DISCRETIZATION_DEFINED_H
 
-#include <vector>
-#include <iostream>
+#include "PCH.hpp"
 #include "EnergyRange.hpp"
 #include "SpectralDensity_Selector.hpp"
 

@@ -1,7 +1,7 @@
 #ifndef ACE_PT_INFINITE_DEFINED_H
 #define ACE_PT_INFINITE_DEFINED_H
 
-#include <memory>
+#include "PCH.hpp"
 #include "ProcessTensorForward.hpp"
 #include "Parameters.hpp"
 

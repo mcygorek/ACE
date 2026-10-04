@@ -1,5 +1,4 @@
 #include "CompressionTree.hpp"
-#include <memory>
 
 namespace ACE{
 void CompressionTree::combine_select(std::shared_ptr<CompressionTree> & other, 

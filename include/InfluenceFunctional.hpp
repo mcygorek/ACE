@@ -1,12 +1,10 @@
 #ifndef INFLUENCE_FUNCTIONAL_DEFINED_H
 #define INFLUENCE_FUNCTIONAL_DEFINED_H
 
-#include <vector>
-#include <Eigen/Core>
+#include "PCH.hpp"
 #include "SpectralDensity.hpp"
 #include "Tensor_Dense.hpp"
 #include "DiagBB.hpp"
-#include <fstream>
 
 namespace ACE{
 

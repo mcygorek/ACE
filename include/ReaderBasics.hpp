@@ -2,15 +2,7 @@
 #ifndef READER_BASICS_DEFINED_H
 #define READER_BASICS_DEFINED_H
 
-#include <iosfwd>
-#include <string>
-//#include <iostream>
-#include <fstream>
-//#include <sstream>
-//#include <string>
-#include <vector>
-#include <utility>
-#include <memory>
+#include "PCH.hpp"
 
 
 /** 

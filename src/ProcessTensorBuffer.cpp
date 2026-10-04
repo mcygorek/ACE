@@ -131,6 +131,10 @@ void ProcessTensorBuffer::clear(){
     delete_files();
   }
   n_tot=0;
+
+  TTree_at=-1;
+  TTree.reset();
+  TTree_inv.reset();
 }
 void ProcessTensorBuffer::push_back(const ProcessTensorElement &templ){
   bool debug=false;
@@ -641,14 +645,14 @@ void ProcessTensorBuffer::set_CompressionTree_at(int n){
 }
 
 
-void ProcessTensorBuffer::sweep_forward(const TruncatedSVD &trunc, 
+double ProcessTensorBuffer::sweep_forward(const TruncatedSVD &trunc, 
                                         int verbosity,
                                         int range_start, int range_end){
 
   if(range_start<0)range_start=0;
   if(range_end<0||range_end>n_tot)range_end=n_tot;
   if(range_start==range_end){
-     return; 
+     return 1; 
   }
   if(range_start>range_end){
     std::cerr<<"ProcessTensorBuffer::sweep_forward: range_start>range_end!"<<std::endl; 
@@ -660,6 +664,7 @@ void ProcessTensorBuffer::sweep_forward(const TruncatedSVD &trunc,
   
   int maxdim_in=0, maxdim_out=0, maxdim_at=0;
   PassOn pass_on;
+  double passed_on_weight=1;
   for(int n=range_start; n<range_end; n++){
     ProcessTensorElement & element = get(n, ForwardPreload);
     if(n==range_start){
@@ -669,7 +674,7 @@ void ProcessTensorBuffer::sweep_forward(const TruncatedSVD &trunc,
     if(element.M.dim_d2>maxdim_in)maxdim_in=element.M.dim_d2;
 
     sweep_forward_pre(n, TTree_at, TTree, TTree_inv, pass_on);
-    element.sweep_forward(trunc, pass_on, (n==range_end-1));
+    passed_on_weight = element.sweep_forward(trunc, pass_on, (n==range_end-1));
     sweep_forward_post(n, TTree_at, TTree, TTree_inv, pass_on);
 
     if(element.M.dim_d2>maxdim_out){
@@ -678,15 +683,17 @@ void ProcessTensorBuffer::sweep_forward(const TruncatedSVD &trunc,
     }
   }
   if(verbosity>0)std::cout<<"Maxdim at n="<<maxdim_at<<": "<<maxdim_in<<" -> "<<maxdim_out<<std::endl;
+//  if(verbosity>0)std::cout<<"Passed-on weight="<<passed_on_weight<<std::endl;
+  return passed_on_weight;
 }
-void ProcessTensorBuffer::sweep_backward(const TruncatedSVD &trunc,
+double ProcessTensorBuffer::sweep_backward(const TruncatedSVD &trunc,
                                         int verbosity,
                                         int range_start, int range_end){
 
   if(range_start<0)range_start=0;
   if(range_end<0||range_end>n_tot)range_end=n_tot;
   if(range_start==range_end){
-     return; 
+     return 1.; 
   }
   if(range_start>range_end){
     std::cerr<<"ProcessTensorBuffer::sweep_backward: range_start>range_end!"<<std::endl; 
@@ -698,6 +705,7 @@ void ProcessTensorBuffer::sweep_backward(const TruncatedSVD &trunc,
   
   PassOn pass_on;
   int maxdim_in=0, maxdim_out=0, maxdim_at=0;
+  double passed_on_weight=1;
   for(int n=range_end-1; n>=range_start; n--){
     ProcessTensorElement & element = get(n, BackwardPreload);
     if(n==range_end-1){
@@ -708,7 +716,7 @@ void ProcessTensorBuffer::sweep_backward(const TruncatedSVD &trunc,
     if(element.M.dim_d1>maxdim_in)maxdim_in=element.M.dim_d1;
 
     sweep_backward_pre(n, TTree_at, TTree, TTree_inv, pass_on);
-    element.sweep_backward(trunc, pass_on, (n==range_start));
+    passed_on_weight = element.sweep_backward(trunc, pass_on, (n==range_start));
     sweep_backward_post(n, TTree_at, TTree, TTree_inv, pass_on);
 
     if(element.M.dim_d1>maxdim_out){
@@ -718,6 +726,8 @@ void ProcessTensorBuffer::sweep_backward(const TruncatedSVD &trunc,
   }
 
   if(verbosity>0)std::cout<<"Maxdim at n="<<maxdim_at<<": "<<maxdim_in<<" -> "<<maxdim_out<<std::endl;
+//  if(verbosity>0)std::cout<<"Passed-on weight="<<passed_on_weight<<std::endl;
+  return passed_on_weight;
 }
 
 void ProcessTensorBuffer::sweep_pair_forward(const TruncatedSVD &trunc, int verbosity){
@@ -1747,6 +1757,13 @@ void ProcessTensorBuffer::set_from_DiagBB(
     }
 
     sweep_intermediate_or_final_start_backward(trunc, line-1, stop_at_row-1, verbosity);
+#ifdef PRINT_DIMS_JP
+    if(line-1==PRINT_DIMS_JP){ std::ofstream ofs("print_dims_JP.dims");
+      for(int l=0; l<n_tot; l++){
+        ofs<<get(l, ForwardPreload).M.dim_d1<<" " \
+           <<get(l, ForwardPreload).M.dim_d2<<std::endl;  
+    } }
+#endif
 if(debug)std::cout<<"line: "<<line<<" done."<<std::endl;   
   }
   if(verbosity>0){std::cout<<"from_diagBB_finalizing"<<std::endl;}

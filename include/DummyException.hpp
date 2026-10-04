@@ -1,7 +1,7 @@
 #ifndef ACE_DUMMY_EXCEPTION_DEFINED_H
 #define ACE_DUMMY_EXCEPTION_DEFINED_H
 
-#include <exception>
+#include "PCH.hpp"
 
 namespace ACE{
 /* Dummy exception: 

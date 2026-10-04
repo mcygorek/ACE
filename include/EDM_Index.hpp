@@ -1,9 +1,7 @@
 #ifndef ACE_EDM_INDEX_DEFINED_H
 #define ACE_EDM_INDEX_DEFINED_H
 
-#include <vector>
-#include <cstdlib>
-#include <iostream>
+#include "PCH.hpp"
 
 namespace ACE {
 

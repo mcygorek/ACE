@@ -228,8 +228,8 @@ void ProcessTensorForwardList::setup2(Parameters &param, std::vector<std::shared
       int Nsys = InitialState(param).rho.rows();
 //      list.push_back(std::shared_ptr<ProcessTensorForward>(new ProcessTensorRepeat(Nsys)));
 //      temp_expand.push_back(ReadPT_struct());
-      list.push_back(std::shared_ptr<ProcessTensorForward>(new ProcessTensorRepeat(1)));
-      temp_expand.push_back(ReadPT_struct("",1,Nsys));
+//      list.push_back(std::shared_ptr<ProcessTensorForward>(new ProcessTensorRepeat(1)));
+//      temp_expand.push_back(ReadPT_struct("",1,Nsys));
     }
 
     add_PT(param);
@@ -329,7 +329,7 @@ void ProcessTensorForwardList::setup2(Parameters &param, std::vector<std::shared
 
       std::shared_ptr<CompressionTree> TTree;
       std::shared_ptr<CompressionTree> TTree_inv;
-      int TTree_at;
+      int TTree_at=-1;
       std::string TTree_filename;
       if(param.is_specified("calculate_CompressionTree")){
         TTree_filename = param.get_as_string_check("calculate_CompressionTree",0,0);
@@ -425,7 +425,8 @@ void ProcessTensorForwardList::propagate_select(Eigen::MatrixXcd & state, const 
 }
 */
 
-Eigen::VectorXcd ProcessTensorForwardList::get_rho_reduced(const Eigen::MatrixXcd & state){
+
+Eigen::VectorXcd ProcessTensorForwardList::get_closure(){
   if(done()){
     std::cerr<<"ProcessTensorForwardList::get_rho_reduced: 'done' was set!"<<std::endl;
     throw DummyException();
@@ -436,7 +437,10 @@ Eigen::VectorXcd ProcessTensorForwardList::get_rho_reduced(const Eigen::MatrixXc
   for(int i=0; i<(int)elements.size(); i++){
     closure = Vector_otimes(closure, elements[i]->closure);   
   }
-  return state * closure;
+  return closure;
+}
+Eigen::VectorXcd ProcessTensorForwardList::get_rho_reduced(const Eigen::MatrixXcd & state){
+  return state * get_closure();
 }
 
 std::vector<std::complex<double> > ProcessTensorForwardList::get_env_reduced(

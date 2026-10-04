@@ -2,9 +2,7 @@
 #ifndef ACE_LINDBLAD_MASTER_EQUATION_DEFINED_H
 #define ACE_LINDBLAD_MASTER_EQUATION_DEFINED_H
 
-#include <iostream>
-#include <Eigen/Eigenvalues>
-#include <vector>
+#include "PCH.hpp"
 #include "TimeGrid.hpp"
 
 namespace ACE{

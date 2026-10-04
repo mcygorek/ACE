@@ -1,8 +1,7 @@
 #ifndef MODE_PROPAGATOR_GENERATOR_BOSON_DEFINED_H
 #define MODE_PROPAGATOR_GENERATOR_BOSON_DEFINED_H
 
-#include <vector>
-#include <Eigen/Dense>
+#include "PCH.hpp"
 #include "ModePropagatorGenerator.hpp"
 #include "Function.hpp"
 

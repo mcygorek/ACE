@@ -1,9 +1,6 @@
 #ifndef ACE_BCF_DECOMPOSITION_DEFINED_H
 #define ACE_BCF_DECOMPOSITION_DEFINED_H
-#include <utility>
-#include <vector>
-#include <complex>
-#include <iostream>
+#include "PCH.hpp"
 	
 
 namespace ACE{

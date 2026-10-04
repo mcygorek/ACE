@@ -1,9 +1,7 @@
 #ifndef POWERURV_DEFINED_H_
 #define POWERURV_DEFINED_H_
 
-#include "Eigen_fwd.hpp"
-#include <iosfwd>
-#include <vector>
+#include "PCH.hpp"
 
 namespace ACE{
 

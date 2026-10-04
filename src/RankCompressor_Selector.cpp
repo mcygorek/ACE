@@ -1,5 +1,4 @@
 #include "RankCompressor_Selector.hpp"
-#include <memory>
 #include "RankCompressorList.hpp"
 #include "Parameters.hpp"
 

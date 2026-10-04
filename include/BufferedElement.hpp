@@ -1,6 +1,6 @@
 #ifndef ACE_BUFFERED_ELEMENT_DEFINED_H
 #define ACE_BUFFERED_ELEMENT_DEFINED_H
-#include <fstream>
+#include "PCH.hpp"
 
 namespace ACE{
 class BufferedElement{

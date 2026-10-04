@@ -1,8 +1,7 @@
 #ifndef ACE_MPG_SELECTOR_DEFINED_H
 #define ACE_MPG_SELECTOR_DEFINED_H
 
-#include <vector>
-#include <memory>
+#include "PCH.hpp"
 #include "ModePropagatorGenerator.hpp"
 
 namespace ACE{

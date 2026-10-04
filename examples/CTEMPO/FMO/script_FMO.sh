@@ -1,0 +1,82 @@
+#!/bin/bash
+LANG=US
+trap 'echo "Ctrl + C detected"; exit 1' INT
+
+
+CCTEMPO="CCTEMPO"    #use explicit path if CCTEMPO binary not in $PATH
+
+te=1
+dt=0.001
+T=77
+
+thr_list="3e-5 1e-5 6e-6 3e-6 1e-6"
+i_list=$(seq 0 1 6)
+
+for thr in $thr_list; do 
+  for i in $i_list; do
+    prefix=E${i}_T${T}_te${te}_dt${dt}_thr${thr}
+    echo $prefix
+    cat << EOF >${prefix}.param
+te $te 
+dt $dt
+threshold  $thr
+set_precision 12
+print_eigenstate_occupations  ${prefix}.eigs
+outfile                       ${prefix}.out
+N_sites 7
+initial_SX_eigenstate $i
+S0_add_Hamiltonian {200*wn*hbar*|1><1|_2}
+S1_add_Hamiltonian {320*wn*hbar*|1><1|_2}
+S2_add_Hamiltonian {  0*wn*hbar*|1><1|_2}
+S3_add_Hamiltonian {110*wn*hbar*|1><1|_2}
+S4_add_Hamiltonian {270*wn*hbar*|1><1|_2}
+S5_add_Hamiltonian {420*wn*hbar*|1><1|_2}
+S6_add_Hamiltonian {230*wn*hbar*|1><1|_2}
+S0S1_add_Hamiltonian {-87.7*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+S0S2_add_Hamiltonian {  5.5*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+S0S3_add_Hamiltonian { -5.9*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+S0S4_add_Hamiltonian {  6.7*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+S0S5_add_Hamiltonian {-13.7*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+S0S6_add_Hamiltonian { -9.9*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+S1S2_add_Hamiltonian { 30.8*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+S1S3_add_Hamiltonian {  8.2*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+S1S4_add_Hamiltonian {  0.7*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+S1S5_add_Hamiltonian { 11.8*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+S1S6_add_Hamiltonian {  4.3*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+S2S3_add_Hamiltonian {-53.5*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+S2S4_add_Hamiltonian { -2.2*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+S2S5_add_Hamiltonian { -9.6*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+S2S6_add_Hamiltonian {  6.0*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+S3S4_add_Hamiltonian {-70.7*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+S3S5_add_Hamiltonian {-17.0*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+S3S6_add_Hamiltonian {-63.3*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+S4S5_add_Hamiltonian { 81.1*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+S4S6_add_Hamiltonian { -1.3*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+S5S6_add_Hamiltonian { 39.7*wn*hbar*(|0><1|_2 otimes |1><0|_2 + |1><0|_2 otimes |0><1|_2)}
+#print_initial_eigenvectors FMO.eigs
+S0_Boson_J_from_file J_structured.dat
+S0_Boson_omega_max  1000
+S0_Boson_temperature  $T
+S1_env_sameas_S 0
+S2_env_sameas_S 0
+S3_env_sameas_S 0
+S4_env_sameas_S 0
+S5_env_sameas_S 0
+S6_env_sameas_S 0
+S0_add_Output  {|1><1|_2}
+S1_add_Output  {|1><1|_2}
+S2_add_Output  {|1><1|_2}
+S3_add_Output  {|1><1|_2}
+S4_add_Output  {|1><1|_2}
+S5_add_Output  {|1><1|_2}
+S6_add_Output  {|1><1|_2}
+EOF
+
+  /usr/bin/time -v $CCTEMPO ${prefix}.param 2>&1 |tee ${prefix}.debug
+
+  #make compatible for comparison with reference results
+  nlines=$(wc -l ${prefix}.eigs |cut -d' ' -f 1)
+  cat ${prefix}.eigs | awk '{print $1*1000, $('$i'+2)} NR=='$nlines'-1{exit}' > ${prefix}.cmp
+  done 
+done 
+

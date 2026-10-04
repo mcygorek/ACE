@@ -1,10 +1,5 @@
 #include "ApproxSVD.hpp"
-#include <iostream>
-#include <Eigen/Dense>
-#include <Eigen/src/misc/RealSvd2x2.h>
-#include <cstdlib>
-#include <vector>
-#include <algorithm>
+//#include <Eigen/src/misc/RealSvd2x2.h>
 
 namespace ACE{
 

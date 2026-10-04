@@ -4,8 +4,6 @@
 
 #include "ModePropagatorGenerator.hpp"
 #include "ModePropagatorGenerator_SingleModeFromFile.hpp"
-#include <vector>
-#include <Eigen/Dense>
 
 namespace ACE{
 

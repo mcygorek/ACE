@@ -2,8 +2,6 @@
 #define ACE_PROCESS_TENSOR_ELEMENT_ACCESSOR_DEFINED_H
 
 #include "MPS_Matrix.hpp"
-#include "Eigen_fwd.hpp"
-#include <vector>
 #include <tuple>
 #include "IF_OD_Dictionary.hpp"
 #include "SelectIndices.hpp"

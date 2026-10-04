@@ -3,9 +3,6 @@
 #include "Pulse_Selector.hpp"
 #include "Pulse.hpp"
 #include "TimedepMatrix.hpp"
-#include <Eigen/Core>
-#include <unsupported/Eigen/MatrixFunctions>
-#include <vector>
 #include "Propagator.hpp"
 #include "Parameters.hpp"
 #include "Operators.hpp"
@@ -22,6 +19,18 @@ namespace ACE{
   int FreePropagator::get_dim()const{
     return const_H.rows();
   }
+  //returns true if L_S has to be 0
+  bool FreePropagator::does_nothing()const{
+    if(Lindbladians.size()>0)return false;
+    if(timedep_H.size()>0)return false;
+    if(timedep_H_forward.size()>0)return false;
+    if(timedep_H_backward.size()>0)return false;
+    if(multitime_op.size()>0)return false;
+    if(const_H.norm()>1e-15)return false;
+    if(nonH.norm()>1e-15)return false;
+    return true;
+  }
+  
   //Either set dimension with a corresponding (zero) Hamiltonian matrix, or make sure adding a new term is consistent with existing dimension
   int FreePropagator::set_dim(int dim, const std::string &error_comment){
     if(!dim_fixed){

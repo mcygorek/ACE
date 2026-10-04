@@ -1,8 +1,4 @@
 #include "Tensor.hpp"
-#include <vector> 
-#include <complex>
-#include <iostream>
-#include <cstdlib>
 
 namespace ACE{
 

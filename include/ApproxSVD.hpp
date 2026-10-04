@@ -2,8 +2,9 @@
 #define ACE_APPROX_SVD_DEFINED_H
 
 //#include "Eigen_fwd.hpp"
-#include <Eigen/Dense>
-#include <vector>
+#include "PCH.hpp"
+//#include <Eigen/Dense>
+//#include <vector>
 
 namespace ACE{
 

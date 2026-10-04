@@ -1,10 +1,8 @@
 #ifndef RRQR_DEFINED_H
 #define RRQR_DEFINED_H
 
-
-#include <iosfwd>
-#include <vector>
-#include "Eigen_fwd.hpp"
+#include "PCH.hpp"
+//#include "Eigen_fwd.hpp"
 //#include <Eigen/Core>
 //#include <Eigen/SVD>
 //#include <iostream>

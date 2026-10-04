@@ -2,8 +2,6 @@
 #define MODE_PROPAGATOR_GENERATOR_SINGLEMODE_DEFINED_H
 
 #include "ModePropagatorGenerator.hpp"
-#include <vector>
-#include <Eigen/Dense>
 
 namespace ACE{
 

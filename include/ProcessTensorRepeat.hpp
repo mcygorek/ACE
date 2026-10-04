@@ -9,7 +9,6 @@
 #include "TimeGrid.hpp"
 #include "TruncationLayout.hpp"
 #include "PreloadHint.hpp"
-#include <vector>
 #include <climits>
 
 

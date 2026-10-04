@@ -3,8 +3,7 @@
 
 #include "PassOn.hpp"
 #include "SelectIndices.hpp"
-#include <iostream>
-#include <vector>
+#include "PCH.hpp"
 
 namespace ACE{
 

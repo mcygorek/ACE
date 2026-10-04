@@ -1,11 +1,8 @@
 #ifndef ACE_BUFFERED_CONTAINER_DEFINED_H
 #define ACE_BUFFERED_CONTAINER_DEFINED_H
-#include <string>
-#include <vector>
 #include "BufferedElement.hpp"
 #include "PreloadHint.hpp"
 #include <future>
-#include <iostream>
 
 namespace ACE{
 
@@ -50,7 +47,6 @@ public:
   void check_preload_bounds(int i)const;
 
   std::string get_fname(int n);
-
 //accessors
   T & get(int n, PreloadHint hint=NoPreload);
   const T & get_ro(int n, PreloadHint hint=NoPreload);

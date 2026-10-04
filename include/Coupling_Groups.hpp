@@ -1,9 +1,7 @@
 #ifndef COUPLING_GROUPS_DEFINED_H
 #define COUPLING_GROUPS_DEFINED_H
 
-//#include <Eigen/Core>
-#include "Eigen_fwd.hpp"
-#include <vector>
+#include "PCH.hpp"
 #include "Printable.hpp"
 
 namespace ACE{

@@ -19,6 +19,11 @@ template <typename T> struct TruncatedSVD_Return_T{
   Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> Vdagger;
   Eigen::VectorXd sigma;
   Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> Residual;
+  TruncatedSVD_Return_T(){}
+  TruncatedSVD_Return_T(int i){
+    U=Vdagger=Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>::Identity(i,i);
+    sigma=Eigen::VectorXd::Ones(i);
+  }
 };
 typedef TruncatedSVD_Return_T<std::complex<double> > TruncatedSVD_Return;
 typedef TruncatedSVD_Return_T<double> TruncatedSVD_Return_real;

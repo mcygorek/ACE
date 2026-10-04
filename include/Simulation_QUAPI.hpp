@@ -6,14 +6,12 @@
 #include "FreePropagator.hpp"
 #include "InfluenceFunctional.hpp"
 #include "ADM.hpp"
-#include <fstream>  
 #include "Simulation_Results.hpp"
 #include "FT_Output.hpp"
 #include "InitialState.hpp"
 #include "SpectralDensity_Selector.hpp"
 #include "RankCompressor_Selector.hpp"
 #include "RankCompressor_SVD.hpp"
-#include  <memory>
 #include "TimeGrid.hpp"
 #include "OutputPrinter.hpp"
 
@@ -91,7 +89,7 @@ public:
 
 typedef Simulation_Template<AugmentedDensityMatrix, InfluenceFunctional> Simulation_QUAPI;
 
-typedef Simulation_Template<AugmentedDensityMatrix_MPS, InfluenceFunctional_Vector> Simulation_TEMPO; 
+typedef Simulation_Template<AugmentedDensityMatrix_MPS, InfluenceFunctional_Vector> Simulation_TEMPO_old; 
 
 }//namespace
 #endif

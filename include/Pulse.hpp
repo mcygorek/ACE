@@ -2,8 +2,6 @@
 #define PULSE_DEFINED_H
 
 #include "Function.hpp"
-#include <vector>
-#include <iosfwd>
 
 namespace ACE{
 class Parameters;

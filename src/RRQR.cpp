@@ -1,10 +1,4 @@
 #include "RRQR.hpp"
-#include <Eigen/Core>
-#include <Eigen/SVD>
-#include <iostream>
-#include <cstdlib>
-#include <vector>
-#include <fstream>
 
 namespace ACE{
 

@@ -266,15 +266,18 @@ void ProcessTensorElement::join_average_selected(
 }
 
 
-void ProcessTensorElement::sweep_forward(const TruncatedSVD &trunc, PassOn &pass_on, bool is_last){
-  M.inner_multiply_left(pass_on.P);
+double ProcessTensorElement::sweep_forward(const TruncatedSVD &trunc, PassOn &pass_on, bool is_last){
+  double weight=1.;
+  if(pass_on.P.rows()>0){ weight=pass_on.P.row(0).norm(); }
+
+  if(pass_on.P.cols()>0){M.inner_multiply_left(pass_on.P);}
 
   if(is_last){
     if(!is_forwardNF()){
       forwardNF=Eigen::VectorXd::Ones(M.dim_d2);
     }
     pass_on.set(M.dim_d2);
-    return;
+    return weight;
   }
   clearNF();
 
@@ -284,6 +287,8 @@ void ProcessTensorElement::sweep_forward(const TruncatedSVD &trunc, PassOn &pass
   if(trunc.keep>0){
     keep=trunc.keep;
   }
+//std::cout<<pass_on.P.row(0).norm()<<" ";
+//std::cout<<"(keep="<<keep<<", fw(0)="<<forwardNF(0)<<") ";
   if(fabs(keep-1.)>1e-6){
     pass_on.P/=keep;
     pass_on.Pinv*=keep;
@@ -293,9 +298,13 @@ void ProcessTensorElement::sweep_forward(const TruncatedSVD &trunc, PassOn &pass
 
   if(closure.size()==pass_on.P.cols())closure=pass_on.P*closure;
   env_ops.process_forward(pass_on);
+  return weight;
 }
 
-void ProcessTensorElement::sweep_backward(const TruncatedSVD &trunc, PassOn &pass_on, bool is_last){
+double ProcessTensorElement::sweep_backward(const TruncatedSVD &trunc, PassOn &pass_on, bool is_last){
+  double weight=1.;
+  if(pass_on.P.cols()>0){ weight=pass_on.P.col(0).norm(); }
+
   if(pass_on.P.rows()!=M.dim_d2){
     std::cerr<<"ProcessTensorElement::sweep_backward: pass_on.P.rows()="<<pass_on.P.rows()<<"!=M.dim_d2="<<M.dim_d2<<"!"<<std::endl;
     throw DummyException();
@@ -319,7 +328,7 @@ void ProcessTensorElement::sweep_backward(const TruncatedSVD &trunc, PassOn &pas
       backwardNF=Eigen::VectorXd::Ones(M.dim_d1);
     }
     pass_on.set(M.dim_d1);
-    return;
+    return weight;
   }
   clearNF();
 
@@ -327,6 +336,7 @@ void ProcessTensorElement::sweep_backward(const TruncatedSVD &trunc, PassOn &pas
   pass_on=trunc.compress_backward(A, backwardNF);
   double keep=backwardNF(0);
   if(trunc.keep>0)keep=trunc.keep;
+//std::cout<<pass_on.P.row(0).norm()<<" ";
   if(fabs(keep-1.)>1e-6){
     pass_on.P/=keep;
     pass_on.Pinv*=keep;
@@ -343,6 +353,7 @@ void ProcessTensorElement::sweep_backward(const TruncatedSVD &trunc, PassOn &pas
     T_cut_at_lower->T = (pass_on.Pinv)*T_cut_at_lower->T; 
   }
 */
+  return weight;
 }
 
 void ProcessTensorElement::sweep_forward_QR(const TruncatedSVD &trunc, PassOn &pass_on, bool is_last){

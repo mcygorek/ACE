@@ -1,8 +1,7 @@
 #ifndef ACE_POTENTIAL1D_DEFINED_H
 #define ACE_POTENTIAL1D_DEFINED_H
 
-#include <vector>
-#include <Eigen/Dense>
+#include "PCH.hpp"
 
 /**
 Solution of Schrödinger equation of a one-dimensional problem. 

@@ -1,10 +1,4 @@
 #include "PowerURV.hpp"
-#include <Eigen/Core>
-#include <Eigen/SVD>
-#include <fstream>
-#include <iostream>
-#include <cstdlib>
-#include <vector>
 
 namespace ACE{
 

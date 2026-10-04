@@ -1,7 +1,7 @@
 #ifndef ACE_PROCESS_TENSOR_ELEMENT_DEFINED_H
 #define ACE_PROCESS_TENSOR_ELEMENT_DEFINED_H
 
-#include <memory>
+#include "PCH.hpp"
 #include "ProcessTensorElementAccessor.hpp"
 #include "PassOn.hpp"
 #include "EnvironmentOperators.hpp"
@@ -100,8 +100,8 @@ struct ProcessTensorElement{
 
  
   //local compression: returned value is the passed-on matrix
-  void sweep_forward(const TruncatedSVD &trunc, PassOn &pass_on, bool is_last);
-  void sweep_backward(const TruncatedSVD &trunc, PassOn &pass_on, bool is_last);
+  double sweep_forward(const TruncatedSVD &trunc, PassOn &pass_on, bool is_last);
+  double sweep_backward(const TruncatedSVD &trunc, PassOn &pass_on, bool is_last);
   
   //canonicalization using QR; so far no truncation implemented
   void sweep_forward_QR(const TruncatedSVD &trunc, PassOn &pass_on, bool is_last);

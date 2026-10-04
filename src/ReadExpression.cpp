@@ -1,12 +1,8 @@
 #include "PCH.hpp"
 #include "ReadExpression.hpp"
 #include "ReaderBasics.hpp"
-//#include <complex>
-//#include <Eigen/Dense>
 #include "otimes.hpp"
 #include "Operators_Boson.hpp"
-#include <iostream>
-//#include <vector>
 
 
 namespace ACE{

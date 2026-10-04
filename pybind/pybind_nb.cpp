@@ -7,7 +7,7 @@
  *   InitialState, TimeGrid, OutputPrinter,
  *   Simulation  (Simulation_PT),
  *   InfluenceFunctional_QUAPI, Simulation_QUAPI,
- *   InfluenceFunctional_TEMPO, Simulation_TEMPO,
+ *   DiagBB, Simulation_TEMPO, Simulation_CTEMPO
  *   DynamicalMap
  *
  * GIL notes
@@ -26,10 +26,12 @@
 #include <nanobind/stl/shared_ptr.h>
 #include <nanobind/eigen/dense.h>
 
-#include <memory>
+#include "PCH.hpp"
 
 #include "Simulation_PT.hpp"
 #include "Simulation_QUAPI.hpp"
+#include "Simulation_TEMPO.hpp"
+#include "Simulation_CTEMPO.hpp"
 #include "FreePropagator.hpp"
 #include "ModePropagatorGenerator_SingleModes.hpp"
 #include "DynamicalMap.hpp"
@@ -303,63 +305,72 @@ NB_MODULE(_ACE, m) {
          })
     ;
 
-  // ── InfluenceFunctional_TEMPO ────────────────────────────────────────────────
-  nb::class_<ACE::InfluenceFunctional_Vector>(m, "InfluenceFunctional_TEMPO")
+  // ── DiagBB ────────────────────────────────────────────────
+  nb::class_<ACE::DiagBB>(m, "DiagBB")
     .def(nb::init<>())
     .def("__init__",
-         [](ACE::InfluenceFunctional_Vector* self, ACE::Parameters param) {
-           ACE::DiagBB diagBB(param, param.get_as_string("Gaussian_prefix", "Boson"));
-           ACE::TimeGrid tgrid(param);
-           int n_mem = tgrid.n_mem;
-           if (n_mem <= 0) n_mem = tgrid.n_tot;
-           new (self) ACE::InfluenceFunctional_Vector(n_mem, tgrid.dt, diagBB);
+         [](ACE::DiagBB* self, ACE::Parameters param) {
+           new (self) ACE::DiagBB(param, param.get_as_string("Gaussian_prefix", "Boson"));
          })
     ;
 
   // ── Simulation_TEMPO ─────────────────────────────────────────────────────────
   nb::class_<ACE::Simulation_TEMPO>(m, "Simulation_TEMPO")
     .def(nb::init<>(), nb::call_guard<nb::gil_scoped_release>())
-    .def("set_threshold", &ACE::Simulation_TEMPO::set_threshold)
-    .def("run",
-         [](ACE::Simulation_TEMPO& sim,
-            ACE::FreePropagator& fprop,
-            const ACE::InfluenceFunctional_Vector& IF,
-            const Eigen::MatrixXcd& init,
-            const ACE::TimeGrid& tgrid,
-            ACE::OutputPrinter& printer,
-            bool use_symmetric_Trotter,
-            bool silent) {
-           sim.run(fprop, IF, init, tgrid, printer, use_symmetric_Trotter, silent);
-         },
-         nb::arg("fprop"), nb::arg("IF"), nb::arg("init"), nb::arg("tgrid"),
-         nb::arg("printer"), nb::arg("use_symmetric_Trotter") = true,
-         nb::arg("silent") = true)
     .def("__init__",
          [](ACE::Simulation_TEMPO* self,
             ACE::FreePropagator& prop,
-            const ACE::InfluenceFunctional_Vector& IF,
+            ACE::DiagBB& diagBB,
             const ACE::InitialState& initial,
             const ACE::TimeGrid& tgrid,
             ACE::OutputPrinter& printer,
             double threshold) {
            new (self) ACE::Simulation_TEMPO();
-           self->set_threshold(threshold);
-           self->run(prop, IF, initial.rho, tgrid, printer, true, false);
-         })
+           ACE::TruncationLayout trunc_layout(threshold);
+           self->run(prop, diagBB, initial.rho, tgrid, printer, trunc_layout);
+         }, nb::call_guard<nb::gil_scoped_release>())
     .def("__init__",
          [](ACE::Simulation_TEMPO* self,
             ACE::FreePropagator& prop,
-            const ACE::InfluenceFunctional_Vector& IF,
-            const Eigen::MatrixXcd& initial,
+            ACE::DiagBB& diagBB,
+            const Eigen::MatrixXcd& rho,
             const ACE::TimeGrid& tgrid,
             ACE::OutputPrinter& printer,
             double threshold) {
            new (self) ACE::Simulation_TEMPO();
-           self->set_threshold(threshold);
-           self->run(prop, IF, initial, tgrid, printer, true, false);
-         })
+           ACE::TruncationLayout trunc_layout(threshold);
+           self->run(prop, diagBB, rho, tgrid, printer, trunc_layout);
+         }, nb::call_guard<nb::gil_scoped_release>())
     ;
 
+  // ── Simulation_CTEMPO ─────────────────────────────────────────────────────────
+  nb::class_<ACE::Simulation_CTEMPO>(m, "Simulation_CTEMPO")
+    .def(nb::init<>(), nb::call_guard<nb::gil_scoped_release>())
+    .def("__init__",
+         [](ACE::Simulation_CTEMPO* self,
+            ACE::FreePropagator& prop,
+            ACE::DiagBB& diagBB,
+            const ACE::InitialState& initial,
+            const ACE::TimeGrid& tgrid,
+            ACE::OutputPrinter& printer,
+            double threshold) {
+           new (self) ACE::Simulation_CTEMPO();
+           ACE::TruncationLayout trunc_layout(threshold);
+           self->run(prop, diagBB, initial.rho, tgrid, printer, trunc_layout);
+         }, nb::call_guard<nb::gil_scoped_release>())
+    .def("__init__",
+         [](ACE::Simulation_CTEMPO* self,
+            ACE::FreePropagator& prop,
+            ACE::DiagBB& diagBB,
+            const Eigen::MatrixXcd& rho,
+            const ACE::TimeGrid& tgrid,
+            ACE::OutputPrinter& printer,
+            double threshold) {
+           new (self) ACE::Simulation_CTEMPO();
+           ACE::TruncationLayout trunc_layout(threshold);
+           self->run(prop, diagBB, rho, tgrid, printer, trunc_layout);
+         }, nb::call_guard<nb::gil_scoped_release>())
+    ;
   // ── DynamicalMap ───────────────────────────────────────────────────────────
   nb::class_<ACE::DynamicalMap>(m, "DynamicalMap")
     .def(nb::init<>())

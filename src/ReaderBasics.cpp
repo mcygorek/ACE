@@ -2,10 +2,6 @@
 #include "ReaderBasics.hpp"
 #include "DummyException.hpp"
 
-#include <iostream>
-#include <sstream>
-#include <memory>
-
 /** 
 Hard core of "Reader" functions to deal with basic interpretation of 
 strings. The actual Reader.h uses functions from ReadExpression.h, which

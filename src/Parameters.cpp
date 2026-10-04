@@ -163,6 +163,15 @@ namespace ACE{
     return ret;
   } 
 
+  std::vector<int> Parameters::get_row_ints(const std::string &key, int row, int min){
+    std::vector<double> dvec=get_row_doubles(key, row, min);
+    std::vector<int> ivec(dvec.size());
+    for(size_t i=0; i<dvec.size(); i++){
+      ivec[i]=std::round(dvec[i]);
+    }
+    return ivec;
+  }
+
 
   std::string Parameters::get_as_string(const std::string &key, const std::string &def, int row, int col){
    set_requested(key);
@@ -339,6 +348,21 @@ namespace ACE{
     print(ofs);
   }
   
+  void Parameters::add(Parameters &other){
+    for(cIterator it=other.map.begin(); it!=other.map.end(); ++it){
+      std::string key=it->first;
+     
+      Iterator it2=map.find(key);
+      if(it2==map.end()){
+        map.insert(std::make_pair(key,it->second));
+      }else{
+        for(size_t i=0; i<it->second.size(); i++){
+          it2->second.push_back(it->second[i]);
+        }
+      }
+    }
+  }
+
   void Parameters::add_from_prefix(const std::string prefix, Parameters &other){
     std::string prefix_=std::string(prefix+"_");
 
@@ -359,5 +383,18 @@ namespace ACE{
     }
   }
   
+  void Parameters::erase_with_prefix(const std::string prefix){
+    std::string prefix_=std::string(prefix+"_");
+
+    std::vector<std::string> keys;
+    for(cIterator it=map.cbegin(); it!=map.cend(); ++it){
+      size_t pos=it->first.find(prefix_);
+      if(pos==std::string::npos)continue;
+      keys.push_back(it->first);
+    }
+    for(size_t i=0; i<keys.size(); i++){
+      map.erase(keys[i]);
+    }
+  }
 
 }//namespace

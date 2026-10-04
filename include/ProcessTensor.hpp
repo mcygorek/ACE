@@ -2,7 +2,6 @@
 #define ACE_PROCESS_TENSOR_DEFINED_H
 
 #include "ProcessTensorElement.hpp"
-#include <vector>
 #include "TimeGrid.hpp"
 #include "ModePropagatorGenerator.hpp"
 

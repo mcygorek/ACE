@@ -1,7 +1,8 @@
+#pragma once
 #ifndef OPERATORS_MULTI2LVL_DEFINED_H
 #define OPERATORS_MULTI2LVL_DEFINED_H
 
-#include <Eigen/Core>
+#include "Eigen_Fwd.hpp"
 #include <vector>
 
 namespace ACE{

@@ -3,13 +3,7 @@
 
 #include "EDM_Index.hpp"
 #include "EDM_Filter.hpp"
-#include <Eigen/Core>
-#include <memory>
-#include <complex>
-#include <unordered_map>
-#include <map>
-#include <fstream>
-#include <iostream>
+#include "PCH.hpp"
 
 namespace ACE {
 

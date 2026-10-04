@@ -3,7 +3,6 @@
 #define SIMULATION_RESULTS_DEFINED_H
 #include "FT_Parameters.hpp"
 #include "Output_Ops.hpp"
-#include <fstream>
 
 namespace ACE{
 

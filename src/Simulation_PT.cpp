@@ -271,6 +271,7 @@ Eigen::MatrixXcd Simulation_PT::run_std(
     }
   }
   // print inner bonds of last PT-MPO:
+#ifndef PRINT_DIMS_JP
   if(PT.size()>0 && print_dims_file!=""){
     std::ofstream ofs(print_dims_file);
     PT.list.back()->reset();
@@ -281,6 +282,7 @@ Eigen::MatrixXcd Simulation_PT::run_std(
     }
     PT.list.back()->reset();
   }
+#endif
 
 
   Eigen::MatrixXcd state(NL, 1);

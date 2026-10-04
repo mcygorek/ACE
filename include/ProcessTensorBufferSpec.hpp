@@ -5,8 +5,6 @@
 #include "ProcessTensorElement.hpp"
 #include "DummyException.hpp"
 #include "TempFileName.hpp"
-#include <vector>
-#include <string>
 
 namespace ACE{
 /**

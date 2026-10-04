@@ -145,6 +145,11 @@ if(debug){std::cout<<exp(-log(threshold_range_factor)*lin_fac)<<std::endl;}
 
   void setup(Parameters &param);
   
+  TruncationLayout_T(double thr){
+    Parameters param;
+    setup(param);
+    base_threshold=thr;
+  }
   TruncationLayout_T(Parameters &param){
     setup(param);
   }

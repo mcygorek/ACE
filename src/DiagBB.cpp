@@ -66,8 +66,10 @@ namespace ACE{
     }
     
     if(n<K_precalc.size()){
+//std::cout<<"WAS PRECALCULATED"<<std::endl;
       return K_precalc[n]*damp;
     }else{
+//std::cout<<"NEED TO CALCULATE"<<std::endl;
       return calculate_K_explicit(n, dt)*damp;
     }
   }

@@ -2,7 +2,7 @@
 #ifndef ACE_CHECK_MATRIX_DEFINED_H
 #define ACE_CHECK_MATRIX_DEFINED_H
 
-#include <Eigen/Dense>
+#include "PCH.hpp" //<Eigen/Dense>
 	
 namespace ACE{
 

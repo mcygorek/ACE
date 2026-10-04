@@ -1,10 +1,7 @@
 #pragma once
 #ifndef READEXPRESSION_DEFINED_H
 #define READEXPRESSION_DEFINED_H
-#include <complex>
-#include <Eigen/Dense>
-#include <vector>
-#include <iostream>
+#include "PCH.hpp"
 
 /* Class to turn a string into a valid complex number */
 

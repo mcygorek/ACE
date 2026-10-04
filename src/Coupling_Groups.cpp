@@ -1,6 +1,4 @@
 #include "Coupling_Groups.hpp"
-#include <Eigen/Core>
-#include <vector>
 #include "Printable.hpp"
 
 namespace ACE{

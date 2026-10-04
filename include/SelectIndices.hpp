@@ -1,7 +1,6 @@
 #ifndef ACE_SELECT_INDICES_DEFINED_H
 #define ACE_SELECT_INDICES_DEFINED_H
 #include "BinaryReader.hpp"
-#include <vector>
 
 namespace ACE{
 

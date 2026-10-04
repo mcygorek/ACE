@@ -2,9 +2,12 @@
 #include <pybind11/stl.h>
 #include <pybind11/eigen.h>
 #include <pybind11/iostream.h>
-#include <memory>
+#include "PCH.hpp"
+#include "DiagBB.hpp"
 #include "Simulation_PT.hpp"
 #include "Simulation_QUAPI.hpp"
+#include "Simulation_TEMPO.hpp"
+#include "Simulation_CTEMPO.hpp"
 #include "FreePropagator.hpp"
 #include "ModePropagatorGenerator_SingleModeFromFile.hpp"
 #include "ModePropagatorGenerator_SingleModes.hpp"
@@ -254,48 +257,80 @@ PYBIND11_MODULE(_ACE, m) {
     }))
     ;
 
-  py::class_<ACE::InfluenceFunctional_Vector>(m, "InfluenceFunctional_TEMPO")
+  py::class_<ACE::DiagBB>(m, "DiagBB")
     .def(py::init<>())
     .def(py::init([](ACE::Parameters param){
-      ACE::DiagBB diagBB(param, param.get_as_string("Gaussian_prefix","Boson"));
-      ACE::TimeGrid tgrid(param);
-      int n_mem=tgrid.n_mem; if(n_mem<=0)n_mem=tgrid.n_tot;
-      return new ACE::InfluenceFunctional_Vector(n_mem, tgrid.dt, diagBB);
+      return new ACE::DiagBB(param, param.get_as_string("Gaussian_prefix","Boson"));
     }))
     ;
-  py::class_<ACE::Simulation_TEMPO>(m, "Simulation_TEMPO")
-    .def(py::init<>())
-    .def("set_threshold",&ACE::Simulation_TEMPO::set_threshold)
-    .def("run",[](ACE::Simulation_TEMPO &sim, ACE::FreePropagator &fprop, const ACE::InfluenceFunctional_Vector &IF, const Eigen::MatrixXcd &init, const ACE::TimeGrid &tgrid, ACE::OutputPrinter &printer, bool use_symmetric_Trotter, bool silent){
 
-#ifndef PYBIND_NO_REDIRECT
-      py::scoped_ostream_redirect stream(std::cout,py::module_::import("sys").attr("stdout"));
-#endif
-      sim.run(fprop, IF, init, tgrid, printer, use_symmetric_Trotter, silent);
-    }, py::arg("fprop"), py::arg("IF"), py::arg("init"), py::arg("tgrid"),py::arg("printer"),py::arg("use_symmetric_Trotter")=true, py::arg("silent")=true)
+ py::class_<ACE::Simulation_TEMPO>(m, "Simulation_TEMPO")
+    .def(py::init<>())
+//    .def("run",[](ACE::Simulation_TEMPO &sim, ACE::FreePropagator &fprop, const ACE::DiagBB &diagBB, const Eigen::MatrixXcd &init, const ACE::TimeGrid &tgrid, ACE::OutputPrinter &printer, bool use_symmetric_Trotter){
+//
+//#ifndef PYBIND_NO_REDIRECT
+//      py::scoped_ostream_redirect stream(std::cout,py::module_::import("sys").attr("stdout"));
+//#endif
+//      sim.run(fprop, diagBB, init, tgrid, printer, trunc_layout);
+//    }, py::arg("fprop"), py::arg("diagBB"), py::arg("init"), py::arg("tgrid"),py::arg("printer"),py::arg("use_symmetric_Trotter")=true)
     .def(py::init([](ACE::FreePropagator &prop,
-                     const ACE::InfluenceFunctional_Vector &IF,
+                     ACE::DiagBB &diagBB,
                      const ACE::InitialState & initial,
                      const ACE::TimeGrid &tgrid,
                      ACE::OutputPrinter &printer,
                      double threshold){
        ACE::Simulation_TEMPO * sim= new ACE::Simulation_TEMPO();
-       sim->set_threshold(threshold);
-       sim->run(prop, IF, initial, tgrid, printer, true, false);
+       ACE::TruncationLayout trunc_layout(threshold);
+       sim->run(prop, diagBB, initial, tgrid, printer, trunc_layout);
        return sim;
     }))
     .def(py::init([](ACE::FreePropagator &prop,
-                     const ACE::InfluenceFunctional_Vector &IF,
+                     ACE::DiagBB &diagBB,
                      const Eigen::MatrixXcd & initial,
                      const ACE::TimeGrid &tgrid,
                      ACE::OutputPrinter &printer,
                      double threshold){
        ACE::Simulation_TEMPO * sim= new ACE::Simulation_TEMPO();
-       sim->set_threshold(threshold);
-       sim->run(prop, IF, initial, tgrid, printer, true, false);
+       ACE::TruncationLayout trunc_layout(threshold);
+
+#ifndef PYBIND_NO_REDIRECT
+      py::scoped_ostream_redirect stream(std::cout,py::module_::import("sys").attr("stdout"));
+#endif
+       sim->run(prop, diagBB, initial, tgrid, printer, trunc_layout);
        return sim;
     }))
     ;
+
+ py::class_<ACE::Simulation_CTEMPO>(m, "Simulation_CTEMPO")
+    .def(py::init<>())
+    .def(py::init([](ACE::FreePropagator &prop,
+                     ACE::DiagBB &diagBB,
+                     const ACE::InitialState & initial,
+                     const ACE::TimeGrid &tgrid,
+                     ACE::OutputPrinter &printer,
+                     double threshold){
+       ACE::Simulation_CTEMPO * sim= new ACE::Simulation_CTEMPO();
+       ACE::TruncationLayout trunc_layout(threshold);
+       sim->run(prop, diagBB, initial, tgrid, printer, trunc_layout);
+       return sim;
+    }))
+    .def(py::init([](ACE::FreePropagator &prop,
+                     ACE::DiagBB &diagBB,
+                     const Eigen::MatrixXcd & initial,
+                     const ACE::TimeGrid &tgrid,
+                     ACE::OutputPrinter &printer,
+                     double threshold){
+       ACE::Simulation_CTEMPO * sim= new ACE::Simulation_CTEMPO();
+       ACE::TruncationLayout trunc_layout(threshold);
+
+#ifndef PYBIND_NO_REDIRECT
+      py::scoped_ostream_redirect stream(std::cout,py::module_::import("sys").attr("stdout"));
+#endif
+       sim->run(prop, diagBB, initial, tgrid, printer, trunc_layout);
+       return sim;
+    }))
+    ;
+
 
   py::class_<ACE::DynamicalMap>(m, "DynamicalMap")
     .def(py::init<>())

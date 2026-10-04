@@ -3,7 +3,7 @@
 
 #include "FreePropagator.hpp"
 #include "ModePropagator.hpp"
-#include <memory>
+#include "PCH.hpp"
 #include "DimensionExtender.h"
 
 namespace ACE{

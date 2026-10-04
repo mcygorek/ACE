@@ -1,8 +1,6 @@
 #ifndef ACE_PROCESS_TENSOR_STREAM_WO_DEFINED_H
 #define ACE_PROCESS_TENSOR_STREAM_WO_DEFINED_H
 
-#include <fstream>
-#include <vector>
 #include "ProcessTensorStream_ro.hpp"
 #include "ProcessTensorElement.hpp"
 

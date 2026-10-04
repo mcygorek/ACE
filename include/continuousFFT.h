@@ -1,8 +1,5 @@
 #include <fftw3.h> 
-#include <complex>
-#include <vector>
-#include <cstdlib>
-#include <iostream>
+#include "PCH.hpp"
 
 namespace ACE{
 //Note: Convention: forward: multiplication with e^{-i omega t}

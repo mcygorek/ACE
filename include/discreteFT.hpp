@@ -2,8 +2,6 @@
 #ifndef DISCRETEFT_DEFINED_H
 #define DISCRETEFT_DEFINED_H
 
-#include <complex> 
-#include <vector> 
 #include "Simulation_Results.hpp"
 
 namespace ACE{

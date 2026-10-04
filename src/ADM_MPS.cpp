@@ -152,13 +152,7 @@ std::cout<<"step="<<step<<" n_max="<<n_max<<" n_mem_IF="<<n_mem_IF<<std::endl;
       ten2.a[0].fill(0.);
       for(int i=0; i<NL; i++){
         int gi=grp2[i];
-/*
-        for(int j=0; j<NL; j++){
-          int gj=grp2[j];
-          ten2.a[0](i, 0, j)=prop.M(i,j)*IF.b[0](gi,gi) ;
-        }
-*/
-          ten2.a[0](i, 0, i)=IF.b[0](gi,gi) ;
+        ten2.a[0](i, 0, i)=IF.b[0](gi,gi) ;
       } 
 
       ten2.a[1].resize(Ngrps2, NL, Ngrps2*ten.a[0].dim_d2);

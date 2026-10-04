@@ -1,11 +1,8 @@
 #ifndef ACE_PROCESS_TENSOR_STREAM_RO_DEFINED_H
 #define ACE_PROCESS_TENSOR_STREAM_RO_DEFINED_H
 
-#include <fstream>
-#include <vector>
 #include "ProcessTensorElement.hpp"
 #include "ProcessTensorForward.hpp"
-#include <memory>
 
 namespace ACE{
 

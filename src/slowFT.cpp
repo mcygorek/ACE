@@ -1,12 +1,6 @@
 /** Slow Fourier transform of an interpolated function. For test purposes. */
 #include "PCH.hpp"
-
 #include "slowFT.hpp"
-#include <vector>
-#include <complex>
-#include <cmath>
-#include <iostream>
-#include <fstream>
 #include "Constants.hpp"
 
 namespace ACE{

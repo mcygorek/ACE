@@ -5,8 +5,6 @@
 #include "Which_Env_Ops.hpp"
 #include "Parameters.hpp"  
 #include "ProcessTensorElement.hpp"
-#include <fstream>
-#include <memory>
 
 namespace ACE{
 

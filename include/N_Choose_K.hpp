@@ -1,7 +1,7 @@
 #ifndef N_CHOOSE_K_DEFINED_H
 #define N_CHOOSE_K_DEFINED_H
 
-#include <vector>
+#include "PCH.hpp"
 
 namespace ACE{
 //Calculate n choose k efficiently by precomputing values (lazy evaluation)

@@ -44,7 +44,7 @@ LIBSRC = $(wildcard src/*.cpp)
 LIBOBJS = $(patsubst src/%.cpp, lib/%.o, $(LIBSRC))
 LIBSTRING = '$(shell pwd)/lib'
 
-EXECOBJS = ACE QUAPI TEMPO #ACE_Network #ACE_env_obs 
+EXECOBJS = ACE QUAPI TEMPO CTEMPO CCTEMPO #ACE_Network #ACE_env_obs 
 BINEXEC = $(patsubst %, bin/%, $(EXECOBJS))
 
 PYBINDSUF = $(shell python3 -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))")
@@ -65,11 +65,11 @@ pybind/ACE/_ACE$(PYBINDSUF): pybind/pybind.cpp lib/$(LIBNAME)
 	cd pybind && python3 -m build --wheel -o . ;  cd .. 
 
 lib: lib/$(LIBNAME)
-lib/$(LIBNAME): $(LIBOBJS) 
+lib/$(LIBNAME): $(LIBOBJS)
 	$(CXX) -shared -fPIC -o lib/$(LIBNAME) -flto lib/*.o 
 
-$(LIBOBJS): lib/%.o: src/%.cpp include/%.hpp 
-	$(CXX) -o $@ -c $< -fPIC $(OPTS)
+$(LIBOBJS): lib/%.o: src/%.cpp include/%.hpp include/PCH.hpp.gch
+	$(CXX) -o $@ -c $< -fPIC -include include/PCH.hpp $(OPTS) 
 
 PCH: include/PCH.hpp.gch 
 include/PCH.hpp.gch: include/PCH.hpp
@@ -91,12 +91,13 @@ EXPERIMENTAL += DiagBB_print_K single_mode_K block_combine
 EXPERIMENTAL += extract_singular_values 
 EXPERIMENTAL += richardson_extrapolate #Chebyshev_Expand
 EXPERIMENTAL += TC_overlap TC_PT TC_join TC_TinvTcombine test_CompressionTree
-EXPERIMENTAL += test_FFT estimate_memory test_split
+EXPERIMENTAL += test_FFT estimate_memory test_split 
 EXPERIMENTAL += test_buffer test_GaussNewton fit_K_single_mode 
-EXPERIMENTAL += test_MeierTannor test_DrudeLorentz
-EXPERIMENTAL += extract_effective_propagator DynamicalMap PT_traceout CTEMPO
+EXPERIMENTAL += test_MeierTannor test_DrudeLorentz 
+EXPERIMENTAL += extract_effective_propagator DynamicalMap PT_traceout 
 EXPERIMENTAL += test_HermitianLiouvilleBasis test_Largest_EV test_Largest_EV2
 EXPERIMENTAL += test_QUAPI_vs_PT test_RandomizedCompression
+#EXPERIMENTAL += test_rSVD test_FMO
 
 tools: $(TOOLS)
 $(TOOLS): %: src_exec/tools/%.cpp lib/$(LIBNAME)

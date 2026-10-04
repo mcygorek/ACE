@@ -4,7 +4,7 @@
 #include "EDM_OneBodyTerm.hpp"
 #include "FreePropagator.hpp"
 #include "Parameters.hpp"
-#include <memory>
+#include "PCH.hpp"
 
 namespace ACE {
 

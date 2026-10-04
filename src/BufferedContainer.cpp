@@ -1,12 +1,9 @@
-#include <string>
-#include <vector>
-#include <iostream>
-#include <cstdio>
 #include "DummyException.hpp"
 #include "BufferedElement.hpp"
 #include "ProcessTensorElement.hpp"
 #include "BufferedContainer.hpp"
 #include "BinaryReader.hpp"
+#include "CombElement.hpp"
 
 
 #ifdef DEBUG_BUFFERED_CONTAINER_ALL
@@ -85,7 +82,7 @@ template <typename T>  const T &  BufferedContainer<T>::peek(int n){
     std::cerr<<"BufferedContainer::peek: Out of bounds: "<<n<<"/"<<n_tot<<std::endl;
     throw DummyException();
   }
-  if(blocksize<0){ 
+  if(blocksize<1){ 
     check_buffer_bounds(n);
     return buffer[n];
   }
@@ -165,6 +162,10 @@ template <typename T> void BufferedContainer<T>::
 #ifdef DEBUG_BUFFERED_CONTAINER_ALL
   std::cout<<"DEBUG_BC["<<fname_header<<"]: read_block_from_file("<<bl<<")"<<std::endl;
 #endif
+  if(blocksize<=0){
+    std::cerr<<"BufferedContainer::read_block_from_file: called while blocksize<1!"<<std::endl;
+    throw DummyException();
+  }
 
   int local_blocksize=blocksize;
   if(blocksize>0 && bl==get_nr_blocks()-1){
@@ -214,7 +215,8 @@ template <typename T> void BufferedContainer<T>::read_block(int bl, PreloadHint 
     clear_buffer();
     buffer.swap(preload);
     current_block=bl;
-    preload_block=-1;
+    //TODO: test swapping preload_block=current_block if hint==NoPreload?
+    preload_block=-1; 
     was_modified=false;
 
     request_async_preload(bl, hint);
@@ -524,5 +526,6 @@ if(debug){std::cout<<"DeleteOnDestruction was set"<<std::endl;}
 //to prepare object files during compile time:
 template class BufferedContainer<BufferedInt>;
 template class BufferedContainer<ProcessTensorElement>;
+template class BufferedContainer<CombElement>;
 
 }//namespace

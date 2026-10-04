@@ -1,9 +1,9 @@
 #ifndef ACE_CLOSURE_OPS_DEFINED_H
 #define ACE_CLOSURE_OPS_DEFINED_H
 
-#include <vector>
-#include <Eigen/Dense>
-#include <iostream>
+#include "PCH.hpp"
+//#include <vector>
+//#include "Eigen_fwd.hpp"
 
 namespace ACE{
 class Parameters;

@@ -2,14 +2,11 @@
 #define ACE_PROCESS_TENSOR_FORWARD_LIST_DEFINED_H
 
 #include "ProcessTensorForward.hpp"
-#include "Eigen_fwd.hpp"
 #include "TruncationLayout.hpp"
-#include <memory>
 #include "Parameters.hpp"
 #include "Which_Env_Ops.hpp"
 #include "ReadPT_struct.hpp"
 #include "ModePropagatorGenerator.hpp"
-#include <cstdio>
 
 namespace ACE{
 
@@ -31,6 +28,7 @@ public:
   void load_next();
   std::vector<const ProcessTensorElement *> current_list();
 
+  Eigen::VectorXcd get_closure();
   Eigen::VectorXcd get_rho_reduced(const Eigen::MatrixXcd & state);
 
   std::vector<std::complex<double> > get_env_reduced(

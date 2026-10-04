@@ -1,7 +1,4 @@
 #include "Largest_EV.hpp"
-#include <Eigen/Dense>
-#include <iostream>
-#include <vector>
 #include "DummyException.hpp"
 
 namespace ACE{

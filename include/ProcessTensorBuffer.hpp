@@ -13,8 +13,6 @@
 #include "ReaderBasics.hpp"
 #include "TruncationLayout.hpp"
 #include "PreloadHint.hpp"
-#include <vector>
-#include <string>
 #include <thread>
 #include <future>
 
@@ -145,10 +143,10 @@ public:
   void distribute_weights();
   void set_CompressionTree_at(int n);
 
-  void sweep_forward(const TruncatedSVD &trunc, int verbosity,
+  double sweep_forward(const TruncatedSVD &trunc, int verbosity,
                      int range_start=0, int range_end=-1);
 
-  void sweep_backward(const TruncatedSVD &trunc, int verbosity,
+  double sweep_backward(const TruncatedSVD &trunc, int verbosity,
                      int range_start=0, int range_end=-1);
 
   void sweep_pair_forward(const TruncatedSVD &trunc, int verbosity);

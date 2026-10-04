@@ -1,7 +1,6 @@
 #ifndef DIAG_BB_DEFINED_H
 #define DIAG_BB_DEFINED_H
 
-#include <vector>
 #include "Function.hpp"
 #include "Coupling_Groups.hpp"
 #include "HilbertSpaceRotation.hpp"

@@ -1,9 +1,8 @@
 #ifndef MODE_PROPAGATOR_GENERATOR_RANDOMSPIN_DEFINED_H
 #define MODE_PROPAGATOR_GENERATOR_RANDOMSPIN_DEFINED_H
 
+#include "PCH.hpp"
 #include "ModePropagatorGenerator.hpp"
-#include <vector>
-#include <Eigen/Dense>
 
 namespace ACE{
 

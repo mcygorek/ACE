@@ -3,7 +3,7 @@
 #define IF_TIMEGRID_DEFINED_H
 //#include "Parameters.hpp"
 
-#include <vector>
+#include "PCH.hpp"
 
 /* Structure to store the parametrization of the time grid as well
    as different parameters determining how exactly the influence functionals

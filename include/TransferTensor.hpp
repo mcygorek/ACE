@@ -5,8 +5,6 @@
 #include "Simulation_PT.hpp"
 #include "ProcessTensorForwardList.hpp"
 #include "TimeGrid.hpp"
-#include <iostream>
-#include <memory>
 
 namespace ACE {
 

@@ -3,9 +3,6 @@
 
 #include "Function.hpp"
 #include "ReadTable.hpp"
-#include <vector>
-#include <algorithm>
-#include <iostream>
 
 namespace ACE{
 

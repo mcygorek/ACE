@@ -1,8 +1,6 @@
 #ifndef ACE_TRAFO_CHAIN_DEFINED_H
 #define ACE_TRAFO_CHAIN_DEFINED_H
 
-#include <vector>
-#include <Eigen/Dense>
 #include "MPS.hpp"
 #include "ModePropagatorGenerator.hpp"
 #include "Tensor.hpp"

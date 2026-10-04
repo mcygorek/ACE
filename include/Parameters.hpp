@@ -2,14 +2,15 @@
 #ifndef PARAMETERS_DEFINED_H
 #define PARAMETERS_DEFINED_H
 
-#include <map>
-#include <set>
-#include <cmath>
-#include <iosfwd>
-#include <vector>
+#include "PCH.hpp"
+//#include <map>
+//#include <set>
+//#include <cmath>
+//#include <iosfwd>
+//#include <vector>
 
 //#include "Eigen_fwd.hpp"
-#include <Eigen/Core>
+//#include <Eigen/Core>
 //#include "Reader.hpp"
 #include "Printable.hpp"
 
@@ -88,6 +89,7 @@ public:
   std::string get_as_single_string(const std::string &key, int row=0);
 
   std::vector<double> get_row_doubles(const std::string &key, int row=0, int min=0);
+  std::vector<int> get_row_ints(const std::string &key, int row=0, int min=0);
 
   std::string get_as_string(const std::string &key, const std::string &def="", int row=0, int col=0);
 
@@ -148,8 +150,12 @@ public:
   
   void print(const std::string &fname)const;
   
+  void add(Parameters &other);
+
   void add_from_prefix(const std::string prefix, Parameters &other);
  
+  void erase_with_prefix(const std::string prefix);
+
   inline void clear(){
     map.clear();
     requested.clear();

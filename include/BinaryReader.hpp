@@ -3,7 +3,8 @@
 #define ACE_BINARY_READER_DEFINED_H
 
 #include "Reader.hpp"
-#include <fstream>
+//#include <fstream>
+#include "PCH.hpp"
 #include "DummyException.hpp"
 
 namespace ACE{

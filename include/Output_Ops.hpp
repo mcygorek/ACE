@@ -2,8 +2,7 @@
 #ifndef OUTPUT_OPS_DEFINED_H
 #define OUTPUT_OPS_DEFINED_H
 
-#include <vector>
-#include <Eigen/Core>
+#include "PCH.hpp"
 
 namespace ACE{
 class HilbertSpaceRotation;

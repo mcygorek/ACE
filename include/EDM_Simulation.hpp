@@ -10,7 +10,7 @@
 #include "Eigen_fwd.hpp"
 #include "TimeGrid.hpp"
 #include "Parameters.hpp"
-#include <memory>
+#include "PCH.hpp"
 
 namespace ACE{
 

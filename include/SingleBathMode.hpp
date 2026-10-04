@@ -1,8 +1,6 @@
 #ifndef SINGLE_BATH_MODE_DEFINED_H
 #define SINGLE_BATH_MODE_DEFINED_H
 
-#include <vector>
-#include <Eigen/Dense>
 #include "FreePropagator.hpp"
 
 /**
