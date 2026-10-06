@@ -29,11 +29,11 @@ Spin-Boson model
 The subdirectory "spinboson" contains exemplary parameter files that can be used to simulate the spin-boson dynamics as indicated in the manuscript for coupling strength alpha=0.1 (or 1), total propagation time te=20.48, time step dt=0.004, and compression threshold epsilon=10^{-8}. Please change these values according to your need.
 The same parameter file can be executed with different binaries to employ the respective method. We suggest to specify the name of the output file to indicate hthe method used, for example:
 
-> CTEMPO ohmic_alpha0.1_te20.48_dt0.004_thr1e-8.param -outfile ohmic_alpha0.1_te20.48_dt0.004_thr1e-8_CTEMPO.out
-> TEMPO ohmic_alpha0.1_te20.48_dt0.004_thr1e-8.param -outfile ohmic_alpha0.1_te20.48_dt0.004_thr1e-8_TEMPO.out
-> ACE ohmic_alpha0.1_te20.48_dt0.004_thr1e-8.param -outfile ohmic_alpha0.1_te20.48_dt0.004_thr1e-8_PTMPO.out
+> CTEMPO ohmic_alpha0.1_te20.48_dt0.04_thr1e-8.param -outfile ohmic_alpha0.1_te20.48_dt0.04_thr1e-8_CTEMPO.out
+> TEMPO  ohmic_alpha0.1_te20.48_dt0.04_thr1e-8.param -outfile ohmic_alpha0.1_te20.48_dt0.04_thr1e-8_TEMPO.out
+> ACE    ohmic_alpha0.1_te20.48_dt0.04_thr1e-8.param -outfile ohmic_alpha0.1_te20.48_dt0.04_thr1e-8_PTMPO.out
 
-"CTEMPO" and "TEMPO" implement the algorithm with the same name. The binary "ACE" is the general binary for PT-MPO simulations. The Jorgensen-Pollock algorithm is selected by the line "use_Gaussian true" in the parameter file.
+The binary "CTEMPO" and "TEMPO" executes the algorithm with the same name. The binary "ACE" is the general binary for PT-MPO simulations. The Jorgensen-Pollock algorithm is selected by the line "use_Gaussian true" in the parameter file.
 
 The corresponding output file ("*.out") contains the time in the first column and the value <sigma_z> in the second column.
 

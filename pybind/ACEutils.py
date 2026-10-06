@@ -50,9 +50,9 @@ def run(parameter_list):
     
 def read_outfile(outfile, ncol=0):
     if ncol<1:  #read number of column pairs in the outfile 
-      with open(outfile,'r') as fil:
+      with open(outfile,'r', encoding='latin-1') as fil:
         nreal = 0
-        data_iter = csv.reader(fil, delimiter = ' ', encoding='latin-1')
+        data_iter = csv.reader(fil, delimiter = ' ')
         for line in data_iter:
             for i in range(len(line)):
                 if line[i].startswith('#') or len(line[i])<1: break
@@ -60,8 +60,8 @@ def read_outfile(outfile, ncol=0):
             if nreal > 0: break
         ncol = int((nreal-1)/2)
     
-    with open(outfile,'r') as fil:
-        data_iter = csv.reader(fil, delimiter = ' ', encoding='latin-1')
+    with open(outfile,'r', encoding='latin-1') as fil:
+        data_iter = csv.reader(fil, delimiter = ' ')
         times = []
         values = []
         for line in data_iter:

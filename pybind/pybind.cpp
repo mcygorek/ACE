@@ -281,9 +281,15 @@ PYBIND11_MODULE(_ACE, m) {
                      double threshold){
        ACE::Simulation_TEMPO * sim= new ACE::Simulation_TEMPO();
        ACE::TruncationLayout trunc_layout(threshold);
+
+#ifndef PYBIND_NO_REDIRECT
+      py::gil_scoped_acquire acquire;
+      py::scoped_ostream_redirect stream(std::cout,py::module_::import("sys").attr("stdout"));
+      py::gil_scoped_release release;
+#endif
        sim->run(prop, diagBB, initial, tgrid, printer, trunc_layout);
        return sim;
-    }))
+    }), py::call_guard<py::gil_scoped_release>())
     .def(py::init([](ACE::FreePropagator &prop,
                      ACE::DiagBB &diagBB,
                      const Eigen::MatrixXcd & initial,
@@ -294,11 +300,13 @@ PYBIND11_MODULE(_ACE, m) {
        ACE::TruncationLayout trunc_layout(threshold);
 
 #ifndef PYBIND_NO_REDIRECT
+      py::gil_scoped_acquire acquire;
       py::scoped_ostream_redirect stream(std::cout,py::module_::import("sys").attr("stdout"));
+      py::gil_scoped_release release;
 #endif
        sim->run(prop, diagBB, initial, tgrid, printer, trunc_layout);
        return sim;
-    }))
+    }), py::call_guard<py::gil_scoped_release>())
     ;
 
  py::class_<ACE::Simulation_CTEMPO>(m, "Simulation_CTEMPO")
