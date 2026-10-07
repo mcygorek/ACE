@@ -9,7 +9,7 @@ Boson_J_type ohmic
 Boson_J_s         1
 Boson_J_div_by_cutoff true
 Boson_J_alpha  {2*1.0}
-Boson_J_omega_c   10
+Boson_J_omega_c    5
 Boson_J_cutoff   exp 
 Boson_omega_max  100
 #Boson_J_print  J.dat  0 100 10000

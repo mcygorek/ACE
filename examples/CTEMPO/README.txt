@@ -27,7 +27,7 @@ Spin-Boson model
 ----------------
 
 The subdirectory "spinboson" contains exemplary parameter files that can be used to simulate the spin-boson dynamics as indicated in the manuscript for coupling strength alpha=0.1 (or 1), total propagation time te=20.48, time step dt=0.004, and compression threshold epsilon=10^{-8}. Please change these values according to your need.
-The same parameter file can be executed with different binaries to employ the respective method. We suggest to specify the name of the output file to indicate hthe method used, for example:
+The same parameter file can be executed with different binaries to employ the respective method. We suggest to specify the name of the output file to indicate the method used, for example:
 
 > CTEMPO ohmic_alpha0.1_te20.48_dt0.04_thr1e-8.param -outfile ohmic_alpha0.1_te20.48_dt0.04_thr1e-8_CTEMPO.out
 > TEMPO  ohmic_alpha0.1_te20.48_dt0.04_thr1e-8.param -outfile ohmic_alpha0.1_te20.48_dt0.04_thr1e-8_TEMPO.out
